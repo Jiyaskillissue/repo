@@ -86,7 +86,12 @@ final class WallpaperPlayer {
         width = metrics.widthPixels;
         height = metrics.heightPixels;
         image = new ImageView(context);
-        image.setScaleType(ImageView.ScaleType.CENTER_CROP);\n        SharedPreferences frame = context.getSharedPreferences("wallpaper_rotation", Context.MODE_PRIVATE);\n        float zoom = Math.max(1f, Math.min(1.8f, frame.getFloat("frame_zoom", 1f)));\n        image.setScaleX(zoom); image.setScaleY(zoom);\n        image.setTranslationX(frame.getFloat("frame_x", 0f) * metricsWidth(context) / 100f);\n        image.setTranslationY(frame.getFloat("frame_y", 0f) * metricsHeight(context) / 100f);
+        image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        SharedPreferences frame = context.getSharedPreferences("wallpaper_rotation", Context.MODE_PRIVATE);
+        float zoom = Math.max(1f, Math.min(1.8f, frame.getFloat("frame_zoom", 1f)));
+        image.setScaleX(zoom); image.setScaleY(zoom);
+        image.setTranslationX(frame.getFloat("frame_x", 0f) * metricsWidth(context) / 100f);
+        image.setTranslationY(frame.getFloat("frame_y", 0f) * metricsHeight(context) / 100f);
         image.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         names = config.wallpaperCaptions && config.wallpaperEnabled && !files.isEmpty()
                 ? WallpaperCaptions.read(files.get(0).getParentFile()) : Collections.emptyMap();
@@ -269,7 +274,10 @@ final class WallpaperPlayer {
         if (old != null && old != bitmap) image.postDelayed(old::recycle, 500);
     }
 
-    private static float metricsWidth(Context c) { return c.getResources().getDisplayMetrics().widthPixels * 0.12f; }\n    private static float metricsHeight(Context c) { return c.getResources().getDisplayMetrics().heightPixels * 0.12f; }\n\n    private Bitmap decode(File file) {
+    private static float metricsWidth(Context c) { return c.getResources().getDisplayMetrics().widthPixels * 0.12f; }
+    private static float metricsHeight(Context c) { return c.getResources().getDisplayMetrics().heightPixels * 0.12f; }
+
+    private Bitmap decode(File file) {
         try {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
