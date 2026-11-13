@@ -423,7 +423,7 @@ final class AppLibraryDialog {
         for (int i = 0; i < apps.size(); i++) {
             if (apps.get(i).activityInfo.packageName.equals(selectedPackage)) { position = i; break; }
         }
-        ((LinearLayoutManager) list.getLayoutManager()).scrollToPositionWithOffset(position, selectedOffset);
+        grid.scrollToPositionWithOffset(position, selectedOffset);
         final int target = position;
         list.post(() -> {
             if (catalog != list || !popup.isShowing()) return;
@@ -594,7 +594,7 @@ final class AppLibraryDialog {
             row.setClickable(true);
             LinearLayout content = new LinearLayout(activity);
             content.setOrientation(LinearLayout.VERTICAL);
-            content.setGravity(Gravity.CENTER_HORIZONTAL);
+            content.setGravity(Gravity.CENTER);
             row.addView(content, new FrameLayout.LayoutParams(-1, -1));
             ImageView icon = new ImageView(activity);
             icon.setId(R.id.icon);
@@ -638,8 +638,13 @@ final class AppLibraryDialog {
             });
             holder.itemView.setOnKeyListener((v, key, event) -> {
                 int index = holder.getBindingAdapterPosition();
-                return event.getAction() == KeyEvent.ACTION_DOWN && ((rtl ? key == KeyEvent.KEYCODE_DPAD_RIGHT : key == KeyEvent.KEYCODE_DPAD_LEFT) && index == 0
-                        || (rtl ? key == KeyEvent.KEYCODE_DPAD_LEFT : key == KeyEvent.KEYCODE_DPAD_RIGHT) && index == apps.size() - 1);
+                if (index == RecyclerView.NO_POSITION) return false;
+                int column = index % 5;
+                boolean atLeftEdge = rtl ? column == 4 : column == 0;
+                boolean atRightEdge = rtl ? column == 0 : column == 4;
+                return event.getAction() == KeyEvent.ACTION_DOWN
+                        && (key == KeyEvent.KEYCODE_DPAD_LEFT && atLeftEdge
+                        || key == KeyEvent.KEYCODE_DPAD_RIGHT && atRightEdge);
             });
         }
         @Override public int getItemCount() { return apps.size(); }
