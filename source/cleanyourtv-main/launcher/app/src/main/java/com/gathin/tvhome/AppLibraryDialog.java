@@ -166,9 +166,10 @@ final class AppLibraryDialog {
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setPadding(dp(28), dp(20), dp(28), dp(24));
         panel.setBackgroundResource(R.drawable.glass_panel);
-        View decor = activity.getWindow().getDecorView();
-        catalogWidth = Math.max(dp(200), decor.getWidth() - dp(32));
-        catalogHeight = Math.max(dp(240), decor.getHeight() - dp(32));
+        android.util.DisplayMetrics display = activity.getResources().getDisplayMetrics();
+        // Use display metrics: the decor view may still be zero-sized when this dialog is constructed.
+        catalogWidth = Math.max(dp(200), display.widthPixels - dp(32));
+        catalogHeight = Math.max(dp(240), display.heightPixels - dp(32));
         popup = new PopupWindow(panel, catalogWidth, catalogHeight, true);
         popup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         popup.setOutsideTouchable(true);
