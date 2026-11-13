@@ -25,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.TextClock;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -341,6 +342,22 @@ final class AppLibraryDialog {
         panel.addView(title, new LinearLayout.LayoutParams(-1, -2));
     }
 
+    private ImageView headerAction(int icon, String description, Runnable action) {
+        ImageView button = new ImageView(activity);
+        button.setImageResource(icon);
+        button.setContentDescription(description);
+        button.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        button.setPadding(dp(10), dp(10), dp(10), dp(10));
+        button.setBackground(surface(0x16FFFFFF, 14));
+        button.setFocusable(true);
+        button.setClickable(true);
+        button.setOnClickListener(v -> action.run());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(dp(42), dp(40));
+        params.setMargins(dp(4), 0, dp(4), 0);
+        button.setLayoutParams(params);
+        return button;
+    }
+
     /** Reuse translated actions instead of shipping another hint in every locale. */
     private String hint(boolean home) {
         if (selectionMode) return activity.getString(android.R.string.ok) + ": "
@@ -361,6 +378,34 @@ final class AppLibraryDialog {
         title.setGravity(Gravity.CENTER_VERTICAL | (rtl ? Gravity.RIGHT : Gravity.LEFT));
         title.setSingleLine(true);
         title.setEllipsize(TextUtils.TruncateAt.END);
+
+        TextClock clock = new TextClock(activity);
+        clock.setFormat12Hour("h:mm a");
+        clock.setFormat24Hour("HH:mm");
+        clock.setTextColor(0xCCFFFFFF);
+        clock.setTextSize(16);
+        clock.setTypeface(UiFont.get(activity, R.string.font_medium));
+        clock.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams clockParams = new LinearLayout.LayoutParams(-2, dp(40));
+        clockParams.setMargins(dp(8), 0, dp(8), 0);
+        header.addView(clock, clockParams);
+
+        header.addView(headerAction(R.drawable.ic_settings, activity.getString(R.string.settings), () -> {
+            try { activity.startActivity(new Intent(activity, LauncherSettingsActivity.class)); }
+            catch (ActivityNotFoundException | SecurityException ignored) { }
+        }));
+        header.addView(headerAction(R.drawable.ic_wifi, activity.getString(R.string.wifi), () -> {
+            try { activity.startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)); }
+            catch (ActivityNotFoundException | SecurityException ignored) { }
+        }));
+        header.addView(headerAction(R.drawable.ic_input, activity.getString(R.string.inputs), () -> {
+            try { activity.startActivity(new Intent("com.android.tv.action.VIEW_INPUTS")); }
+            catch (ActivityNotFoundException | SecurityException ignored) {
+                try { activity.startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS)); }
+                catch (ActivityNotFoundException | SecurityException ignoredAgain) { }
+            }
+        }));
+
         TextView count = text(activity.getResources().getQuantityString(
                 R.plurals.library_app_count, totalApps, totalApps), 13, 0xA6FFFFFF);
         count.setSingleLine(true);
