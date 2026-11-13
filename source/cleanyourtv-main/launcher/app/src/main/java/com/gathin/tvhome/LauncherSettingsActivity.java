@@ -20,6 +20,7 @@ import android.graphics.BitmapFactory;
 import android.widget.ImageView;
 import android.graphics.Color;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -62,6 +63,10 @@ public final class LauncherSettingsActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_launcher_settings);
+        findViewById(R.id.navDisplay).setOnClickListener(v -> navigateTo(R.id.displaySection));
+        findViewById(R.id.navWallpaper).setOnClickListener(v -> navigateTo(R.id.wallpaperSection));
+        findViewById(R.id.navMotion).setOnClickListener(v -> navigateTo(R.id.motionSection));
+        findViewById(R.id.navSystem).setOnClickListener(v -> navigateTo(R.id.systemSection));
         choices = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE);
         Config config = Config.load(this);
         View reorderChoice = findViewById(R.id.reorderChoice);
@@ -138,7 +143,7 @@ public final class LauncherSettingsActivity extends Activity {
         wallpaperChoice = findViewById(R.id.wallpaperChoice);
         wallpaperChoice.setOnClickListener(v -> showWallpaperPicker());
         findViewById(R.id.wallpaperImportChoice).setOnClickListener(v -> importWallpapers());
-        findViewById(R.id.wallpaperCuratedChoice).setOnClickListener(v -> { int count = CuratedWallpapers.install(this); changed(); refresh(); Toast.makeText(this, getString(R.string.wallpaper_curated_done, count), Toast.LENGTH_LONG).show(); });
+        findViewById(R.id.wallpaperCuratedChoice).setOnClickListener(v -> { int count = CuratedWallpapers.install(this); if (count > 0) choices.edit().remove(Config.WALLPAPER_CHOICE_KEY).apply(); changed(); refresh(); Toast.makeText(this, getString(R.string.wallpaper_curated_done, count), Toast.LENGTH_LONG).show(); });
         findViewById(R.id.wallpaperAdjustChoice).setOnClickListener(v -> showWallpaperAdjust());
         animationsChoice = findViewById(R.id.animationsChoice);
         animationsChoice.setOnClickListener(v -> {
@@ -189,7 +194,7 @@ public final class LauncherSettingsActivity extends Activity {
                 open(SystemSettings.intent(this, Settings.ACTION_SETTINGS)));
         refresh();
         if (config.launcherSettingsButton) reorderChoice.requestFocus();
-        else columnChoices[Math.max(0, Math.min(columns - 4, 3))].requestFocus();
+        else findViewById(R.id.navDisplay).requestFocus();
     }
 
     private void reverseRow(TextView[] views) {
@@ -249,8 +254,11 @@ public final class LauncherSettingsActivity extends Activity {
         String lower = name.toLowerCase(java.util.Locale.ROOT);
         if (!(lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp"))) {
             String mime = getContentResolver().getType(uri);
-            String extension = "image/png".equals(mime) ? ".png"
-                    : "image/webp".equals(mime) ? ".webp" : ".jpg";
+            String extension;
+            if ("image/jpeg".equals(mime)) extension = ".jpg";
+            else if ("image/png".equals(mime)) extension = ".png";
+            else if ("image/webp".equals(mime)) extension = ".webp";
+            else return false;
             name = "wallpaper-" + System.currentTimeMillis() + extension;
         }
         File destination = new File(folder, name);
@@ -305,8 +313,8 @@ public final class LauncherSettingsActivity extends Activity {
         SeekBar ys = new SeekBar(this); ys.setMax(200); ys.setProgress(Math.max(0,Math.min(200,Math.round(prefs.getFloat("frame_y",0f)+100)))); box.addView(ys);
         preview.setScaleX(zoom/100f); preview.setScaleY(zoom/100f);
         zs.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean u){z.setText("Zoom · "+(100+p)+"%");preview.setScaleX(1f+p/100f);preview.setScaleY(1f+p/100f);}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
-        xs.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean u){preview.setTranslationX((p-100)*dp(1));}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
-        ys.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean u){preview.setTranslationY((p-100)*dp(1));}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
+        xs.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean u){preview.setTranslationX((p-100)*preview.getWidth()*0.12f/100f);}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
+        ys.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean u){preview.setTranslationY((p-100)*preview.getHeight()*0.12f/100f);}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
 
         new AlertDialog.Builder(this).setTitle(R.string.wallpaper_adjust).setMessage(R.string.wallpaper_adjust_hint).setView(box)
             .setPositiveButton(android.R.string.ok,(d,w)->{prefs.edit().putFloat("frame_zoom",1f+zs.getProgress()/100f).putFloat("frame_x",xs.getProgress()-100f).putFloat("frame_y",ys.getProgress()-100f).apply();changed();})
@@ -455,6 +463,14 @@ public final class LauncherSettingsActivity extends Activity {
                 || choices.contains("animations") || choices.contains("advanced_effects")
                 || choices.contains(Config.WALLPAPER_CHOICE_KEY) || choices.contains(Config.DOCK_OPACITY_KEY)
                 || choices.contains(Config.CLOCK_FORMAT_KEY) || choices.contains(OpenOnStart.KEY);
+    }
+
+    private void navigateTo(int sectionId) {
+        View section = findViewById(sectionId);
+        ScrollView scroll = findViewById(R.id.settingsScroll);
+        if (section != null && scroll != null) {
+            scroll.post(() -> scroll.smoothScrollTo(0, section.getTop()));
+        }
     }
 
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
