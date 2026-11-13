@@ -54,6 +54,9 @@
     <string name="rows_below_dock_label">Rows below dock</string>
     <string name="dock_opacity_label">Dock band opacity</string>
     <string name="wallpaper_label">Wallpaper</string>
+    <string name="wallpaper_import">Import wallpapers from device</string>
+    <string name="wallpaper_imported">Imported %1$d wallpaper(s)</string>
+    <string name="wallpaper_import_failed">No wallpapers imported. Use JPG, PNG or WebP images up to 10 MB.</string>
     <string name="wallpaper_state">Wallpaper: %1$s</string>
     <string name="wallpaper_none">None</string>
     <string name="wallpaper_applied">Wallpaper changed</string>
