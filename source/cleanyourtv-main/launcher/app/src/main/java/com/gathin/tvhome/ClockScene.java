@@ -1,8 +1,6 @@
 package com.gathin.tvhome;
 
 import android.animation.ArgbEvaluator;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
@@ -49,7 +47,7 @@ final class ClockScene {
     private final ClockRefresh clockRefresh;
     private final ImageView ambient;
     private final GradientDrawable glow;
-    private AnimatorSet wallpaperMotion;
+    private ValueAnimator wallpaperMotion;
     private int colorIndex;
     private int glowColor;
     /** clock_wallpaper or clock_glow false: something else (a picture, or plain black) replaced the coloured glow. */
@@ -222,16 +220,19 @@ final class ClockScene {
         if (wallpaperMotion != null) wallpaperMotion.cancel();
         float driftX = ambient.getWidth() * 0.018f;
         float driftY = ambient.getHeight() * 0.012f;
-        ObjectAnimator zoomX = ObjectAnimator.ofFloat(ambient, View.SCALE_X, 1.025f, 1.075f);
-        ObjectAnimator zoomY = ObjectAnimator.ofFloat(ambient, View.SCALE_Y, 1.025f, 1.075f);
-        ObjectAnimator panX = ObjectAnimator.ofFloat(ambient, View.TRANSLATION_X, driftX, -driftX);
-        ObjectAnimator panY = ObjectAnimator.ofFloat(ambient, View.TRANSLATION_Y, -driftY, driftY);
-        wallpaperMotion = new AnimatorSet();
-        wallpaperMotion.playTogether(zoomX, zoomY, panX, panY);
+        wallpaperMotion = ValueAnimator.ofFloat(0f, 1f);
         wallpaperMotion.setDuration(90_000L);
         wallpaperMotion.setInterpolator(new android.view.animation.LinearInterpolator());
         wallpaperMotion.setRepeatCount(ValueAnimator.INFINITE);
         wallpaperMotion.setRepeatMode(ValueAnimator.REVERSE);
+        wallpaperMotion.addUpdateListener(animation -> {
+            float progress = (float) animation.getAnimatedValue();
+            float scale = 1.025f + 0.05f * progress;
+            ambient.setScaleX(scale);
+            ambient.setScaleY(scale);
+            ambient.setTranslationX(driftX - 2f * driftX * progress);
+            ambient.setTranslationY(-driftY + 2f * driftY * progress);
+        });
         wallpaperMotion.start();
     }
 
