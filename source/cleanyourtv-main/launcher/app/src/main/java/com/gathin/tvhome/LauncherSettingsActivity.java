@@ -457,6 +457,8 @@ public final class LauncherSettingsActivity extends Activity {
                 || choices.contains(Config.CLOCK_FORMAT_KEY) || choices.contains(OpenOnStart.KEY);
     }
 
+    private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
+
     private void open(Intent intent) {
         try {
             startActivity(intent);
