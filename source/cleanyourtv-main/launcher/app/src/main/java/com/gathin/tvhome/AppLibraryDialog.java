@@ -31,7 +31,7 @@ import androidx.annotation.NonNull;
 import androidx.dynamicanimation.animation.FloatPropertyCompat;
 import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.dynamicanimation.animation.SpringForce;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.Collator;
@@ -103,6 +103,7 @@ final class AppLibraryDialog {
     private float scrollOffset;
     private boolean highlightShown;
     private final int catalogWidth;
+    private final int catalogHeight;
 
     private void stopHighlight() {
         if (spring != null) spring.cancel();
@@ -162,13 +163,12 @@ final class AppLibraryDialog {
         panel = new LinearLayout(activity);
         panel.setLayoutDirection(rtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         panel.setOrientation(LinearLayout.VERTICAL);
-        panel.setPadding(dp(12), dp(8), dp(12), dp(12));
+        panel.setPadding(dp(28), dp(20), dp(28), dp(24));
         panel.setBackgroundResource(R.drawable.glass_panel);
         View decor = activity.getWindow().getDecorView();
-        catalogWidth = Math.min(dp(800), Math.max(dp(200), decor.getWidth() - dp(64)));
-        int width = catalogWidth;
-        int height = dp(280);
-        popup = new PopupWindow(panel, width, height, true);
+        catalogWidth = Math.max(dp(200), decor.getWidth() - dp(32));
+        catalogHeight = Math.max(dp(240), decor.getHeight() - dp(32));
+        popup = new PopupWindow(panel, catalogWidth, catalogHeight, true);
         popup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         popup.setOutsideTouchable(true);
         popup.setAnimationStyle(0);
@@ -350,7 +350,7 @@ final class AppLibraryDialog {
 
     private void showCatalog() {
         stopHighlight();
-        resize(catalogWidth, dp(280));
+        resize(catalogWidth, catalogHeight);
         panel.removeAllViews();
         LinearLayout header = new LinearLayout(activity);
         header.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
@@ -392,13 +392,12 @@ final class AppLibraryDialog {
         RecyclerView list = new RecyclerView(activity);
         list.setLayoutDirection(rtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         catalog = list;
-        list.setLayoutManager(new LinearLayoutManager(activity, RecyclerView.HORIZONTAL, false) {
-            @Override protected boolean isLayoutRTL() { return rtl; }
-        });
+        GridLayoutManager grid = new GridLayoutManager(activity, 5);
+        list.setLayoutManager(grid);
         list.setItemAnimator(null);
         list.setOverScrollMode(View.OVER_SCROLL_NEVER);
         list.setClipToPadding(false);
-        list.setPadding(dp(10), dp(8), dp(10), dp(8));
+        list.setPadding(dp(8), dp(12), dp(8), dp(12));
         list.setAdapter(new Catalog());
         shelf.addView(list, new FrameLayout.LayoutParams(-1, -1));
         highlight = new GlassView(activity, null);
@@ -416,8 +415,7 @@ final class AppLibraryDialog {
         else spring.setSpring(new SpringForce().setStiffness(260f).setDampingRatio(0.58f));
         list.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
-                scrollOffset += dx;
-                highlight.setTranslationX(highlight.getTranslationX() - dx);
+                highlight.setTranslationY(highlight.getTranslationY() - dy);
             }
         });
         panel.addView(shelf, new LinearLayout.LayoutParams(-1, 0, 1));
@@ -462,18 +460,8 @@ final class AppLibraryDialog {
         }
         selectedOffset = 0;
         if (add && catalog != null) {
-            RecyclerView.ViewHolder holder = catalog.findViewHolderForAdapterPosition(selectedPosition);
-            if (holder != null) {
-                View card = holder.itemView;
-                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) card.getLayoutParams();
-                selectedOffset = rtl
-                        ? catalog.getWidth() - catalog.getPaddingRight()
-                            - catalog.getLayoutManager().getDecoratedRight(card) - params.rightMargin
-                        : catalog.getLayoutManager().getDecoratedLeft(card)
-                            - params.leftMargin - catalog.getPaddingLeft();
-            }
             // Advance through missing shortcuts instead of following the newly checked app
-            // into the Home group. Preserve its screen slot when the catalogue is rebuilt.
+            // into the Home group.
             int next = LibraryApps.nextFocus(selectedPosition, apps.size(),
                     index -> !onHome.test(apps.get(index).activityInfo.packageName));
             if (next >= 0) {
@@ -490,18 +478,6 @@ final class AppLibraryDialog {
         int position = apps.indexOf(app);
         int next = add ? -1 : LibraryApps.nextAfterRemoval(position, apps.size());
         selectedOffset = 0;
-        if (!add && catalog != null) {
-            RecyclerView.ViewHolder holder = catalog.findViewHolderForAdapterPosition(position);
-            if (holder != null) {
-                View card = holder.itemView;
-                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) card.getLayoutParams();
-                selectedOffset = rtl
-                        ? catalog.getWidth() - catalog.getPaddingRight()
-                            - catalog.getLayoutManager().getDecoratedRight(card) - params.rightMargin
-                        : catalog.getLayoutManager().getDecoratedLeft(card)
-                            - params.leftMargin - catalog.getPaddingLeft();
-            }
-        }
         selectedPackage = next >= 0 ? apps.get(next).activityInfo.packageName : app.activityInfo.packageName;
     }
 
@@ -610,10 +586,10 @@ final class AppLibraryDialog {
     private final class Catalog extends RecyclerView.Adapter<Row> {
         @NonNull @Override public Row onCreateViewHolder(@NonNull ViewGroup parent, int type) {
             FrameLayout row = new FrameLayout(activity);
-            RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(dp(132), dp(170));
-            params.setMargins(dp(6), dp(2), dp(6), dp(2));
+            RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(116));
+            params.setMargins(dp(8), dp(8), dp(8), dp(8));
             row.setLayoutParams(params);
-            row.setPadding(dp(10), dp(12), dp(10), dp(10));
+            row.setPadding(dp(8), dp(8), dp(8), dp(8));
             row.setFocusableInTouchMode(true);
             row.setClickable(true);
             LinearLayout content = new LinearLayout(activity);
@@ -623,19 +599,8 @@ final class AppLibraryDialog {
             ImageView icon = new ImageView(activity);
             icon.setId(R.id.icon);
             icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            content.addView(icon, new LinearLayout.LayoutParams(dp(60), dp(60)));
-            TextView name = text("", 15, Color.WHITE);
-            name.setId(R.id.title);
-            name.setGravity(Gravity.CENTER);
-            name.setMaxLines(2);
-            LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(-1, dp(44));
-            nameParams.topMargin = dp(10);
-            content.addView(name, nameParams);
-            TextView status = text("", 11, 0xBBFFFFFF);
-            status.setId(R.id.status);
-            status.setGravity(Gravity.CENTER);
-            status.setMaxLines(2);
-            content.addView(status, new LinearLayout.LayoutParams(-1, -2));
+            content.addView(icon, new LinearLayout.LayoutParams(dp(68), dp(68)));
+            // Icon-only catalogue: labels and status text are intentionally omitted.
             View check = new View(activity);
             check.setId(R.id.dot);
             FrameLayout.LayoutParams badge = new FrameLayout.LayoutParams(dp(18), dp(18), Gravity.TOP | Gravity.END);
@@ -647,14 +612,8 @@ final class AppLibraryDialog {
             ResolveInfo app = apps.get(position);
             String pkg = app.activityInfo.packageName;
             bindIcon(holder.itemView.findViewById(R.id.icon), app);
-            TextView name = holder.itemView.findViewById(R.id.title);
-            name.setText(label(app));
-            name.setEllipsize(TextUtils.TruncateAt.END);
-            TextView status = holder.itemView.findViewById(R.id.status);
             boolean home = onHome.test(pkg);
             boolean recent = !selectionMode && LibraryApps.recent(installTimes.getOrDefault(pkg, 0L), catalogTime);
-            status.setText(home ? R.string.library_on_home : recent ? R.string.library_recent : R.string.library_add_home);
-            status.setVisibility(home || !okOpens ? View.VISIBLE : View.INVISIBLE);
             holder.itemView.setBackground(surface(home ? 0x1475BBA4 : 0x0CFFFFFF, 18));
             View check = holder.itemView.findViewById(R.id.dot);
             check.getLayoutParams().width = dp(home ? 18 : 8);
@@ -679,9 +638,7 @@ final class AppLibraryDialog {
             });
             holder.itemView.setOnKeyListener((v, key, event) -> {
                 int index = holder.getBindingAdapterPosition();
-                return event.getAction() == KeyEvent.ACTION_DOWN && (key == KeyEvent.KEYCODE_DPAD_UP
-                        || key == KeyEvent.KEYCODE_DPAD_DOWN
-                        || (rtl ? key == KeyEvent.KEYCODE_DPAD_RIGHT : key == KeyEvent.KEYCODE_DPAD_LEFT) && index == 0
+                return event.getAction() == KeyEvent.ACTION_DOWN && ((rtl ? key == KeyEvent.KEYCODE_DPAD_RIGHT : key == KeyEvent.KEYCODE_DPAD_LEFT) && index == 0
                         || (rtl ? key == KeyEvent.KEYCODE_DPAD_LEFT : key == KeyEvent.KEYCODE_DPAD_RIGHT) && index == apps.size() - 1);
             });
         }
