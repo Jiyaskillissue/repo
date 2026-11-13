@@ -1,0 +1,1500 @@
+﻿            handleViewInputs = bool(json, "handle_view_inputs", handleViewInputs);
+            appKeys = stringList(json, "app_keys", appKeys);
+            stockHomeRedirect = string(json, "stock_home_redirect", stockHomeRedirect);
+            cinematic = bool(json, "cinematic_home", cinematic);
+            ambientGlow = bool(json, "ambient_glow", ambientGlow);
+            appGlow = bool(json, "app_glow", appGlow);
+            fadeRows = bool(json, "fade_rows", fadeRows);
+            idleClockMinutes = integer(json, "home_idle_clock_minutes", idleClockMinutes, 0, 1440);
+            keyFilter = bool(json, "key_filter", keyFilter);
+            gamepadPassthrough = bool(json, "gamepad_passthrough", gamepadPassthrough);
+            consumeVolumeKeys = bool(json, "consume_volume_keys", consumeVolumeKeys);
+            volumePausesFilter = bool(json, "volume_pauses_filter", volumePausesFilter);
+            homeIgnoreChannelKeys = bool(json, "home_ignore_channel_keys", homeIgnoreChannelKeys);
+            powerOnHome = bool(json, "power_on_home", powerOnHome);
+            homeLongPressHome = bool(json, "home_long_press_home", homeLongPressHome);
+            powerOnHomeAlways = bool(json, "power_on_home_always", powerOnHomeAlways);
+            inputsConnectedOnly = bool(json, "inputs_connected_only", inputsConnectedOnly);
+            inputsCecStateOnly = bool(json, "inputs_cec_state_only", inputsCecStateOnly);
+            clockFormat = string(json, CLOCK_FORMAT_KEY, clockFormat);
+            dockGlass = bool(json, "dock_glass", dockGlass);
+            dockEvenPadding = bool(json, "dock_even_padding", dockEvenPadding);
+            dockBand = bool(json, "dock_band", dockBand);
+            cinematicDots = bool(json, "cinematic_dots", cinematicDots);
+            cinematicWhiteFocus = bool(json, "cinematic_white_focus", cinematicWhiteFocus);
+            wifiStatusColor = bool(json, "wifi_status_color", wifiStatusColor);
+            cinematicArt = integer(json, "cinematic_art", cinematicArt, 0, 100);
+            cinematicScrim = integer(json, "cinematic_scrim", cinematicScrim, 0, 100);
+            JSONObject moods = json.optJSONObject("wallpaper_moods");
+            if (moods != null) wallpaperMoods = moods(moods);
+            wifiStatusWarnings = bool(json, "wifi_status_warnings", wifiStatusWarnings);
+            dateBelowClock = bool(json, "date_below_clock", dateBelowClock);
+            vpnPill = bool(json, "vpn_pill", vpnPill);
+            locale = string(json, "locale", locale).trim();
+            topBarApps = stringList(json, "top_bar_apps", topBarApps);
+            showGreeting = bool(json, "show_greeting", showGreeting);
+            headerWhite = bool(json, "header_white", headerWhite);
+            clockWallpaper = bool(json, "clock_wallpaper", clockWallpaper);
+            clockWallpaperDim = integer(json, "clock_wallpaper_dim", clockWallpaperDim, 0, 90);
+            clockGlow = bool(json, "clock_glow", clockGlow);
+            singleRow = bool(json, "single_row", singleRow);
+            dockBandAll = bool(json, "dock_band_all", dockBandAll);
+            glowStyle = string(json, "glow_style", glowStyle);
+            glassStyle = string(json, "glass_style", glassStyle);
+        }
+        // A top-bar app is moved there, not copied: it leaves the grid.
+        for (String pkg : topBarApps) if (!hidden.contains(pkg)) hidden.add(pkg);
+        // A theme push or reset invalidates choices made on the TV. On first use, remember the
+        // current theme without clearing choices from an older launcher version.
+        SharedPreferences choices = ctx.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE);
+        // Unmounted storage looks like a theme reset; compare only once the file is readable.
+        if (mounted) syncThemeChoices(choices, dir, file);
+        int chosenColumns = choices.getInt("columns", columns);
+        if (chosenColumns >= 4 && chosenColumns <= 7) columns = chosenColumns;
+        int chosenRows = choices.getInt(ROWS_BELOW_DOCK_KEY, rowsBelow);
+        if (chosenRows >= 0 && chosenRows <= 3) rowsBelow = chosenRows;
+        animations = choices.getBoolean("animations", animations);
+        advancedEffects = choices.getBoolean("advanced_effects", advancedEffects);
+        File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;
+        if (wallpaper != null && !(wallpaper.isFile() && wallpaper.length() > 0)) wallpaper = null;
+        // A theme can also switch the wallpaper off while the file is still there.
+        boolean wallpaperEnabled = json == null || bool(json, "wallpaper", true);
+        if (!wallpaperEnabled) wallpaper = null;
+        int rotationMinutes = json == null ? 0 : integer(json, "wallpaper_rotation_minutes", 0, 0, 1440);
+        int wallpaperDim = json == null ? 0 : integer(json, "wallpaper_dim", 0, 0, 90);
+        int dockOpacity = json == null ? 100 : integer(json, "dock_opacity", 100, 30, 100);
+        dockOpacity = chosenDockOpacity(choices.getInt(DOCK_OPACITY_KEY, -1), dockOpacity);
+        clockFormat = choices.getString(CLOCK_FORMAT_KEY, clockFormat);
+        String wallpaperOrder = json == null ? WallpaperRotation.ORDER_SHUFFLE
+                : string(json, "wallpaper_order", WallpaperRotation.ORDER_SHUFFLE);
+        // An unknown order must not silently change how an existing collection rotates.
+        if (!WallpaperRotation.validOrder(wallpaperOrder)) wallpaperOrder = WallpaperRotation.ORDER_SHUFFLE;
+        List<File> wallpapers = new ArrayList<>();
+        if (rotationMinutes > 0 && dir != null && wallpaperEnabled) {
+            wallpapers.addAll(WallpaperRotation.images(new File(dir, "wallpapers")));
+        }
+        if (wallpapers.isEmpty() && wallpaper != null) wallpapers.add(wallpaper);
+        // An on-TV wallpaper pick overrides the theme: a filename from the wallpapers/
+        // collection, or "none". Unset means the theme decides (off by default).
+        String wallpaperChoice = choices.getString(WALLPAPER_CHOICE_KEY, null);
+        List<File> chosen = WallpaperRotation.chosen(dir == null ? Collections.emptyList()
+                : WallpaperRotation.images(new File(dir, "wallpapers")), wallpaper, wallpaperChoice);
+        if (chosen != null) {
+            wallpapers.clear();
+            wallpapers.addAll(chosen);
+            wallpaper = chosen.isEmpty() ? null : chosen.get(0);
+            wallpaperEnabled = !chosen.isEmpty();
+        }
+        // A festive skin comes only from a theme; config.xml has no festival. seasonal_skin names one the same way
+        // but launchers before it ignore the key, so a theme can carry it without older ones showing the diya skin.
+        Festival festival = json == null ? Festival.NONE : Festival.parse(festivalName(json),
+                string(json, "festival_until", ""), string(json, "greeting", ""), string(json, "accent_color", ""));
+
+        return new Config(dock, fillDock, hidden, libraryApps, libraryExcludedApps, liveTv, liveTvAction, liveTvInputId, packageMap(launchActions), packageMap(appLabels),
+                packageMap(appBanners), panelService, panelAction, panelExtra, coocaaSources, inputAction, inputSources, inputUriScheme, Math.max(1, columns),
+                Math.max(0, rowsBelow), animations, advancedEffects, shamsi, greetingName, moduleCards, reducedMotion, bootToLiveTv,
+                openOnStartChoice, dockTitle, dockRow, topMenu, launcherSettingsButton, reorderButton, showNetworkPill, showInputsPill,
+                iconOnlyButtons, iconOnlyInputs, libraryButton, showLibraryPill, wifiLabelWidth, alwaysShowNames, wallpaperTrueColor, focusOvershoot,
+                vpn, homeSettings, showStats, gameDay, library, librarySelection, libraryOkOpens, uniformTiles, background,
+                Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, restoreKeyServices, wallpaperEnabled, wallpaper,
+                wallpapers, rotationMinutes, wallpaperDim, dockOpacity, wallpaperOrder, applied, festival, inputKeycodes, appKeys, stockHomeRedirect,
+                json == null ? Collections.emptyList() : raceCalendar(json), cinematic, ambientGlow, appGlow, fadeRows,
+                Math.max(0, idleClockMinutes), keyFilter, dockGlass, glowStyle, wallpaperCaptions, handleViewInputs, tileMenu, dockEvenPadding,
+                dockBand, cinematicDots, cinematicWhiteFocus, wifiStatusColor, cinematicScrim, cinematicArt, wallpaperMoods, gamepadPassthrough,
+                consumeVolumeKeys, volumePausesFilter, homeIgnoreChannelKeys, powerOnHome, homeLongPressHome, wifiStatusWarnings, topBarApps, showGreeting, headerWhite, clockWallpaper,
+                Math.max(0, Math.min(90, clockWallpaperDim)), clockGlow, glassStyle, singleRow && dockRow, dockBandAll, lunar, lunarOffset,
+                dateBelowClock, vpnPill, locale, powerOnHomeAlways, inputsConnectedOnly, inputsCecStateOnly,
+                Math.max(0, Math.min(600, openOnStartNetworkWait)), openOnStartOnWake, iconOnlyVpn, clockFormat, backOpensClock, glowSnap,
+                settingsKeyClearTask);
+    }
+
+    /**
+     * {@code "race_calendar": [{"round": 18, "name": "United States Grand Prix", "place": "Austin",
+     * "sessions": [{"name": "FP1", "start": "2026-10-23T17:30:00Z"}, ...]}, ...]}. A race or session that does
+     * not parse is left out on its own; the rest of the calendar still counts.
+     */
+    private static List<RaceWeekend.Race> raceCalendar(JSONObject json) {
+        List<RaceWeekend.Race> races = new ArrayList<>();
+        JSONArray list = json.optJSONArray("race_calendar");
+        if (list == null) return races;
+        for (int i = 0; i < list.length(); i++) {
+            JSONObject r = list.optJSONObject(i);
+            JSONArray sessions = r == null ? null : r.optJSONArray("sessions");
+            if (sessions == null) continue;
+            List<RaceWeekend.Session> parsed = new ArrayList<>();
+            for (int j = 0; j < sessions.length(); j++) {
+                JSONObject s = sessions.optJSONObject(j);
+                if (s == null) continue;
+                String name = s.optString("name", "").trim();
+                try {
+                    if (!name.isEmpty()) parsed.add(new RaceWeekend.Session(name, java.time.Instant.parse(s.optString("start", ""))));
+                } catch (java.time.format.DateTimeParseException ignored) {
+                    // a session without a readable start time cannot be counted down
+                }
+            }
+            if (!parsed.isEmpty()) races.add(new RaceWeekend.Race(r.optInt("round", 0),
+                    r.optString("name", "Grand Prix").trim(), r.optString("place", "").trim(), parsed));
+        }
+        return races;
+    }
+
+    private static void syncThemeChoices(SharedPreferences choices, File dir, File config) {
+        File revision = dir == null ? null : new File(dir, THEME_REVISION_NAME);
+        String token = revisionToken(revision);
+        String signature = fileStamp(config) + ":" + token;
+        String seen = choices.getString(THEME_SIGNATURE_KEY, null);
+        if (seen == null) {
+            // Existing preferences survive an app upgrade, unless the first launch follows an
+            // explicit theme push or reset by the updated tools.
+            SharedPreferences.Editor editor = choices.edit();
+            if (!"absent".equals(token)) editor.remove("columns").remove("animations")
+                    .remove("advanced_effects").remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY)
+                    .remove(DOCK_OPACITY_KEY).remove(CLOCK_FORMAT_KEY);
+            editor.putString(THEME_SIGNATURE_KEY, signature).commit();
+        } else if (!seen.equals(signature)) {
+            choices.edit().remove("columns").remove("animations").remove("advanced_effects")
+                    .remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY).remove(DOCK_OPACITY_KEY)
+                    .remove(CLOCK_FORMAT_KEY).putString(THEME_SIGNATURE_KEY, signature).commit();
+        }
+    }
+
+    /** The dock band opacity chosen in Launcher settings, or the theme's when none (or an out-of-range one) is saved. */
+    static int chosenDockOpacity(int chosen, int theme) {
+        return chosen >= 30 && chosen <= 100 ? chosen : theme;
+    }
+
+    private static String fileStamp(File file) {
+        return file != null && file.isFile() ? file.length() + "@" + file.lastModified() : "absent";
+    }
+
+    private static String revisionToken(File file) {
+        if (file == null || !file.isFile() || file.length() > 64) return "absent";
+        try (InputStream in = new FileInputStream(file)) {
+            byte[] bytes = new byte[(int) file.length()];
+            int n = in.read(bytes);
+            return n > 0 ? new String(bytes, 0, n, StandardCharsets.US_ASCII) : "absent";
+        } catch (Exception ignored) {
+            return "absent";
+        }
+    }
+
+    /** Reads and parses the overlay; any problem means "no overlay", never a crash on the home screen. */
+    /**
+     * The overlay, or before external storage is mounted, the copy kept from the last time it was read. Home can
+     * start before the card is mounted (seen at every boot on a Xiaomi MiTV-MTEQ0), and without the copy it comes
+     * up with the built-in dock order. A missing file on mounted storage still means no overlay.
+     */
+    private static JSONObject readOverlay(Context ctx, File file, boolean mounted) {
+        File copy = new File(ctx.getFilesDir(), FILE_NAME);
+        if (!mounted) return read(copy);
+        JSONObject json = read(file);
+        if (json == null) {
+            copy.delete();
+        } else {
+            try (FileOutputStream out = new FileOutputStream(copy)) {
+                out.write(json.toString().getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                Log.w(TAG, "could not keep a copy of " + file + ": " + e.getMessage());
+            }
+        }
+        return json;
+    }
+
+    private static JSONObject read(File file) {
+        if (file == null || !file.isFile()) return null;
+        if (file.length() > 64 * 1024) {
+            Log.w(TAG, "ignoring " + file + ": larger than 64 KB");
+            return null;
+        }
+        try (InputStream in = new FileInputStream(file)) {
+            byte[] buf = new byte[(int) file.length()];
+            int n = 0, r;
+            while (n < buf.length && (r = in.read(buf, n, buf.length - n)) > 0) n += r;
+            String text = new String(buf, 0, n, StandardCharsets.UTF_8);
+            if (text.startsWith("\uFEFF")) text = text.substring(1);   // Windows editors add a BOM
+            return new JSONObject(text);
+        } catch (Exception e) {
+            Log.w(TAG, "ignoring " + file + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    /** wallpaper_moods as JSON text (config.xml); empty or unreadable is no groups. */
+    private static Map<String, Set<String>> moods(String text) {
+        if (text.trim().isEmpty()) return Collections.emptyMap();
+        try {
+            return moods(new JSONObject(text));
+        } catch (JSONException e) {
+            return Collections.emptyMap();
+        }
+    }
+
+    /** {"night": ["03-moon-lake.jpg", ...], ...}: each mood's picture names; other keys and names are left out. */
+    private static Map<String, Set<String>> moods(JSONObject o) {
+        Map<String, Set<String>> groups = new HashMap<>();
+        for (String mood : WallpaperMood.ALL) {
+            JSONArray names = o.optJSONArray(mood);
+            if (names == null) continue;
+            Set<String> group = new HashSet<>();
+            for (int i = 0; i < names.length(); i++) {
+                String name = names.optString(i, "").trim();
+                if (ThemeFiles.collectionImage(name)) group.add(name);
+            }
+            if (!group.isEmpty()) groups.put(mood, Collections.unmodifiableSet(group));
+        }
+        return Collections.unmodifiableMap(groups);
+    }
+
+    private static String string(JSONObject o, String key, String fallback) {
+        Object v = o.opt(key);
+        return v instanceof String ? ((String) v).trim() : fallback;
+    }
+
+    /** The theme's festival: {@code festival}, or {@code seasonal_skin} when that is empty or missing. */
+    static String festivalName(JSONObject o) {
+        String name = string(o, "festival", "");
+        return name.isEmpty() ? string(o, "seasonal_skin", "") : name;
+    }
+
+    private static boolean bool(JSONObject o, String key, boolean fallback) {
+        Object v = o.opt(key);
+        return v instanceof Boolean ? (Boolean) v : fallback;
+    }
+
+    private static int integer(JSONObject o, String key, int fallback, int min, int max) {
+        Object v = o.opt(key);
+        if (!(v instanceof Number)) return fallback;
+        int i = ((Number) v).intValue();
+        return i < min || i > max ? fallback : i;
+    }
+
+    private static int color(JSONObject o, String key, int fallback) {
+        Object v = o.opt(key);
+        if (!(v instanceof String)) return fallback;
+        try {
+            int c = Color.parseColor(((String) v).trim());
+            return c | 0xFF000000;   // always opaque: the window behind is black anyway
+        } catch (IllegalArgumentException e) {
+            return fallback;
+        }
+    }
+
+    /** Positive keycodes only (vendor remotes use codes in the thousands); a list with anything else in it is ignored as a whole. */
+    private static int[] intArray(JSONObject o, String key, int[] fallback) {
+        Object v = o.opt(key);
+        if (!(v instanceof JSONArray)) return fallback;
+        JSONArray a = (JSONArray) v;
+        int[] out = new int[a.length()];
+        for (int i = 0; i < a.length(); i++) {
+            Object item = a.opt(i);
+            if (!(item instanceof Number)) return fallback;
+            out[i] = ((Number) item).intValue();
+            if (out[i] < 1) return fallback;
+        }
+        return out;
+    }
+
+    /** "package=value" entries; an entry without both halves is skipped, and a later entry for a package wins. */
+    static Map<String, String> packageMap(List<String> entries) {
+        Map<String, String> out = new HashMap<>();
+        for (String entry : entries) {
+            int eq = entry.indexOf('=');
+            if (eq <= 0) continue;
+            String pkg = entry.substring(0, eq).trim(), value = entry.substring(eq + 1).trim();
+            if (!pkg.isEmpty() && !value.isEmpty()) out.put(pkg, value);
+        }
+        return out;
+    }
+
+    private static List<String> stringList(JSONObject o, String key, List<String> fallback) {
+        Object v = o.opt(key);
+        if (!(v instanceof JSONArray)) return fallback;
+        JSONArray a = (JSONArray) v;
+        List<String> out = new ArrayList<>();
+        for (int i = 0; i < a.length(); i++) {
+            Object item = a.opt(i);
+            if (item instanceof String && !((String) item).trim().isEmpty()) out.add(((String) item).trim());
+        }
+        return out;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\CoocaaSources.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Inputs on Coocaa OS (Skyworth) TVs, which register nothing with TvInputManager. com.skyworth.tv lists
+ * the sources its own Source panel shows (HDMI 1, HDMI 2, RF, AV), and switches to one and brings up its
+ * player, as picking it in that panel does.
+ */
+final class CoocaaSources {
+
+    private static final Uri LIST = Uri.parse("content://com.skyworth.tv.provider/system/source_list");
+    private static final Uri METHOD = Uri.parse("content://com.skyworth.tv.sdk.provider/method");
+    private static final String[] COLUMNS = {"sourceName", "sourceIndex", "displayName"};
+
+    static final class Source {
+        /** HDMI, AV, VOD (the RF tuner), ... */
+        final String name;
+        final int index;
+        final String label;
+
+        Source(String name, int index, String label) {
+            this.name = name;
+            this.index = index;
+            this.label = label;
+        }
+    }
+
+    private CoocaaSources() {
+    }
+
+    /** HDMI ports in port order, then AV, then the tuner; empty where the provider is missing. */
+    static List<Source> list(Context ctx) {
+        List<Source> out = new ArrayList<>();
+        try (Cursor c = ctx.getContentResolver().query(LIST, COLUMNS, null, null, null)) {
+            while (c != null && c.moveToNext()) {
+                String name = c.getString(0);
+                String label = c.getString(2);
+                if (name == null) continue;
+                out.add(new Source(name, c.getInt(1), label == null || label.isEmpty() ? name : label));
+            }
+        } catch (RuntimeException e) {
+            return Collections.emptyList();
+        }
+        Collections.sort(out, (a, b) -> a.name.equals(b.name) ? Integer.compare(a.index, b.index)
+                : Integer.compare(rank(a.name), rank(b.name)));
+        return out;
+    }
+
+    private static int rank(String name) {
+        switch (name) {
+            case "HDMI": return 0;
+            case "AV": return 1;
+            case "VOD": return 3;
+            default: return 2;
+        }
+    }
+
+    static boolean open(Context ctx, Source source) {
+        Bundle extras = new Bundle();
+        extras.putString("name", source.name);
+        extras.putInt("index", source.index);
+        try {
+            Bundle ret = ctx.getContentResolver().call(METHOD, "METHOD_GOTO_SOURCE", null, extras);
+            return ret != null && ret.getBoolean("ret");
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\DiyaDrawable.java ==========
+package com.gathin.tvhome;
+
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.LinearGradient;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PixelFormat;
+import android.graphics.RadialGradient;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.Random;
+
+/**
+ * A clay diya whose flame shows the network: the flame's height follows the signal level (1 to 4), it goes out
+ * with a wisp of smoke when the level drops to 0, and relights with a spark when it comes back. Ethernet gets a
+ * calm, steady flame. Drawn in a 24 x 24 unit box scaled into the bounds, with a dark outline so it reads on the
+ * frosted and on the white (focused) pill. The flame flickers only while started, at about 15 fps; nothing is
+ * allocated per frame. The first {@link #setFlame} call applies its level without an animation.
+ */
+public final class DiyaDrawable extends Drawable implements FestiveLamp {
+
+    private static final float BOX = 24f;
+    private static final long FRAME_MS = 66;
+    private static final long LEVEL_MS = 300, OUT_MS = 350, SMOKE_DELAY_MS = 260, SMOKE_MS = 900;
+    private static final long OUT_END_MS = Math.max(OUT_MS, SMOKE_DELAY_MS + SMOKE_MS);
+    private static final long SPARK_MS = 200, GROW_DELAY_MS = 110, GROW_MS = 500;
+    private static final int IDLE = 0, OUT = 1, RELIGHT = 2;
+    /** Flame size for each level; index 0 is out. */
+    private static final float[] LEVEL_SCALE = {0f, 0.46f, 0.64f, 0.82f, 1f};
+    /** Where the flame stands: the wick at the tip of the spout. */
+    private static final float WICK_X = 18.5f, WICK_Y = 12.1f;
+    /** Full flame height and half width, in box units. */
+    private static final float FLAME_H = 10f, FLAME_W = 2f;
+    private static final int SMOKE_POINTS = 16;
+    /** Painted dots on the bowl, x/y pairs. */
+    private static final float[] DOTS = {5.0f, 17.6f, 7.4f, 18.5f, 9.9f, 18.8f, 12.4f, 18.4f, 14.6f, 17.3f};
+
+    private final float density;
+    private final float[] noise = new float[256];
+
+    private final Path body = new Path(), opening = new Path(), rimLip = new Path(), sheen = new Path();
+    private final Path flame = new Path(), core = new Path(), smoke = new Path();
+    private final RectF foot = new RectF(7.2f, 20.0f, 12.4f, 22.4f);
+    private final RectF oval = new RectF();
+    private final Matrix matrix = new Matrix();
+
+    private final Paint footPaint, bodyPaint, warmPaint, openingPaint, openingEdge, dotPaint, lipPaint, sheenPaint,
+            outlinePaint, wickPaint, glowPaint, flamePaint, edgePaint, corePaint, smokePaint, emberPaint, sparkPaint,
+            rayPaint;
+    private final Paint[] paints;
+    private final Shader glowShader, flameShader, coreShader, smokeShader, sparkShader;
+
+    private int level = 4;
+    private boolean primed;
+    private float scaleFrom = 1f, scaleTo = 1f;
+    private long scaleStart;
+    private int phase = IDLE;
+    private long phaseStart;
+    private float outFrom;
+    private boolean running, steady, reduced;
+    private int alpha = 255;
+    private final long epoch = SystemClock.uptimeMillis();
+
+    private final Runnable tick = new Runnable() {
+        @Override
+        public void run() {
+            long now = SystemClock.uptimeMillis();
+            update(now);
+            invalidateSelf();
+            if (wantsFrames()) scheduleSelf(this, now + FRAME_MS);
+        }
+    };
+
+    public DiyaDrawable(float density) {
+        this.density = density;
+        Random rnd = new Random(0xD1A5L);
+        for (int i = 0; i < noise.length; i++) noise[i] = rnd.nextFloat() * 2f - 1f;
+        buildLamp();
+
+        footPaint = fill(0xFF8E3E1E);
+        bodyPaint = fill(0xFFC4612F);
+        bodyPaint.setShader(new RadialGradient(7.5f, 14.5f, 13f,
+                new int[]{0xFFE58C57, 0xFFC4612F, 0xFF9A4220, 0xFF6E2C14},
+                new float[]{0f, 0.35f, 0.7f, 1f}, Shader.TileMode.CLAMP));
+        warmPaint = fill(0xFFFFB347);
+        RadialGradient warm = new RadialGradient(0f, 0f, 1f,
+                new int[]{0xA6FFB347, 0x40FF9A2A, 0x00FF8A1A}, new float[]{0f, 0.5f, 1f}, Shader.TileMode.CLAMP);
+        matrix.setScale(9f, 9f);
+        matrix.postTranslate(WICK_X, WICK_Y);
+        warm.setLocalMatrix(matrix);
+        warmPaint.setShader(warm);
+        openingPaint = fill(0xFF4A1E0E);
+        openingPaint.setShader(new LinearGradient(2.6f, 0f, 19f, 0f,
+                new int[]{0xFF3B170A, 0xFF5A2A10, 0xFF7A4416}, null, Shader.TileMode.CLAMP));
+        openingEdge = stroke(0xFF4A1A0A, 0.3f);
+        dotPaint = fill(0xFFFFE0A3);
+        lipPaint = stroke(0xFFEE9A68, 0.6f);
+        sheenPaint = stroke(0x73FFE8D2, 0.75f);
+        outlinePaint = stroke(0xFF3D1408, 0.7f);
+        wickPaint = stroke(0xFF2B140A, 0.6f);
+
+        glowPaint = fill(0xFFFFB040);
+        glowShader = new RadialGradient(0f, 0f, 1f,
+                new int[]{0x99FFC45A, 0x44FF9A2A, 0x00FF8A1A}, new float[]{0f, 0.45f, 1f}, Shader.TileMode.CLAMP);
+        glowPaint.setShader(glowShader);
+        flamePaint = fill(0xFFFF9A2A);
+        flameShader = new LinearGradient(0f, 0f, 0f, 1f,
+                new int[]{0xFFD9430B, 0xFFFF7A14, 0xFFFFA62B, 0xFFFFB83F, 0xFFF08A24},
+                new float[]{0f, 0.22f, 0.55f, 0.85f, 1f}, Shader.TileMode.CLAMP);
+        flamePaint.setShader(flameShader);
+        edgePaint = stroke(0xFFB8400A, 0.28f);
+        corePaint = fill(0xFFFFF0B8);
+        coreShader = new LinearGradient(0f, 0f, 0f, 1f,
+                new int[]{0xFFFFD25A, 0xFFFFF0B8, 0xFFFFF8E1, 0xFFFFE9A6},
+                new float[]{0f, 0.35f, 0.7f, 1f}, Shader.TileMode.CLAMP);
+        corePaint.setShader(coreShader);
+
+        smokePaint = stroke(0xFFA0A0A0, 0.6f);
+        smokeShader = new LinearGradient(0f, 0f, 0f, 1f,
+                new int[]{0x00A0A0A0, 0xB09A9A9A, 0xFF8E8E8E}, new float[]{0f, 0.4f, 1f}, Shader.TileMode.CLAMP);
+        smokePaint.setShader(smokeShader);
+        emberPaint = fill(0xFFFF5A1A);
+        sparkPaint = fill(0xFFFFF4C8);
+        sparkShader = new RadialGradient(0f, 0f, 1f,
+                new int[]{0xFFFFF4C8, 0xCCFFC24A, 0x00FF9A20}, new float[]{0f, 0.45f, 1f}, Shader.TileMode.CLAMP);
+        sparkPaint.setShader(sparkShader);
+        rayPaint = stroke(0xFFF2A12E, 0.35f);
+
+        paints = new Paint[]{footPaint, bodyPaint, warmPaint, openingPaint, openingEdge, dotPaint, lipPaint,
+                sheenPaint, outlinePaint, wickPaint, glowPaint, flamePaint, edgePaint, corePaint, smokePaint,
+                emberPaint, sparkPaint, rayPaint};
+    }
+
+    // ---- public API ----
+
+    /** 0 puts the flame out; 1 to 4 is the signal strength, which sets the flame's height. */
+    @Override
+    public void setFlame(int newLevel) {
+        int lvl = Math.max(0, Math.min(4, newLevel));
+        if (!primed) {
+            primed = true;
+            level = lvl;
+            snap();
+            kick();
+            return;
+        }
+        if (lvl == level) return;
+        long now = SystemClock.uptimeMillis();
+        update(now);
+        float current = flameScale(now);
+        int old = level;
+        level = lvl;
+        if (!animates()) {
+            snap();
+        } else if (lvl == 0) {
+            outFrom = current;
+            phase = OUT;
+            phaseStart = now;
+        } else if (old == 0) {
+            phase = RELIGHT;
+            phaseStart = now;
+            scaleFrom = scaleTo = LEVEL_SCALE[lvl];
+            scaleStart = now;
+        } else {
+            scaleFrom = baseScale(now);
+            scaleTo = LEVEL_SCALE[lvl];
+            scaleStart = now;
+        }
+        kick();
+    }
+
+    /** A steady flame (Ethernet) only breathes slowly and does not sway. */
+    @Override
+    public void setSteady(boolean steady) {
+        if (this.steady == steady) return;
+        this.steady = steady;
+        invalidateSelf();
+    }
+
+    /** With reduced motion the flame is still, there is no smoke or spark, and level changes are instant. */
+    @Override
+    public void setReducedMotion(boolean reducedMotion) {
+        if (reduced == reducedMotion) return;
+        reduced = reducedMotion;
+        if (reduced) snap();
+        kick();
+    }
+
+    @Override
+    public void start() {
+        if (running) return;
+        running = true;
+        kick();
+    }
+
+    @Override
+    public void stop() {
+        if (!running) return;
+        running = false;
+        snap();
+        kick();
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running;
+    }
+
+    @Override
+    public boolean setVisible(boolean visible, boolean restart) {
+        boolean changed = super.setVisible(visible, restart);
+        if (changed) {
+            if (!visible) snap();
+            kick();
+        }
+        return changed;
+    }
+
+    // ---- state ----
+
+    private boolean animates() {
+        return running && !reduced && isVisible();
+    }
+
+    private boolean wantsFrames() {
+        return running && isVisible() && ((level > 0 && !reduced) || phase != IDLE);
+    }
+
+    private void kick() {
+        unscheduleSelf(tick);
+        if (wantsFrames()) scheduleSelf(tick, SystemClock.uptimeMillis() + FRAME_MS);
+        invalidateSelf();
+    }
+
+    /** Jumps to the end state of whatever is playing. */
+    private void snap() {
+        phase = IDLE;
+        scaleFrom = scaleTo = LEVEL_SCALE[level];
+    }
+
+    private void update(long now) {
+        if (phase == OUT && now - phaseStart >= OUT_END_MS) phase = IDLE;
+        else if (phase == RELIGHT && now - phaseStart >= GROW_DELAY_MS + GROW_MS) phase = IDLE;
+    }
+
+    private float baseScale(long now) {
+        float p = clamp01((now - scaleStart) / (float) LEVEL_MS);
+        return scaleFrom + (scaleTo - scaleFrom) * decel(p);
+    }
+
+    private float flameScale(long now) {
+        switch (phase) {
+            case OUT: {
+                float e = (now - phaseStart) / (float) OUT_MS;
+                return e >= 1f ? 0f : outFrom * (1f - e * e);
+            }
+            case RELIGHT: {
+                float g = (now - phaseStart - GROW_DELAY_MS) / (float) GROW_MS;
+                return g <= 0f ? 0f : baseScale(now) * backOut(Math.min(1f, g));
+            }
+            default:
+                return level == 0 ? 0f : baseScale(now);
+        }
+    }
+
+    private float flameBright(long now) {
+        if (phase != OUT) return 1f;
+        float e = clamp01((now - phaseStart) / (float) OUT_MS);
+        return 1f - e * (float) Math.sqrt(e);
+    }
+
+    // ---- drawing ----
+
+    @Override
+    public void draw(@NonNull Canvas c) {
+        Rect b = getBounds();
+        if (b.isEmpty()) return;
+        long now = SystemClock.uptimeMillis();
+        update(now);
+        float s = Math.min(b.width(), b.height()) / BOX;
+        int save = alpha < 255 ? c.saveLayerAlpha(b.left, b.top, b.right, b.bottom, alpha) : c.save();
+        c.clipRect(b);
+        c.translate(b.exactCenterX() - 12f * s, b.exactCenterY() - 12f * s);
+        c.scale(s, s);
+
+        float scale = flameScale(now);
+        float bright = flameBright(now);
+        float hMul = 1f, wMul = 1f, sway = 0f;
+        if (running && !reduced && isVisible()) {
+            float t = (now - epoch) / 1000f;
+            if (steady) {
+                float breath = sin(t / 4.2f);
+                hMul = 1f + 0.035f * breath;
+                wMul = 1f + 0.02f * breath;
+            } else {
+                hMul = 1f + 0.055f * sin(0.83f * t) + 0.035f * sin(1.71f * t + 0.21f)
+                        + 0.025f * sin(2.63f * t + 0.33f) + 0.03f * noise(t * 1.9f);
+                wMul = 1f + 0.045f * sin(1.37f * t + 0.14f) + 0.03f * noise(t * 2.2f + 31f);
+                sway = 0.45f * sin(0.47f * t + 0.1f) + 0.28f * sin(1.13f * t + 0.38f) + 0.2f * noise(t * 1.3f + 17f);
+            }
+        }
+        float h = FLAME_H * scale * hMul;
+        float w = FLAME_W * Math.min(1f, scale * 2.2f) * (0.5f + 0.5f * scale) * wMul;
+        float lean = sway * scale;
+        float vis = scale * bright;
+
+        if (vis > 0.01f) {
+            float cx = WICK_X + lean * 0.4f, cy = WICK_Y - h * 0.45f;
+            float rx = 2.6f + 3.4f * scale, ry = rx * 1.2f;
+            matrix.setScale(rx, ry);
+            matrix.postTranslate(cx, cy);
+            glowShader.setLocalMatrix(matrix);
+            glowPaint.setAlpha((int) (255 * bright * (0.5f + 0.5f * scale)));
+            oval.set(cx - rx, cy - ry, cx + rx, cy + ry);
+            c.drawOval(oval, glowPaint);
+        }
+
+        drawLamp(c, vis);
+
+        if (phase == OUT) drawSmoke(c, now);
+        if (phase == RELIGHT) drawSpark(c, now);
+
+        if (h > 0.15f && bright > 0.01f) {
+            float by = WICK_Y + 0.2f;
+            teardrop(flame, WICK_X, by, h, w, lean);
+            matrix.setScale(1f, h);
+            matrix.postTranslate(0f, by - h);
+            flameShader.setLocalMatrix(matrix);
+            flamePaint.setAlpha((int) (255 * bright));
+            c.drawPath(flame, flamePaint);
+            edgePaint.setAlpha((int) (150 * bright));
+            c.drawPath(flame, edgePaint);
+
+            float cby = WICK_Y - h * 0.06f, ch = h * 0.58f, cw = w * 0.5f;
+            teardrop(core, WICK_X + lean * 0.05f, cby, ch, cw, lean * 0.55f);
+            matrix.setScale(1f, ch);
+            matrix.postTranslate(0f, cby - ch);
+            coreShader.setLocalMatrix(matrix);
+            corePaint.setAlpha((int) (255 * bright * bright));
+            c.drawPath(core, corePaint);
+        }
+        c.restoreToCount(save);
+    }
+
+    private void drawLamp(Canvas c, float warmth) {
+        c.drawOval(foot, footPaint);
+        c.drawOval(foot, outlinePaint);
+        c.drawPath(body, bodyPaint);
+        if (warmth > 0.01f) {
+            warmPaint.setAlpha((int) (190 * warmth));
+            c.drawPath(body, warmPaint);
+        }
+        c.drawPath(opening, openingPaint);
+        if (warmth > 0.01f) {
+            warmPaint.setAlpha((int) (255 * warmth));
+            c.drawPath(opening, warmPaint);
+        }
+        c.drawPath(opening, openingEdge);
+        for (int i = 0; i < DOTS.length; i += 2) c.drawCircle(DOTS[i], DOTS[i + 1], 0.42f, dotPaint);
+        c.drawPath(rimLip, lipPaint);
+        c.drawPath(sheen, sheenPaint);
+        c.drawPath(body, outlinePaint);
+        c.drawLine(WICK_X - 0.9f, WICK_Y + 0.7f, WICK_X, WICK_Y, wickPaint);
+    }
+
+    private void drawSmoke(Canvas c, long now) {
+        long since = now - phaseStart;
+        // the wick glows for a moment after the flame dies
+        float ember = 1f - since / (float) (SMOKE_DELAY_MS + SMOKE_MS * 0.6f);
+        if (ember > 0f) {
+            emberPaint.setAlpha((int) (255 * ember));
+            c.drawCircle(WICK_X, WICK_Y, 0.5f, emberPaint);
+        }
+        if (reduced) return;
+        float sp = (since - SMOKE_DELAY_MS) / (float) SMOKE_MS;
+        if (sp <= 0f || sp >= 1f) return;
+        float head = 10.5f * decel(sp);
+        float tp = (sp - 0.3f) / 0.7f;
+        float tail = tp <= 0f ? 0f : Math.min(head - 0.6f, 8.5f * tp * tp);
+        if (head - tail < 0.3f) return;
+        smoke.reset();
+        for (int i = 0; i < SMOKE_POINTS; i++) {
+            float d = tail + (head - tail) * i / (SMOKE_POINTS - 1);
+            float curl = (0.2f + 0.17f * d) * (float) Math.sin(d * 0.9f - sp * 5.5f);
+            float x = WICK_X - 0.28f * d + curl, y = WICK_Y - 0.3f - d;
+            if (i == 0) smoke.moveTo(x, y);
+            else smoke.lineTo(x, y);
+        }
+        float top = WICK_Y - 0.3f - head;
+        matrix.setScale(1f, head - tail);
+        matrix.postTranslate(0f, top);
+        smokeShader.setLocalMatrix(matrix);
+        smokePaint.setStrokeWidth(0.55f + 0.35f * sp);
+        smokePaint.setAlpha((int) (230 * (1f - sp)));
+        c.drawPath(smoke, smokePaint);
+    }
+
+    private void drawSpark(Canvas c, long now) {
+        float k = (now - phaseStart) / (float) SPARK_MS;
+        if (k >= 1.5f) return;
+        float r = 0.5f + 2.8f * decel(Math.min(1f, k));
+        float a = k < 0.25f ? k / 0.25f : 1f - (k - 0.25f) / 1.25f;
+        float cx = WICK_X, cy = WICK_Y - 0.5f;
+        matrix.setScale(r, r);
+        matrix.postTranslate(cx, cy);
+        sparkShader.setLocalMatrix(matrix);
+        sparkPaint.setAlpha((int) (255 * a));
+        c.drawCircle(cx, cy, r, sparkPaint);
+        rayPaint.setAlpha((int) (255 * a));
+        for (int i = 0; i < 4; i++) {
+            double ang = Math.toRadians(45 + 90 * i + 30 * k);
+            float cs = (float) Math.cos(ang), sn = (float) Math.sin(ang);
+            c.drawLine(cx + cs * r * 0.55f, cy + sn * r * 0.55f, cx + cs * r * 1.15f, cy + sn * r * 1.15f, rayPaint);
+        }
+    }
+
+    /** A candle-flame teardrop standing on (bx, by): round bulb low down, pointed tip leaning by {@code lean}. */
+    private static void teardrop(Path p, float bx, float by, float h, float w, float lean) {
+        float tx = bx + lean, ty = by - h;
+        float ml = lean * 0.35f;
+        float wy = by - Math.max(w * 1.1f, h * 0.24f);
+        float up = (wy - ty) * 0.35f, down = (by - wy) * 0.55f;
+        p.reset();
+        p.moveTo(tx, ty);
+        p.cubicTo(tx + w * 0.25f, ty + h * 0.3f, bx + ml + w, wy - up, bx + w, wy);
+        p.cubicTo(bx + w, wy + down, bx + w * 0.55f, by, bx, by);
+        p.cubicTo(bx - w * 0.55f, by, bx - w, wy + down, bx - w, wy);
+        p.cubicTo(bx + ml - w, wy - up, tx - w * 0.25f, ty + h * 0.3f, tx, ty);
+        p.close();
+    }
+
+    private void buildLamp() {
+        body.moveTo(1.6f, 14.2f);
+        body.cubicTo(1.8f, 18.6f, 5.4f, 21.0f, 9.6f, 21.0f);
+        body.cubicTo(13.2f, 21.0f, 15.6f, 19.4f, 16.8f, 16.6f);
+        body.cubicTo(17.6f, 15.0f, 18.6f, 13.6f, 20.2f, 12.4f);
+        body.quadTo(20.5f, 12.0f, 19.9f, 11.9f);
+        body.cubicTo(18.2f, 12.1f, 16.8f, 12.6f, 15.4f, 13.0f);
+        body.cubicTo(12.0f, 11.6f, 5.0f, 11.8f, 1.6f, 14.2f);
+        body.close();
+
+        opening.moveTo(2.6f, 14.2f);
+        opening.cubicTo(5.6f, 12.6f, 11.8f, 12.5f, 15.2f, 13.4f);
+        opening.cubicTo(16.6f, 13.0f, 17.8f, 12.7f, 19.2f, 12.4f);
+        opening.cubicTo(17.6f, 13.4f, 16.6f, 14.0f, 15.4f, 14.6f);
+        opening.cubicTo(11.6f, 16.4f, 5.0f, 16.2f, 2.6f, 14.2f);
+        opening.close();
+
+        rimLip.moveTo(2.7f, 14.65f);
+        rimLip.cubicTo(5.1f, 16.65f, 11.6f, 16.85f, 15.5f, 15.0f);
+        rimLip.cubicTo(16.7f, 14.4f, 17.7f, 13.8f, 19.4f, 12.75f);
+
+        sheen.moveTo(3.2f, 15.4f);
+        sheen.quadTo(4.0f, 18.4f, 6.9f, 19.7f);
+    }
+
+    // ---- helpers ----
+
+    private float noise(float x) {
+        int i = (int) Math.floor(x);
+        float f = x - i;
+        float s = f * f * (3f - 2f * f);
+        float a = noise[i & 255], b = noise[(i + 1) & 255];
+        return a + (b - a) * s;
+    }
+
+    /** sin of a phase given in turns. */
+    private static float sin(float turns) {
+        return (float) Math.sin(turns * 2.0 * Math.PI);
+    }
+
+    private static float clamp01(float v) {
+        return v < 0f ? 0f : (v > 1f ? 1f : v);
+    }
+
+    private static float decel(float p) {
+        float q = 1f - p;
+        return 1f - q * q;
+    }
+
+    private static float backOut(float x) {
+        float s = 1.4f, q = x - 1f;
+        return 1f + (s + 1f) * q * q * q + s * q * q;
+    }
+
+    private static Paint fill(int color) {
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setColor(color);
+        return p;
+    }
+
+    private static Paint stroke(int color, float width) {
+        Paint p = fill(color);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(width);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        p.setStrokeJoin(Paint.Join.ROUND);
+        return p;
+    }
+
+    @Override
+    public int getIntrinsicWidth() {
+        return Math.round(BOX * density);
+    }
+
+    @Override
+    public int getIntrinsicHeight() {
+        return Math.round(BOX * density);
+    }
+
+    @Override
+    public void setAlpha(int alpha) {
+        if (this.alpha == alpha) return;
+        this.alpha = alpha;
+        invalidateSelf();
+    }
+
+    @Override
+    public int getAlpha() {
+        return alpha;
+    }
+
+    @Override
+    public void setColorFilter(@Nullable ColorFilter filter) {
+        for (Paint p : paints) p.setColorFilter(filter);
+        invalidateSelf();
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public int getOpacity() {
+        return PixelFormat.TRANSLUCENT;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\DockDecoration.java ==========
+package com.gathin.tvhome;
+
+import android.graphics.Canvas;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
+/** Draws the tvOS style lighter band behind the first (dock) row and adds a gap below it. */
+public class DockDecoration extends RecyclerView.ItemDecoration {
+
+    private final int dockSize;
+    private final float density;
+    private final Paint band = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint edge = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF rect = new RectF();
+
+    /** Extra band below the tiles for their names (always_show_names), in px. */
+    private final float namesRoom;
+    /** Light glass like the top bar's pills (config.xml dock_glass): a white tint that fades downwards. */
+    private final boolean lightGlass;
+    /** Padding all round the tiles equal to the gap between them (config.xml dock_even_padding). */
+    private final boolean evenPadding;
+    /** The band's top and bottom the glass gradient was made for; it is remade when they move. */
+    private float shaderTop = Float.NaN, shaderBottom = Float.NaN;
+    /** Draw the band and its edge (config.xml dock_band); false leaves the tiles floating on the wallpaper. */
+    private final boolean bandVisible;
+    /** single_row: the tiles after the dock share its row, so they take the same offsets to stay level with it. */
+    private final boolean singleRow;
+    /** dock_band_all: in a single row, the band runs behind every app instead of the dock apps only. */
+    private final boolean bandAll;
+
+    /**
+     * @param translucent the cinematic shelf's band: the artwork and the glow show through it.
+     * @param names       the dock tiles show their names, so the band reaches down over them.
+     * @param opacity     the plain band's opacity in percent (dock_opacity), so a wallpaper can show through it.
+     * @param lightGlass  a light frosted band like the pills, for a sky or wallpaper behind it.
+     * @param evenPadding the band's padding is the gap between the tiles on all four sides (dock_even_padding).
+     * @param bandVisible false skips the band and its edge, so the tiles float on the wallpaper (dock_band).
+     * @param singleRow   every app sits in the dock's row (single_row); the band covers the dock apps only, unless bandAll.
+     * @param bandAll     with singleRow, the band runs behind every app in the row (dock_band_all).
+     */
+    DockDecoration(int dockSize, float density, boolean translucent, boolean names, int opacity, boolean lightGlass,
+                   boolean evenPadding, boolean bandVisible, boolean singleRow, boolean bandAll) {
+        this.dockSize = dockSize;
+        this.singleRow = singleRow;
+        this.bandAll = singleRow && bandAll;
+        this.density = density;
+        this.namesRoom = names ? 22 * density : 0;
+        this.lightGlass = lightGlass;
+        this.evenPadding = evenPadding;
+        this.bandVisible = bandVisible;
+        band.setColor(translucent ? 0x8C121014 : (Math.round(opacity * 2.55f) << 24) | 0x141416);
+        edge.setStyle(Paint.Style.STROKE);
+        edge.setStrokeWidth(density);
+        edge.setColor(lightGlass ? 0x38FFFFFF : translucent ? 0x26FFFFFF : 0x1FFFFFFF);
+    }
+
+    /** Concentric corners: the band's radius is the tiles' radius plus the band's padding around them. */
+    static float radiusPx(float tileRadiusPx, float paddingPx) {
+        return tileRadiusPx + paddingPx;
+    }
+
+    /**
+     * The band's padding on every side for dock_even_padding: the gap between two dock tiles (a cell minus its tile, as
+     * AppAdapter.tileWidthPx lays them out), capped by the room the grid leaves at its edges.
+     */
+    static float evenPaddingPx(int innerWidthPx, int columns, int tileWidthPx, float roomPx) {
+        float gap = columns > 0 ? innerWidthPx / (float) columns - tileWidthPx : 0f;
+        return Math.max(0f, Math.min(gap, roomPx));
+    }
+
+    @Override
+    public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent,
+                               @NonNull RecyclerView.State state) {
+        int pos = parent.getChildAdapterPosition(view);
+        if (pos >= 0 && (singleRow || pos < dockSize)) {
+            outRect.top = (int) (6 * density);
+            outRect.bottom = (int) (12 * density);
+        }
+    }
+
+    @Override
+    public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+        if (!bandVisible) return;
+        boolean any = false;
+        int cardWidth = 0;
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            View child = parent.getChildAt(i);
+            int pos = parent.getChildAdapterPosition(child);
+            if (pos < 0 || (!bandAll && pos >= dockSize)) continue;
+            RecyclerView.ViewHolder vh = parent.getChildViewHolder(child);
+            View card = vh instanceof AppAdapter.Holder ? ((AppAdapter.Holder) vh).card : child.findViewById(R.id.card);
+            if (card == null) continue;
+            float l = child.getLeft() + card.getLeft();
+            float t = child.getTop() + card.getTop() + child.getTranslationY();
+            float r = l + card.getWidth();
+            float b = t + card.getHeight();
+            cardWidth = card.getWidth();
+            if (!any) {
+                rect.set(l, t, r, b);
+                any = true;
+            } else {
+                rect.union(l, t, r, b);
+            }
+        }
+        if (!any) return;
+        float pad = 14 * density;
+        // The band can only draw inside the grid, and the first and last dock tiles sit 12dp in from its
+        // edges: a full 14dp at the sides sliced the rounded ends flat (#454). Keep the sides, with the
+        // 1dp edge line, inside the grid; the top and bottom have room.
+        // 22dp at the sides (the grid's 10dp padding makes room): a focused first or last tile grows about 7dp
+        // outwards and still keeps about the band's top margin from its rounded end.
+        float sidePad = 22 * density;
+        float side = Math.max(0f, Math.min(sidePad, Math.min(rect.left, parent.getWidth() - rect.right) - density));
+        float radius = AppAdapter.cornerRadius(cardWidth, density);
+        if (evenPadding) {
+            // The same padding on all four sides, so the band's corners are concentric with the tiles' everywhere.
+            int inner = parent.getWidth() - parent.getPaddingLeft() - parent.getPaddingRight();
+            // A single row's tiles can run off the screen, so only its top limits the padding; its ends are clamped below.
+            float room = (singleRow ? rect.top : Math.min(rect.top, Math.min(rect.left, parent.getWidth() - rect.right))) - density;
+            float even = evenPaddingPx(inner, dockSize, cardWidth, room);
+            rect.inset(-even, -even);
+            radius = radiusPx(radius, even);
+        } else {
+            // dock_even_padding off: the band as before, with its fixed 26 dp corners.
+            rect.inset(singleRow ? -sidePad : -side, -pad);
+            radius = 26 * density;
+        }
+        if (singleRow) {
+            // Tiles past the screen's edge: the band stops at the grid's edge with its rounded end instead of being
+            // sliced square there.
+            rect.left = Math.max(rect.left, density);
+            rect.right = Math.min(rect.right, parent.getWidth() - density);
+        }
+        rect.bottom += namesRoom;
+        if (lightGlass && (rect.top != shaderTop || rect.bottom != shaderBottom)) {
+            // The pills' glass (pill_bg: white, 18% fading to 8%), a little fainter over this much larger area.
+            band.setShader(new LinearGradient(0, rect.top, 0, rect.bottom, 0x24FFFFFF, 0x0DFFFFFF,
+                    Shader.TileMode.CLAMP));
+            shaderTop = rect.top;
+            shaderBottom = rect.bottom;
+        }
+        c.drawRoundRect(rect, radius, radius, band);
+        c.drawRoundRect(rect, radius, radius, edge);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\DockSlots.java ==========
+package com.gathin.tvhome;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * The dock is the first row of the grid. dock_apps decides what is in it, or the saved order once the owner
+ * changed the dock on the TV: a slot left free stays empty instead of taking the first grid app (#162) when
+ * fill_dock is false; by default they fill.
+ */
+final class DockSlots {
+    private DockSlots() { }
+
+    /**
+     * Empty slots to put after the {@code docked} dock apps found. None when the dock is full, when no
+     * dock app is installed (the first row fills so Home still has a dock) or when nothing follows.
+     */
+    static int empty(int docked, int dockSize, int tiles, boolean fill) {
+        if (fill || docked <= 0 || docked >= dockSize || tiles <= docked) return 0;
+        return dockSize - docked;
+    }
+
+    /**
+     * The order a reorder session saves when fill_dock is false (#499). Reorder mode shows no empty slots, so a
+     * grid app slides into a free dock slot without being put there. Only the keys in {@code dock} (in the dock
+     * when the session started, or carried into it) that end inside the first {@code dockSize} places stay in the
+     * dock: they come first, in their order, and every other key follows in its order. The dock size to save is
+     * the number of keys in {@code dock} found there.
+     */
+    static List<String> dockFirst(List<String> keys, int dockSize, Set<String> dock) {
+        List<String> head = new ArrayList<>(), tail = new ArrayList<>();
+        for (int i = 0; i < keys.size(); i++) {
+            String k = keys.get(i);
+            (i < dockSize && dock.contains(k) ? head : tail).add(k);
+        }
+        head.addAll(tail);
+        return head;
+    }
+
+    /** How many of the first {@code dockSize} keys are in {@code dock}: the dock size dockFirst puts first. */
+    static int dockCount(List<String> keys, int dockSize, Set<String> dock) {
+        int n = 0;
+        for (int i = 0; i < Math.min(dockSize, keys.size()); i++) if (dock.contains(keys.get(i))) n++;
+        return n;
+    }
+
+    /** Whether a tile sits in the dock row: every tile of a single row, else the first `dockSize` of the grid. */
+    static boolean inDockRow(boolean dockRow, boolean singleRow, int position, int dockSize) {
+        return dockRow && (singleRow || position < dockSize);
+    }
+
+    /** A position focus can land on: an empty slot sends it to the last dock app. */
+    static int focusable(int position, int docked, int empty) {
+        return empty > 0 && position >= docked && position < docked + empty ? docked - 1 : position;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\Festival.java ==========
+package com.gathin.tvhome;
+
+import android.content.res.Resources;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.Locale;
+
+/**
+ * A festive skin set by a theme's config.json: {@code festival} (or {@code seasonal_skin}), {@code festival_until},
+ * {@code greeting} and {@code accent_color}. While it is active the pills get festive icons (a diya for the
+ * network, a bell for Inputs, a marigold for Settings; for {@code halloween} a jack-o'-lantern, a bat and a
+ * ghost), the greeting is replaced and the focus glow takes the accent colour. It switches itself off after
+ * {@code festival_until}, so nobody has to remember to undo it.
+ */
+final class Festival {
+
+    static final Festival NONE = new Festival("", null, "", 0);
+
+    /** Warm diya gold, the accent when a theme names a festival but no colour. */
+    static final int DEFAULT_ACCENT = 0xFFFFB23C;
+
+    /** The festival with its own skin (jack-o'-lantern, bat, ghost, bats on the first Home) instead of the diya's. */
+    static final String HALLOWEEN = "halloween";
+
+    /** Pumpkin orange, Halloween's accent when the theme names no colour. */
+    static final int PUMPKIN = 0xFFFF7A1A;
+
+    /** Lower-case festival name, or "" for none. */
+    final String name;
+    /** Last day the skin shows, inclusive; null for no end date. */
+    final LocalDate until;
+    /** Text that replaces the time-of-day greeting; "" uses the festival's own default. */
+    final String greeting;
+    /** Focus glow colour as 0xAARRGGBB, or 0 for {@link #DEFAULT_ACCENT}. */
+    final int accent;
+
+    private Festival(String name, LocalDate until, String greeting, int accent) {
+        this.name = name;
+        this.until = until;
+        this.greeting = greeting;
+        this.accent = accent;
+    }
+
+    /**
+     * Builds the skin from raw config values. Anything malformed turns the skin off rather than leaving a
+     * festival on the screen forever: an unreadable end date or an empty name gives {@link #NONE}.
+     */
+    static Festival parse(String name, String until, String greeting, String accent) {
+        String n = name == null ? "" : name.trim().toLowerCase(Locale.ROOT);
+        if (n.isEmpty() || n.length() > 40) return NONE;
+        LocalDate end = null;
+        if (until != null && !until.trim().isEmpty()) {
+            try {
+                end = LocalDate.parse(until.trim());
+            } catch (DateTimeParseException e) {
+                return NONE;
+            }
+        }
+        String g = greeting == null ? "" : Cards.cleanLabel(greeting, "");
+        return new Festival(n, end, g, parseColor(accent));
+    }
+
+    /** Whether the skin shows today. */
+    boolean active(LocalDate today) {
+        return !name.isEmpty() && (until == null || !today.isAfter(until));
+    }
+
+    /** The greeting to show while active, or "" to keep the normal time-of-day greeting. */
+    String greetingText(Resources res) {
+        if (!greeting.isEmpty()) return greeting;
+        switch (name) {
+            case "dussehra":
+                return res.getString(R.string.festival_dussehra_greeting);
+            case "diwali":
+                return res.getString(R.string.festival_diwali_greeting);
+            case HALLOWEEN:
+                return res.getString(R.string.festival_halloween_greeting);
+            default:
+                return "";
+        }
+    }
+
+    int accentColor() {
+        if (accent != 0) return accent;
+        return isHalloween() ? PUMPKIN : DEFAULT_ACCENT;
+    }
+
+    /** Whether this is the Halloween skin rather than the diya, bell and marigold. */
+    boolean isHalloween() {
+        return HALLOWEEN.equals(name);
+    }
+
+    /** {@code #RRGGBB} to an opaque colour, anything else to 0. */
+    static int parseColor(String s) {
+        if (s == null) return 0;
+        String t = s.trim();
+        if (!t.matches("#[0-9A-Fa-f]{6}")) return 0;
+        return 0xFF000000 | Integer.parseInt(t.substring(1), 16);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\FestiveLamp.java ==========
+package com.gathin.tvhome;
+
+import android.graphics.drawable.Animatable;
+
+/**
+ * The network pill's icon while a festive skin is on: a light that follows the connection. The diya's flame and
+ * the jack-o'-lantern's candle both take the same calls from the Wi-Fi label code.
+ */
+interface FestiveLamp extends Animatable {
+
+    /** 0 puts the light out (offline); 1 to 4 is the signal strength. */
+    void setFlame(int level);
+
+    /** A steady light (Ethernet) does not flicker. */
+    void setSteady(boolean steady);
+
+    /** With reduced motion the light is still and changes are instant. */
+    void setReducedMotion(boolean reducedMotion);
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\GameDay.java ==========
+package com.gathin.tvhome;
+
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ProviderInfo;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Handler;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+
+/**
+ * game_day (config.xml or a theme): each team's next game in the race panel's place, from an add-on such as
+ * Game Day, rotating with the theme's F1 weekend. The launcher only reads what the add-on publishes and stays
+ * offline. Contract: docs/modules.md.
+ */
+final class GameDay {
+    static final String META = "com.gathin.tvhome.games";
+    static final int TURN_DEFAULT = 30;
+    private static final String[] COLUMNS = {"top_line", "word", "start_ms", "end_ms", "colour", "calendar", "turn_seconds"};
+
+    private final Context ctx;
+    private final Uri uri;
+    private final Handler main;
+    private final Runnable onChange;
+    private final ExecutorService io = Executors.newSingleThreadExecutor();
+    private final ContentObserver observer;
+    private boolean watching;
+    private List<Turn> turns = Collections.emptyList();
+    private int turnSeconds = TURN_DEFAULT;
+
+    private GameDay(Context ctx, Uri uri, Handler main, Runnable onChange) {
+        this.ctx = ctx;
+        this.uri = uri;
+        this.main = main;
+        this.onChange = onChange;
+        observer = new ContentObserver(main) {
+            @Override
+            public void onChange(boolean selfChange) {
+                read();
+            }
+        };
+    }
+
+    /**
+     * Null when the key is empty, the package is not installed, or it names no provider of its own in a
+     * {@value #META} meta-data. Naming the package is the owner's opt-in.
+     */
+    static GameDay create(Context ctx, String pkg, Handler main, Runnable onChange) {
+        if (pkg == null || pkg.trim().isEmpty()) return null;
+        try {
+            PackageManager pm = ctx.getPackageManager();
+            ApplicationInfo info = pm.getApplicationInfo(pkg.trim(), PackageManager.GET_META_DATA);
+            String authority = info.metaData == null ? null : info.metaData.getString(META);
+            if (authority == null || authority.trim().isEmpty()) return null;
+            // The provider must be the named package's own, not another app's that claims the authority.
+            ProviderInfo provider = pm.resolveContentProvider(authority.trim(), 0);
+            if (provider == null || !pkg.trim().equals(provider.packageName)) return null;
+            Uri uri = new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT).authority(authority.trim()).appendPath("turns").build();
+            return new GameDay(ctx, uri, main, onChange);
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
+        }
+    }
+
+    /** Home is on screen: read now and watch for changes. */
+    void start() {
+        if (!watching) {
+            try {
+                ctx.getContentResolver().registerContentObserver(uri, false, observer);
+                watching = true;
+            } catch (SecurityException e) {
+                // The add-on's provider went away; the panel keeps what it had.
+            }
+        }
+        read();
+    }
+
+    /** Home is off screen: nothing runs until it is back. */
+    void stop() {
+        if (watching) ctx.getContentResolver().unregisterContentObserver(observer);
+        watching = false;
+    }
+
+    void shutdown() {
+        stop();
+        io.shutdownNow();
+    }
+
+    /** One query off the main thread (the provider lives in the add-on's process), then onChange on the main thread. */
+    void read() {
+        try {
+            io.execute(() -> {
+                List<Object[]> rows = new ArrayList<>();
+                try (Cursor c = ctx.getContentResolver().query(uri, COLUMNS, null, null, null)) {
+                    while (c != null && c.moveToNext()) {
+                        rows.add(new Object[] {c.getString(0), c.getString(1), c.getLong(2), c.getLong(3), c.getInt(4),
+                                c.getString(5), c.getInt(6)});
+                    }
+                } catch (RuntimeException gone) {
+                    // Uninstalled or crashed mid-query: keep what is on screen.
+                    return;
+                }
+                List<Turn> parsed = fromRows(rows);
+                int seconds = turnSeconds(rows);
+                main.post(() -> {
+                    turns = parsed;
+                    turnSeconds = seconds;
+                    onChange.run();
+                });
+            });
+        } catch (RejectedExecutionException shutDown) {
+            // Home is being destroyed.
+        }
+    }
+
+    List<Turn> turns() {
+        return turns;
+    }
+
+    int turnSeconds() {
+        return turnSeconds;
+    }
+
+    /** The add-on's rows as turns; a row without a top line or with impossible times is skipped. */
+    static List<Turn> fromRows(List<Object[]> rows) {
+        List<Turn> out = new ArrayList<>();
+        for (Object[] r : rows) {
+            if (!(r[0] instanceof String) || ((String) r[0]).isEmpty()) continue;
+            long start = r[2] instanceof Number ? ((Number) r[2]).longValue() : -1;
+            long end = r[3] instanceof Number ? ((Number) r[3]).longValue() : -1;
+            if (start < 0 || end <= start) continue;
+            String word = r[1] instanceof String ? (String) r[1] : "";
+            int colour = r[4] instanceof Number ? ((Number) r[4]).intValue() : 0xFFFFFFFF;
+            out.add(new Turn((String) r[0], word, start, end, colour));
+        }
+        return out;
+    }
+
+    /** 10 to 120 seconds per turn, as the add-on's settings allow; anything else is the default. */
+    static int turnSeconds(List<Object[]> rows) {
+        if (rows.isEmpty() || !(rows.get(0)[6] instanceof Number)) return TURN_DEFAULT;
+        int s = ((Number) rows.get(0)[6]).intValue();
+        return s >= 10 && s <= 120 ? s : TURN_DEFAULT;
+    }
+
+    /** One turn in the rotation: a game from the add-on, or the theme's F1 weekend ({@link #f1}). */
+    static final class Turn {
+        final String topLine;
+        /** "Puck drop": the countdown reads "Puck drop in 2h 18m". */
+        final String word;
+        /** For the F1 turn: when its next session starts, or now while one is live (the sort key). */
+        final long startMs;
+        final long endMs;
+        /** ARGB, for the short bar. */
+        final int colour;
+        final boolean f1;
+
+        Turn(String topLine, String word, long startMs, long endMs, int colour) {
+            this(topLine, word, startMs, endMs, colour, false);
+        }
+
+        private Turn(String topLine, String word, long startMs, long endMs, int colour, boolean f1) {
+            this.topLine = topLine;
+            this.word = word;
+            this.startMs = startMs;
+            this.endMs = endMs;
+            this.colour = colour;
+            this.f1 = f1;
+        }
+    }
+
+    /**
+     * The turns to rotate through, soonest first: the games that have not ended, and the F1 weekend as one turn
+     * while the race panel would show it (sorted by its next session, or now while a session is live).
+     */
+    static List<Turn> merge(List<Turn> games, RaceWeekend.State f1, long nowMs) {
+        List<Turn> out = new ArrayList<>();
+        for (Turn t : games) {
+            if (t.endMs > nowMs) out.add(t);
+        }
+        if (f1 != null) {
+            long key = f1.live == null && f1.next != null ? f1.next.start.toEpochMilli() : nowMs;
+            out.add(new Turn("", "", key, Long.MAX_VALUE, 0, true));
+        }
+        Collections.sort(out, Comparator.comparingLong(t -> t.startMs));
+        return out;
+    }
+
+    /** Which turn is on screen, {@code sinceMs} after the rotation started. */
+    static int current(int count, long sinceMs, int turnSeconds) {
+        if (count <= 0) return 0;
+        return (int) ((Math.max(0, sinceMs) / (turnSeconds * 1000L)) % count);
+    }
+
+    /** Milliseconds until the next turn, {@code sinceMs} after the rotation started. */
+    static long delayToNextTurn(long sinceMs, int turnSeconds) {
+        long turnMs = turnSeconds * 1000L;
+        return turnMs - Math.floorMod(sinceMs, turnMs);
+    }
+
+    static boolean live(Turn t, long nowMs) {
+        return nowMs >= t.startMs && nowMs < t.endMs;
+    }
+
+    static Duration until(Turn t, long nowMs) {
+        return Duration.ofMillis(t.startMs - nowMs);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\GamepadPassthrough.java ==========
+package com.gathin.tvhome;
+
+import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;

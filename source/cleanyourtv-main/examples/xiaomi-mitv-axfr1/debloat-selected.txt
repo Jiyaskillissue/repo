@@ -1,0 +1,31 @@
+# Custom debloat list for MiTV-AXFR1 (rango)
+
+# Xiaomi + Google analytics
+com.miui.tv.analytics
+com.xiaomi.statistic
+com.google.android.feedback
+
+# PatchWall, sponsored content and partner auto-installs
+com.mitv.tvhome.atv
+com.xm.webcontent
+com.google.android.tvrecommendations
+android.autoinstalls.config.xioami.dangal
+com.mitv.tvhome.mitvplus
+
+# Unused Xiaomi services
+com.xiaomi.mitv.handbook
+com.xiaomo.tv.milegal
+
+# Unused preloaded apps
+com.xiaomi.mimusic2
+com.google.android.play.games
+com.google.android.videos
+com.mitv.dream
+
+# Streaming apps - reinstall later if needed
+com.jio.media.stb.ondemand
+com.sonyliv
+com.graymatrix.did
+com.google.android.youtube.tvmusic
+com.mxtech.videoplayer.television
+com.formulaone.production

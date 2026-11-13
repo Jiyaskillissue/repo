@@ -1,0 +1,1500 @@
+﻿    <string name="locale" translatable="false"></string>
+
+    <!-- A name after the greeting: "Mr. Trá»‹nh" shows GOOD MORNING, MR. TRá»ŠNH. Empty: the greeting alone. -->
+    <string name="greeting_name" translatable="false"></string>
+    <!-- The greeting above the clock ("Good evening"). false hides it. Can also be set with "show_greeting" in a theme. -->
+    <bool name="show_greeting">true</bool>
+    <!-- The date and the line between the clock and the date in the clock's full white instead of dimmed. Can also be
+         set with "header_white" in a theme. -->
+    <bool name="header_white">false</bool>
+    <!-- Optional VPN app the network pill opens (hold the pill for Wi-Fi settings), e.g. the package of the
+         VPN you use. Empty: the pill opens Wi-Fi settings. The green VPN badge shows for any VPN either way;
+         with an app set here, a red "VPN off" badge also shows while no VPN is up. -->
+    <string name="vpn_app" translatable="false"></string>
+    <!-- The VPN as its own pill after the network pill, instead of a badge inside it: solid green with a lock while a
+         VPN is up, solid red "VPN off" while none is and vpn_app is installed. Pressing it opens vpn_app (without it,
+         the App library, or VPN settings when app_library is off), and the network pill then always opens Wi-Fi
+         settings. Hidden while no VPN is up and vpn_app is empty or not installed, and with top_menu. It keeps its
+         label with icon_only_buttons, since the red state has no icon. A VPN app's kill switch keeps a VPN up while
+         the app says disconnected (it holds the tunnel to block traffic), so the pill stays green then. Can also be
+         set with "vpn_pill" in a theme. -->
+    <bool name="vpn_pill">false</bool>
+    <!-- The dock as its own row: a lighter band, no names under the tiles, parked low on the screen with the top
+         shelf above it. false makes the dock apps simply the first tiles of one plain grid (still in dock_apps
+         order, no empty slots), with names under every tile and the glow behind every focused tile. -->
+    <bool name="dock_row">true</bool>
+    <!-- Inputs, Wi-Fi and Settings folded into one round gear at the top right, like Google TV: OK drops a menu
+         with the three, hold OK keeps the launcher menu. Off by default; a theme can set "top_menu": true. -->
+    <bool name="top_menu">false</bool>
+    <!-- A direct Launcher settings action instead of TV Settings in the header (or top_menu).
+         Off by default; a theme can set "launcher_settings_button": true. -->
+    <bool name="launcher_settings_button">false</bool>
+    <!-- The dock band as light frosted glass, like the Inputs, Wi-Fi and Settings pills, so a sky or wallpaper shows
+         through it. false (the default) keeps the solid near-black band, or the cinematic shelf's dark glass. Can
+         also be set with "dock_glass": true in a theme's config.json. -->
+    <bool name="dock_glass">false</bool>
+    <!-- Draw the dock band and its edge. false leaves the tiles floating on the wallpaper (config.xml dock_band). -->
+    <bool name="dock_band">true</bool>
+    <!-- Every app in one row: the dock apps first, the rest after them, and the row scrolls sideways when focus
+         reaches its edge. No grid below; rows_below_dock is ignored. Needs dock_row. Can also be set with
+         "single_row" in a theme. -->
+    <bool name="single_row">false</bool>
+    <!-- With single_row, the band runs behind every app in the row, apps installed later included, instead of
+         the dock apps only. Can also be set with "dock_band_all" in a theme. -->
+    <bool name="dock_band_all">false</bool>
+    <!-- The dock band's padding equals the gap between its tiles on all four sides (as far as the grid's edges leave room),
+         so its corners are concentric with the tiles' and the spacing reads even. false (the default) keeps the fixed
+         14dp above and below, up to 22dp at the sides and 26dp corners. Can also be set with "dock_even_padding": true in a theme's config.json. -->
+    <bool name="dock_even_padding">false</bool>
+    <!-- A reorder button (two arrows) in the top bar. Off by default: reordering is also in the Settings
+         button's long-press menu, so it needs no extra button on screen. -->
+    <bool name="reorder_button">false</bool>
+    <!-- Wi-Fi and Settings as round icon-only buttons (the network name moves to the talkback description);
+         Inputs keeps its label. -->
+    <bool name="icon_only_buttons">false</bool>
+    <!-- The Inputs pill as a round icon button too (the label moves to the talkback description). -->
+    <bool name="icon_only_inputs">false</bool>
+    <!-- With vpn_pill, the VPN pill as a round icon button too: an open lock on the plain glass button while no VPN is
+         up, the closed lock in a green outline while one is (solid green only while focused, like the pill). "VPN" /
+         "VPN off" become its talkback description. A theme can set "icon_only_vpn": true. -->
+    <bool name="icon_only_vpn">false</bool>
+    <!-- The launcher's clocks (Home, the clock screensaver and the Clock screen) in 12- or 24-hour time whatever the TV
+         is set to: "12", "24", or "system", the default, which follows the TV. Launcher settings' Clock row overrides
+         it, and a theme can set "clock_format": "24". -->
+    <string name="clock_format" translatable="false">system</string>
+    <!-- true colours the Wi-Fi pill's icon green while the TV is online and leaves it white while it is not (dark on
+         the focused pill either way), so the connection shows at a glance, also as an icon-only button. Can also be
+         set with "wifi_status_color": true in a theme's config.json. -->
+    <bool name="wifi_status_color">false</bool>
+    <!-- With wifi_status_color: the icon orange while the TV is connected but Android has not reached the internet
+         through it (a hotel or holiday-park Wi-Fi waiting for its login page) and red while it is offline, instead
+         of white for both. Can also be set with "wifi_status_warnings": true in a theme's config.json. -->
+    <bool name="wifi_status_warnings">false</bool>
+    <!-- The app library as a round button in the top bar, beside Settings (app_library must be on too). -->
+    <bool name="library_button">false</bool>
+    <!-- The App library pill after the last Home row. false hides it while library_button is on, so the top-bar
+         button stays the way in, and Down from the last row stays put as with app_library off. Can also be set
+         with "show_library_pill": false in a theme's config.json. -->
+    <bool name="show_library_pill">true</bool>
+    <!-- With icon_only_buttons: keep the network name on the Wi-Fi pill up to this width in dp, cut with an ellipsis.
+         0 leaves the Wi-Fi pill as an icon. -->
+    <integer name="wifi_label_width">0</integer>
+
+    <!-- The Wi-Fi/Ethernet pill in the top bar. false hides it (on Android 14 with Location off it can
+         only say "Wi-Fi", not the network name). Can also be set with "show_network_pill" in a theme. -->
+    <bool name="show_network_pill">true</bool>
+    <!-- Apps shown as round buttons with their own logo in the top bar, left of the network pill, in this order.
+         They leave the grid. Missing apps are skipped. Can also be set with "top_bar_apps" in a theme. -->
+    <string-array name="top_bar_apps" translatable="false">
+    </string-array>
+    <!-- The Inputs pill in the top bar, shown when the TV has inputs to list. false hides it for good; what the
+         remote's Input button does is unchanged. Can also be set with "show_inputs_pill" in a theme. -->
+    <bool name="show_inputs_pill">true</bool>
+    <!-- The Inputs list shows only HDMI ports and CEC devices that report connected. Empty ports, devices asleep in
+         standby (some TVs, TCL among them, report an empty HDMI port as connected-standby, the same state a
+         sleeping device has) and the AV jacks fold behind a "More inputs" row that expands the rest. An HDMI row
+         whose state the TV cannot be trusted with stays. Off by default: every input is listed. Can also be set
+         with "inputs_connected_only" in a theme. -->
+    <bool name="inputs_connected_only">false</bool>
+    <!-- Only CEC device rows in the Inputs list show a connection state ("Steam Deck Â· HDMI 1  Connected"); bare HDMI
+         ports show none. For TVs whose port states land on the wrong port: TCL UnionTV (Android 9) reports the empty
+         HDMI 1 as connected and a device on HDMI 2 nowhere, while its CEC device list stays right. A device without
+         CEC then shows no state at all. Off by default. Can also be set with "inputs_cec_state_only" in a theme. -->
+    <bool name="inputs_cec_state_only">false</bool>
+    <!-- Names under every tile, not only the focused one: unfocused names stay dimmed, the focused one is full white.
+         With dock_row the band grows down to hold the dock's names too. -->
+    <bool name="always_show_names">false</bool>
+    <!-- Wallpapers decode as RGB_565 (2 bytes a pixel, 4 MB at 1080p), which bands dark gradients such as a night
+         sky, most of all under wallpaper_dim. true decodes them in 32-bit colour: 8 MB, for TVs with 2 GB or more. -->
+    <bool name="wallpaper_true_color">false</bool>
+    <!-- Rotating wallpapers: show each picture's name under the top-right buttons, from a captions.txt next to the
+         pictures in wallpapers/ ("01-dusk.jpg<TAB>Dusk over the peaks", one per line). A picture without a line
+         shows no name. Can also be set with "wallpaper_captions": true in a theme's config.json. -->
+    <bool name="wallpaper_captions">false</bool>
+    <!-- Rotating wallpapers grouped by the time of day, as JSON: {"morning": [file names], "evening": [...],
+         "night": [...]}. While set, the rotation picks only from the group that fits now: morning from sunrise to
+         noon, evening until half an hour after sunset, night the rest, with the sun at latitude and longitude (07:00
+         and 18:30 without them). It moves to the new group as soon as the time of day changes. A missing or empty
+         group falls back to the whole collection; empty rotates through every picture. A theme can set
+         "wallpaper_moods" as an object. -->
+    <string name="wallpaper_moods" translatable="false"></string>
+    <!-- Hold OK on a tile opens a small menu: Move (picks the tile up for reordering), Remove from Home (only with
+         app_library) and App info. On by default since 3.3; false keeps the old behaviour: holding OK opens the app's
+         App info page. A theme's config.json can set "tile_menu" either way. -->
+    <bool name="tile_menu">true</bool>
+
+    <!-- Grid rows left visible under the dock on the home screen. 0 = dock sits at the very bottom. Tiles shrink if
+         the dock, its title and this many rows would not otherwise fit the screen height. -->
+    <integer name="rows_below_dock">0</integer>
+
+    <!-- The focused dock app's name in large type above the dock. false keeps only the glow, which leaves room
+         for bigger tiles when rows_below_dock is 2 or 3. -->
+    <bool name="dock_title">true</bool>
+
+    <!-- Tiles per row in the grid; the dock always has this many slots. Tiles are 180dp wide at 4 columns and
+         shrink to fit from 5 up (about 144dp at 5, 117dp at 6 on a 1080p TV). -->
+    <integer name="columns">4</integer>
+
+    <!-- Basic motion is on; advanced effects are opt-in in the launcher's own Settings screen. -->
+    <bool name="animations">true</bool>
+    <bool name="advanced_effects">false</bool>
+
+    <!-- Optional Default-home tile; keep this key for existing themes and tile-ordering work.
+         Off by default because the chooser is also available from launcher settings. -->
+    <bool name="show_home_settings_shortcut">false</bool>
+
+    <!-- Installed launchable apps, including ordinary Android apps. Also settable in config.json. -->
+    <bool name="app_library">false</bool>
+    <!-- Every app tile is its icon on a card tinted from that icon, name only under the focused tile,
+         instead of each app's own banner. Off by default; a theme can set "uniform_tiles": true. -->
+    <bool name="uniform_tiles">false</bool>
+    <!-- Optional direct Home picker in the app library: OK toggles the checkmark, checked apps first.
+         Off by default; a theme can set "app_library_selection": true (also needs app_library). -->
+    <bool name="app_library_selection">false</bool>
+    <!-- OK opens every app in the library, not only the apps on Home: for a library that holds the apps a theme
+         keeps off Home with hidden_apps. Hold OK still offers Add to Home. app_library_selection wins when both are
+         on. Off by default; a theme can set "library_ok_opens": true (also needs app_library). -->
+    <bool name="library_ok_opens">false</bool>
+
+    <!-- Apps pre-seeded into the App library's "added" set at startup (config.xml library_apps, or a theme's
+         config.json). They show on Home as if the owner had added them in the App library UI, and stay
+         removable there (a removed one stays hidden). For sets where almost no app declares a leanback entry
+         (many China-market TVs, e.g. Coocaa 8R145), a fresh Home with app_library on would otherwise be
+         nearly empty. Empty (off) by default, so existing setups change nothing. -->
+    <string-array name="library_apps" translatable="false">
+    </string-array>
+
+    <!-- Packages the App library catalogue never offers, even with app_library on (config.xml
+         library_excluded_apps, or a theme's config.json). Different from hidden_apps, which only keeps a
+         package off Home while still listing it here: some boards hide a package because opening it is
+         unsafe (a factory-test menu that can misconfigure the TV), and the catalogue otherwise ignores
+         hidden_apps and offers it as "Add to Home" anyway. Empty (off) by default, so existing setups
+         change nothing. -->
+    <string-array name="library_excluded_apps" translatable="false">
+    </string-array>
+
+    <!-- Module cards: an app that declares a card (docs/specs/card.md) can stand in for its tile with its own
+         label, caption and glow colour, once you answer Show on the prompt. false: never look for cards or ask. -->
+    <bool name="module_cards">true</bool>
+
+    <!-- Reduced motion: for TVs whose GPU cannot keep up (MediaTek MT5895 on Android 10 is the known case).
+         true keeps the GPU drawing path but calms the movement and draws far fewer frames: the highlight
+         slides with no bounce and settles within 5 frames, every animation lasts 90 ms or less, names, top
+         shelf, glow and highlight appear instead of fading, and there is no tile entrance. Set it
+         here or with "reduced_motion": true in a theme's config.json; false keeps the normal motion. -->
+    <bool name="reduced_motion">false</bool>
+
+    <!-- The glass highlight springs past the tile it moves to and the focused tile zooms past its size
+         before settling. false: both go straight there, with no bounce, while scrolling stays smooth
+         (reduced_motion also removes the overshoot, but scrolls in one jump). Can also be set with
+         "focus_overshoot" in a theme's config.json. -->
+    <bool name="focus_overshoot">true</bool>
+
+    <!-- One line under the clock: CPU, free memory and free storage. Off by default; a theme can set
+         "show_stats": true. Nothing is read, and the clock does not move, while this is false. -->
+    <bool name="show_stats">false</bool>
+
+    <!-- Each team's next game in the F1 panel's place under the clock, rotating with the theme's F1 weekend: the package
+         of an add-on that publishes them (the Game Day add-on: io.github.justinnewman.gameday; contract in docs/modules.md).
+         Empty = off: nothing is read or watched. The launcher only reads what the add-on publishes and never goes
+         online. A theme can set "game_day". -->
+    <string name="game_day" translatable="false"></string>
+
+    <!-- Time-of-day backdrop behind everything: a dark gradient that follows the clock, with a warm
+         horizon glow around sunrise and sunset. 0 keeps the plain background (the default); 1 to 100
+         sets its opacity. Around 60 reads clearly without hiding a wallpaper. Can also be set with
+         "sky_intensity": 60 in a theme's config.json. -->
+    <integer name="sky_intensity">0</integer>
+    <!-- Where the TV is, in decimal degrees, so the sky's sunrise and sunset glows follow the real sun
+         (computed on the TV, no network). Empty: a fixed temperate day, sunset glow around 19:00.
+         Vilnius: 54.69 and 25.28. -->
+    <string name="latitude" translatable="false"></string>
+    <string name="longitude" translatable="false"></string>
+
+    <!-- Cinematic top shelf: the focused dock app's artwork, softened, fills the top of the screen in its
+         colour; the shelf gets a larger name, a "Last opened" line (from the apps Home opened) and dock position
+         dots, the focus glow takes the app's colour and the dock band turns translucent. false keeps the plain
+         shelf. Can also be set with "cinematic_home": true in a theme's config.json. -->
+    <bool name="cinematic_home">false</bool>
+    <!-- With cinematic_home, false leaves out the dock position dots under the app's name, for a quieter shelf. Can
+         also be set with "cinematic_dots": false in a theme's config.json. -->
+    <bool name="cinematic_dots">true</bool>
+    <!-- With cinematic_home, true keeps the focus highlight white on the dock instead of the focused app's colour,
+         for wallpapers and banners that clash with it; app_glow still colours every tile. Can also be set with
+         "cinematic_white_focus": true in a theme's config.json. -->
+    <bool name="cinematic_white_focus">false</bool>
+    <!-- With cinematic_home, how much of a wallpaper the shelf covers: cinematic_scrim is the strength of the dark
+         scrim that keeps the name readable (0 to 100 percent, 100 as before) and cinematic_art the opacity of the
+         app's softened artwork (0 to 100, 50 as before; 0 leaves the wallpaper uncovered). Lower values let a
+         theme's wallpaper show through. A theme can set "cinematic_scrim" and "cinematic_art". -->
+    <integer name="cinematic_scrim">45</integer>
+    <integer name="cinematic_art">75</integer>
+
+    <!-- The glow behind the dock in the focused app's colour (red for YouTube, blue for Prime Video). false keeps
+         only background_color or the wallpaper behind everything. Can also be set with "ambient_glow": false in a
+         theme's config.json. -->
+    <bool name="ambient_glow">true</bool>
+    <!-- true: when the focus moves to an app of another colour, the ambient glow takes the new colour in one frame
+         instead of dimming and fading back in. Each frame of that fade repaints the whole screen, about 40 per key
+         press, which a slow GPU such as the Mali-G52 cannot keep up with. Can also be set with "glow_snap" in a
+         theme's config.json. -->
+    <bool name="glow_snap">false</bool>
+    <!-- The focus highlight glows in the focused app's colour on every tile, as the cinematic shelf does for the
+         dock, without cinematic_home. Can also be set with "app_glow": true in a theme's config.json. -->
+    <bool name="app_glow">false</bool>
+    <!-- The rows fade out as they scroll up under the clock, instead of being cut off at a hard line (TopFade).
+         The grid then draws into a hardware layer, about 6 MB of graphics memory at 1080p, so it is off by default.
+         Can also be set with "fade_rows": true in a theme's config.json. -->
+    <bool name="fade_rows">false</bool>
+    <!-- Minutes Home may sit untouched before it shows the clock screensaver (ClockActivity); 0 turns it off.
+         Unlike the system screensaver this never starts over live TV or an app, which matters on TVs whose
+         Live TV window does not keep the screen on (CVTE): there the system screensaver would start in the
+         middle of a programme. Can also be set with "home_idle_clock_minutes": 10 in a theme's config.json. -->
+    <integer name="home_idle_clock_minutes">10</integer>
+    <!-- Back on the Home screen opens the clock screensaver (ClockActivity, the same screen as
+         home_idle_clock_minutes). Back keeps working as usual inside apps and Settings; only Home's own Back
+         press changes. Off by default (Back does nothing on Home); a theme can set "back_opens_clock": true. -->
+    <bool name="back_opens_clock">false</bool>
+    <!-- The clock screensaver (Home idle clock and the system screensaver) over Home's wallpaper instead of black with
+         a coloured glow. The clock still moves every minute. Can also be set with "clock_wallpaper" in a theme. -->
+    <bool name="clock_wallpaper">true</bool>
+    <!-- How dark that wallpaper is behind the clock, 0 to 90 %. Can also be set with "clock_wallpaper_dim". -->
+    <integer name="clock_wallpaper_dim">50</integer>
+    <!-- The clock screensaver's slow coloured glow behind the clock. false leaves the clock and date alone on plain black
+         (OLED panels); they still move every minute. Ignored while clock_wallpaper shows a picture. Can also be set
+         with "clock_glow" in a theme. -->
+    <bool name="clock_glow">true</bool>
+    <!-- Shape of the glow behind the focused app, in its colour: radial (a soft glow, the default) or horizon (the
+         colour washes down from the top edge and fades to black, brightest along the top). The cinematic shelf
+         keeps its own glow. Can also be set with "glow_style": "horizon" in a theme's config.json. -->
+    <string name="glow_style" translatable="false">radial</string>
+    <!-- The focus highlight's look: glass (the default: a translucent slab with a bright top sheen, a crisp rim and a
+         faint outer glow), rim (the crisp rim alone, no sheen, fill or glow, for a quiet focus over a wallpaper) or
+         halo (the rim with a lighter outer glow). Can also be set with "glass_style": "rim" in a theme's config.json. -->
+    <string name="glass_style" translatable="false">glass</string>
+
+    <!-- Tiles drawn from the app's icon and name instead of its banner (for banners that crop badly). -->
+    <string-array name="icon_tiles" translatable="false">
+    </string-array>
+</resources>
+
+
+
+
+
+
+`n`n========== FILE: launcher\app\src\main\res\values\fonts.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The UI fonts, looked up through these strings so a locale can swap in a system family: Outfit has no
+     glyphs for most Vietnamese accented letters, so values-vi points them at the system sans-serif (#833). -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="ReferenceType">
+    <string name="font_body" translatable="false">@font/outfit</string>
+    <string name="font_regular" translatable="false">@font/outfit_regular</string>
+    <string name="font_light" translatable="false">@font/outfit_light</string>
+    <string name="font_extralight" translatable="false">@font/outfit_extralight</string>
+    <string name="font_medium" translatable="false">@font/outfit_medium</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values\lunar.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- lunar_date (config.json, off by default): the lunisolar date under the date. Translated where the
+     calendar is used (ko, vi, zh-rCN, zh-rTW); other locales show the English names on purpose. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string name="lunar_date_format">Lunar %1$d/%2$s Â· %3$s</string>
+    <string name="lunar_month_leap">%1$d (leap)</string>
+    <string name="lunar_year">Year of the %2$s</string>
+    <string-array name="lunar_stems">
+        <item>Jia</item><item>Yi</item><item>Bing</item><item>Ding</item><item>Wu</item>
+        <item>Ji</item><item>Geng</item><item>Xin</item><item>Ren</item><item>Gui</item>
+    </string-array>
+    <string-array name="lunar_branches">
+        <item>Rat</item><item>Ox</item><item>Tiger</item><item>Rabbit</item><item>Dragon</item><item>Snake</item>
+        <item>Horse</item><item>Goat</item><item>Monkey</item><item>Rooster</item><item>Dog</item><item>Pig</item>
+    </string-array>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Home</string>
+    <string name="inputs">Inputs</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">Settings</string>
+    <string name="choose_input">Inputs</string>
+    <string name="connected">Connected</string>
+    <string name="standby">Standby</string>
+    <string name="not_connected">No device</string>
+    <string name="live_tv">Live TV</string>
+    <string name="no_inputs">No inputs found</string>
+    <string name="more_inputs">More inputs</string>
+    <string name="good_morning">Good morning</string>
+    <string name="good_afternoon">Good afternoon</string>
+    <string name="good_evening">Good evening</string>
+    <string name="good_forenoon">Good late morning</string>
+    <string name="good_night">Good night</string>
+    <string name="festival_dussehra_greeting">Happy Dussehra</string>
+    <string name="festival_diwali_greeting">Happy Diwali</string>
+    <string name="festival_halloween_greeting">Happy Halloween</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">Offline</string>
+    <string name="not_available">Not available on this TV</string>
+    <string name="cant_open">Can\'t open %1$s</string>
+    <string name="date_format">EEEE  d MMMM</string>
+    <!-- Date next to the clock on Home; a locale can split it over two lines with \n. -->
+    <string name="date_format_home" translatable="false">@string/date_format</string>
+    <string name="shamsi_month_farvardin">Farvardin</string>
+    <string name="shamsi_month_ordibehesht">Ordibehesht</string>
+    <string name="shamsi_month_khordad">Khordad</string>
+    <string name="shamsi_month_tir">Tir</string>
+    <string name="shamsi_month_mordad">Mordad</string>
+    <string name="shamsi_month_shahrivar">Shahrivar</string>
+    <string name="shamsi_month_mehr">Mehr</string>
+    <string name="shamsi_month_aban">Aban</string>
+    <string name="shamsi_month_azar">Azar</string>
+    <string name="shamsi_month_dey">Dey</string>
+    <string name="shamsi_month_bahman">Bahman</string>
+    <string name="shamsi_month_esfand">Esfand</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">Memory %1$d / %2$d MB</string>
+    <string name="stats_storage">Storage %1$s free</string>
+    <string name="storage_gb_whole">%1$.0f GB</string>
+    <string name="storage_gb_decimal">%1$.1f GB</string>
+    <string name="dream_name">Clock</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN off</string>
+    <string name="home_settings">Choose default home</string>
+    <string name="home_settings_help">Select your original home to stop using CleanYourTV as Home, or CleanYourTV to switch back. The original launcher must be enabled and your TV must provide a home picker; use the restore script first if it was disabled.</string>
+    <string name="launcher_settings">Launcher settings</string>
+    <string name="native_settings">Native settings</string>
+    <string name="columns_label">Apps per row</string>
+    <string name="rows_below_dock_label">Rows below dock</string>
+    <string name="dock_opacity_label">Dock band opacity</string>
+    <string name="wallpaper_label">Wallpaper</string>
+    <string name="wallpaper_state">Wallpaper: %1$s</string>
+    <string name="wallpaper_none">None</string>
+    <string name="wallpaper_applied">Wallpaper changed</string>
+    <string name="wallpaper_theme_default">Theme default</string>
+    <string name="animations_state">Animations: %1$s</string>
+    <string name="advanced_effects">Advanced effects</string>
+    <string name="advanced_effects_state">Advanced effects: %1$s</string>
+    <string name="open_on_start_label">Open on start</string>
+    <string name="open_on_start_state">Open on start: %1$s</string>
+    <string name="advanced_effects_warning">Adds a lifted tile, icon zoom and smooth colour transitions. May increase memory use; the actual difference depends on your TV.</string>
+    <string name="follow_theme">Follow theme (reset on-TV choices)</string>
+    <string name="follow_theme_hint">Uses the current theme or built-in layout and motion settings. Pushing or resetting a theme also clears your on-TV choices.</string>
+    <string name="tv_settings">TV system settings</string>
+    <string name="quick_picture">Display</string>
+    <string name="quick_network">Network</string>
+    <string name="quick_apps">Apps</string>
+    <string name="quick_apps_hint">Re-enable</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="enable">Enable</string>
+    <string name="input_key_service_description">Opens the input switcher when the remote\'s Input button is pressed.</string>
+    <string name="home_key_name">Home button</string>
+    <string name="home_key_description">Makes the remote\'s Home button open this launcher.</string>
+    <string name="card_prompt_title">New card from %1$s</string>
+    <string name="card_prompt_body">%1$s can show a card on your home screen. Keeping it hidden leaves the app\'s normal tile as it is.</string>
+    <string name="card_prompt_names">The card is named \'%1$s\'. The app is \'%2$s\'.</string>
+    <string name="card_prompt_resigned">%1$s was updated with a different signing key, so your earlier answer no longer applies. Decide again for its card.</string>
+    <string name="card_prompt_relabelled">%1$s changed the name of its card since you decided. Decide again for it.</string>
+    <string name="card_prompt_hint">You can change this later: hold OK on Settings, then choose Module cards.</string>
+    <string name="card_prompt_identity">%1$s, key %2$s</string>
+    <string name="card_keep_hidden">Keep hidden</string>
+    <string name="card_show">Show card</string>
+    <string name="card_not_saved">Couldn\'t save the choice</string>
+    <string name="module_cards">Module cards</string>
+    <string name="no_module_cards">No module cards installed</string>
+    <string name="card_app_name">App: %1$s</string>
+    <string name="card_state_shown">Shown</string>
+    <string name="card_state_over_limit">Shown, over the limit of 8</string>
+    <string name="card_state_hidden">Hidden</string>
+    <string name="card_state_new">New</string>
+    <string name="card_state_new_key">New key</string>
+    <string name="card_state_new_label">New name</string>
+    <string name="dock_edit">Edit dock</string>
+    <!-- Settings menu: opens the system power menu (Restart on most TVs). -->
+    <string name="power_menu">Restartâ€¦</string>
+    <string name="dock_edit_hint">Choose the dock place to change and press OK. Back to finish.</string>
+    <string name="dock_edit_pick_app">Now choose the app to put there and press OK. Back to choose another place.</string>
+    <string name="tile_add_to_dock">Add to dock</string>
+    <string name="tile_replace_in_dock">Replace with another app</string>
+    <string name="dock_edit_pick_place">Choose the dock place for this app and press OK. Back to cancel.</string>
+    <string name="reorder">Reorder apps</string>
+    <string name="tile_move">Move</string>
+    <string name="reorder_hint">OK picks up an app, arrows move it, Back places it. Back again to finish.</string>
+    <string name="reorder_not_saved">Couldn\'t save the new order</string>
+    <string name="app_library">App library</string>
+    <string name="library_empty">No launchable apps found</string>
+    <string name="library_on_home">On Home</string>
+    <string name="library_add_home">Add to Home</string>
+    <string name="library_remove_shortcut">Remove from Home</string>
+    <string name="library_open">Open</string>
+    <string name="library_app_info">App info</string>
+    <string name="library_save_failed">Could not save the shortcut</string>
+    <string name="library_recent">New Â· Add to Home</string>
+    <string name="library_hint_add">Press to add to Home Â· Hold for options</string>
+    <string name="library_hint_open">Press to open Â· Hold for options</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
+    <!-- The greeting, then greeting_name: "Good morning, Mr. Trá»‹nh". -->
+    <string name="greeting_with_name">%1$s, %2$s</string>
+
+    <!-- Race-weekend panel (RaceWeekend). -->
+    <string name="race_kicker">Round %1$d Â· %2$s Â· %3$s</string>
+    <string name="race_kicker_no_place">Round %1$d Â· %2$s</string>
+    <string name="race_next">%1$s in %2$s</string>
+    <string name="race_lights_out">Lights out in %1$s</string>
+    <string name="race_live">%1$s Â· live</string>
+    <string name="race_finished">Chequered flag</string>
+    <string name="race_practice_1">Practice 1</string>
+    <string name="race_practice_2">Practice 2</string>
+    <string name="race_practice_3">Practice 3</string>
+    <string name="race_sprint_qualifying">Sprint qualifying</string>
+    <string name="race_sprint">Sprint</string>
+    <string name="race_qualifying">Qualifying</string>
+    <string name="race_race">Race</string>
+    <string name="race_practice_1_short">FP1</string>
+    <string name="race_practice_2_short">FP2</string>
+    <string name="race_practice_3_short">FP3</string>
+    <string name="race_sprint_qualifying_short">SQ</string>
+    <string name="race_sprint_short">SPRINT</string>
+    <string name="race_qualifying_short">QUALI</string>
+    <string name="race_race_short">RACE</string>
+    <string name="race_countdown_minutes">%1$d min</string>
+    <string name="race_countdown_hours">%1$dh %2$dm</string>
+    <string name="race_countdown_days">%1$dd %2$dh</string>
+    <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
+         last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
+    <string name="last_opened">Last opened %1$s</string>
+    <!-- game_day: a game on now, in the race panel. -->
+    <string name="game_live">Live now</string>
+    <string name="clock_format_system">System</string>
+    <string name="clock_format_12">12-hour</string>
+    <string name="clock_format_24">24-hour</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values\styles.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.TvHome" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+    <!-- Frosted pill, tvOS style. -->
+    <style name="TopButtonBase">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">42dp</item>
+        <item name="android:layout_marginStart">10dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/pill_bg</item>
+        <item name="android:textColor">@drawable/pill_text</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">@string/font_medium</item>
+        <item name="android:letterSpacing">0.01</item>
+        <item name="android:drawablePadding">9dp</item>
+        <item name="android:drawableTint">@drawable/pill_text</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+    <style name="TopButton" parent="TopButtonBase" />
+
+    <!-- Icon-only pill: a 42dp circle (pill_bg's 21dp corners) with the 22dp icon centred by even padding. Give it a
+         contentDescription, since there is no text. -->
+    <style name="TopButtonIcon" parent="TopButtonBase">
+        <item name="android:layout_width">42dp</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:drawablePadding">0dp</item>
+    </style>
+
+    <style name="SettingsRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:background">@drawable/settings_choice_bg</item>
+        <item name="android:textColor">#FFFFFFFF</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+    <style name="SettingsColumnChoice" parent="SettingsRow">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginEnd">10dp</item>
+        <item name="android:gravity">center</item>
+    </style>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-ar\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</string>
+    <string name="inputs">Ø§Ù„Ù…Ø¯Ø®Ù„Ø§Øª</string>
+    <string name="wifi">ÙˆØ§ÙŠ ÙØ§ÙŠ</string>
+    <string name="settings">Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª</string>
+    <string name="choose_input">Ø§Ù„Ù…Ø¯Ø®Ù„Ø§Øª</string>
+    <string name="connected">Ù…ØªØµÙ„</string>
+    <string name="standby">ÙÙŠ ÙˆØ¶Ø¹ Ø§Ù„Ø§Ø³ØªØ¹Ø¯Ø§Ø¯</string>
+    <string name="not_connected">Ù„Ø§ ÙŠÙˆØ¬Ø¯ Ø¬Ù‡Ø§Ø²</string>
+    <string name="live_tv">Ø§Ù„Ø¨Ø« Ø§Ù„Ù…Ø¨Ø§Ø´Ø±</string>
+    <string name="no_inputs">Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ù…Ø¯Ø®Ù„Ø§Øª</string>
+    <string name="more_inputs">Ù…Ø¯Ø®Ù„Ø§Øª Ø£Ø®Ø±Ù‰</string>
+    <string name="good_morning">ØµØ¨Ø§Ø­ Ø§Ù„Ø®ÙŠØ±</string>
+    <string name="good_afternoon">Ù…Ø³Ø§Ø¡ Ø§Ù„Ø®ÙŠØ±</string>
+    <string name="good_evening">Ù…Ø³Ø§Ø¡ Ø§Ù„Ø®ÙŠØ±</string>
+    <string name="good_night">Ù„ÙŠÙ„Ø© Ø³Ø¹ÙŠØ¯Ø©</string>
+    <string name="ethernet">Ø¥ÙŠØ«Ø±Ù†Øª</string>
+    <string name="offline">ØºÙŠØ± Ù…ØªØµÙ„</string>
+    <string name="not_available">ØºÙŠØ± Ù…ØªØ§Ø­ Ø¹Ù„Ù‰ Ù‡Ø°Ø§ Ø§Ù„ØªÙ„ÙØ§Ø²</string>
+    <string name="cant_open">ØªØ¹Ø°Ù‘Ø± ÙØªØ­ %1$s</string>
+    <string name="date_format">EEEE  d MMMM</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">Ø§Ù„Ø°Ø§ÙƒØ±Ø© %1$d / %2$d Ù….Ø¨</string>
+    <string name="stats_storage">Ø§Ù„ØªØ®Ø²ÙŠÙ† %1$s Ù…ØªØ§Ø­</string>
+    <string name="dream_name">Ø§Ù„Ø³Ø§Ø¹Ø©</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN Ù…ØªÙˆÙ‚Ù</string>
+    <string name="home_settings">Ø§Ù„Ø´Ø§Ø´Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠØ©</string>
+    <string name="home_settings_help">Ø§Ø®ØªØ± Ø§Ù„Ø´Ø§Ø´Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ© Ø§Ù„Ø£ØµÙ„ÙŠØ© Ù„Ø¥ÙŠÙ‚Ø§Ù Ø§Ø³ØªØ®Ø¯Ø§Ù… CleanYourTV Ø§ÙØªØ±Ø§Ø¶ÙŠÙ‹Ø§ØŒ Ø£Ùˆ Ø§Ø®ØªØ± CleanYourTV Ù„Ù„Ø¹ÙˆØ¯Ø©. ÙŠØ¬Ø¨ Ø£Ù† ÙŠÙƒÙˆÙ† Ø§Ù„Ù…Ø´ØºÙ‘Ù„ Ø§Ù„Ø£ØµÙ„ÙŠ Ù…ÙØ¹Ù‘Ù„Ù‹Ø§ ÙˆØ£Ù† ÙŠØ¯Ø¹Ù… Ø§Ù„ØªÙ„ÙØ§Ø² Ø§Ø®ØªÙŠØ§Ø± Ø§Ù„Ø´Ø§Ø´Ø© Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©. Ø¥Ø°Ø§ Ø¹ÙØ·Ù‘Ù„ØŒ Ø§Ø³ØªØ®Ø¯Ù… Ø¨Ø±Ù†Ø§Ù…Ø¬ Ø§Ù„Ø§Ø³ØªØ¹Ø§Ø¯Ø© Ø£ÙˆÙ„Ù‹Ø§.</string>
+    <string name="input_key_service_description">ÙŠÙØªØ­ Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…Ø¯Ø®Ù„Ø§Øª Ø¹Ù†Ø¯ Ø§Ù„Ø¶ØºØ· Ø¹Ù„Ù‰ Ø²Ø± Ø§Ù„Ù…Ø¯Ø®Ù„Ø§Øª ÙÙŠ Ø¬Ù‡Ø§Ø² Ø§Ù„ØªØ­ÙƒÙ….</string>
+    <string name="home_key_name">Ø²Ø± Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</string>
+    <string name="home_key_description">ÙŠØ¬Ø¹Ù„ Ø²Ø± Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ© ÙÙŠ Ø¬Ù‡Ø§Ø² Ø§Ù„ØªØ­ÙƒÙ… ÙŠÙØªØ­ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ø§Ø´Ø©.</string>
+    <string name="card_prompt_title">Ø¨Ø·Ø§Ù‚Ø© Ø¬Ø¯ÙŠØ¯Ø© Ù…Ù† %1$s</string>
+    <string name="card_prompt_body">ÙŠÙ…ÙƒÙ† Ù„ØªØ·Ø¨ÙŠÙ‚ %1$s Ø¹Ø±Ø¶ Ø¨Ø·Ø§Ù‚Ø© Ø¹Ù„Ù‰ Ø´Ø§Ø´ØªÙƒ Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©. Ø¥Ø¨Ù‚Ø§Ø¤Ù‡Ø§ Ù…Ø®ÙÙŠØ© ÙŠØªØ±Ùƒ Ù…Ø±Ø¨Ù‘Ø¹ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„Ø¹Ø§Ø¯ÙŠ ÙƒÙ…Ø§ Ù‡Ùˆ.</string>
+    <string name="card_prompt_names">Ø§Ø³Ù… Ø§Ù„Ø¨Ø·Ø§Ù‚Ø© Â«%1$sÂ»ØŒ ÙˆØ§Ø³Ù… Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Â«%2$sÂ».</string>
+    <string name="card_prompt_resigned">ØªÙ… ØªØ­Ø¯ÙŠØ« %1$s Ø¨Ù…ÙØªØ§Ø­ ØªÙˆÙ‚ÙŠØ¹ Ù…Ø®ØªÙ„ÙØŒ Ù„Ø°Ø§ Ù„Ù… ÙŠØ¹Ø¯ Ø§Ø®ØªÙŠØ§Ø±Ùƒ Ø§Ù„Ø³Ø§Ø¨Ù‚ Ø³Ø§Ø±ÙŠÙ‹Ø§. Ø§Ø®ØªØ± Ù…Ù† Ø¬Ø¯ÙŠØ¯ Ø¨Ø´Ø£Ù† Ø¨Ø·Ø§Ù‚ØªÙ‡.</string>
+    <string name="card_prompt_relabelled">ØºÙŠÙ‘Ø± %1$s Ø§Ø³Ù… Ø¨Ø·Ø§Ù‚ØªÙ‡ Ù…Ù†Ø° Ø£Ù† Ø§Ø®ØªØ±Øª. Ø§Ø®ØªØ± Ù…Ù† Ø¬Ø¯ÙŠØ¯ Ø¨Ø´Ø£Ù†Ù‡Ø§.</string>
+    <string name="card_prompt_hint">ÙŠÙ…ÙƒÙ†Ùƒ ØªØºÙŠÙŠØ± Ù‡Ø°Ø§ Ù„Ø§Ø­Ù‚Ù‹Ø§: Ø§Ø¶ØºØ· Ù…Ø·ÙˆÙ„Ù‹Ø§ Ø¹Ù„Ù‰ OK ÙÙˆÙ‚ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø«Ù… Ø§Ø®ØªØ± Ø¨Ø·Ø§Ù‚Ø§Øª Ø§Ù„ØªØ·Ø¨ÙŠÙ‚Ø§Øª.</string>
+    <string name="card_prompt_identity">%1$sØŒ Ø§Ù„Ù…ÙØªØ§Ø­ %2$s</string>
+    <string name="card_keep_hidden">Ø¥Ø¨Ù‚Ø§Ø¤Ù‡Ø§ Ù…Ø®ÙÙŠØ©</string>
+    <string name="card_show">Ø¹Ø±Ø¶ Ø§Ù„Ø¨Ø·Ø§Ù‚Ø©</string>
+    <string name="card_not_saved">ØªØ¹Ø°Ù‘Ø± Ø­ÙØ¸ Ø§Ù„Ø§Ø®ØªÙŠØ§Ø±</string>
+    <string name="module_cards">Ø¨Ø·Ø§Ù‚Ø§Øª Ø§Ù„ÙˆØ­Ø¯Ø§Øª</string>
+    <string name="no_module_cards">Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨Ø·Ø§Ù‚Ø§Øª ÙˆØ­Ø¯Ø§Øª Ù…Ø«Ø¨Ù‘ØªØ©</string>
+    <string name="card_app_name">Ø§Ù„ØªØ·Ø¨ÙŠÙ‚: %1$s</string>
+    <string name="card_state_shown">Ù…Ø¹Ø±ÙˆØ¶Ø©</string>
+    <string name="card_state_over_limit">Ù…Ø¹Ø±ÙˆØ¶Ø©ØŒ ÙÙˆÙ‚ Ø§Ù„Ø­Ø¯ Ø§Ù„Ø£Ù‚ØµÙ‰ ÙˆÙ‡Ùˆ 8</string>
+    <string name="card_state_hidden">Ù…Ø®ÙÙŠØ©</string>
+    <string name="card_state_new">Ø¬Ø¯ÙŠØ¯Ø©</string>
+    <string name="card_state_new_key">Ù…ÙØªØ§Ø­ Ø¬Ø¯ÙŠØ¯</string>
+    <string name="card_state_new_label">Ø§Ø³Ù… Ø¬Ø¯ÙŠØ¯</string>
+    <string name="launcher_settings">Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ù…Ø´ØºÙ‘Ù„</string>
+    <string name="native_settings">Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„Ù…ÙØµÙ†Ù‘Ø¹</string>
+    <string name="columns_label">ØªØ·Ø¨ÙŠÙ‚Ø§Øª ÙÙŠ ÙƒÙ„ ØµÙ</string>
+    <string name="dock_opacity_label">Ø¹ØªØ§Ù…Ø© Ø´Ø±ÙŠØ· Ø§Ù„ØªØ·Ø¨ÙŠÙ‚Ø§Øª</string>
+    <string name="animations_state">Ø§Ù„Ø±Ø³ÙˆÙ… Ø§Ù„Ù…ØªØ­Ø±ÙƒØ©: %1$s</string>
+    <string name="advanced_effects">ØªØ£Ø«ÙŠØ±Ø§Øª Ù…ØªÙ‚Ø¯Ù…Ø©</string>
+    <string name="advanced_effects_state">ØªØ£Ø«ÙŠØ±Ø§Øª Ù…ØªÙ‚Ø¯Ù…Ø©: %1$s</string>
+    <string name="open_on_start_label">Ø§Ù„ÙØªØ­ Ø¹Ù†Ø¯ Ø§Ù„ØªØ´ØºÙŠÙ„</string>
+    <string name="open_on_start_state">Ø§Ù„ÙØªØ­ Ø¹Ù†Ø¯ Ø§Ù„ØªØ´ØºÙŠÙ„: %1$s</string>
+    <string name="advanced_effects_warning">ØªØ±ÙØ¹ Ø§Ù„Ø¨Ø·Ø§Ù‚Ø§Øª ÙˆØªÙƒØ¨Ù‘Ø± Ø§Ù„Ø£ÙŠÙ‚ÙˆÙ†Ø§Øª ÙˆØªÙ†Ø¹Ù‘Ù… Ø§Ù†ØªÙ‚Ø§Ù„Ø§Øª Ø§Ù„Ø£Ù„ÙˆØ§Ù†. Ù‚Ø¯ ØªØ²ÙŠØ¯ Ø§Ø³ØªÙ‡Ù„Ø§Ùƒ Ø§Ù„Ø°Ø§ÙƒØ±Ø© Ø­Ø³Ø¨ Ø§Ù„ØªÙ„ÙØ§Ø².</string>
+    <string name="follow_theme">Ø§ØªÙ‘Ø¨Ø§Ø¹ Ø§Ù„Ø³Ù…Ø© (Ø¥Ø¹Ø§Ø¯Ø© Ø¶Ø¨Ø· Ø§Ù„Ø®ÙŠØ§Ø±Ø§Øª)</string>
+    <string name="follow_theme_hint">Ø§Ø³ØªØ®Ø¯Ù… ØªØ®Ø·ÙŠØ· Ø§Ù„Ø³Ù…Ø© Ø§Ù„Ø­Ø§Ù„ÙŠØ© ÙˆØ­Ø±ÙƒØªÙ‡Ø§ Ø£Ùˆ Ø§Ù„Ù‚ÙŠÙ… Ø§Ù„Ù…Ø¶Ù…Ù‘Ù†Ø©. ØªØ·Ø¨ÙŠÙ‚ Ø³Ù…Ø© Ø£Ùˆ Ø¥Ø¹Ø§Ø¯Ø© Ø¶Ø¨Ø·Ù‡Ø§ ÙŠÙ…Ø­Ùˆ Ø®ÙŠØ§Ø±Ø§Øª Ø§Ù„ØªÙ„ÙØ§Ø² Ø£ÙŠØ¶Ù‹Ø§.</string>
+    <string name="tv_settings">Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ù†Ø¸Ø§Ù… Ø§Ù„ØªÙ„ÙØ§Ø²</string>
+    <string name="on">ØªØ´ØºÙŠÙ„</string>
+    <string name="off">Ø¥ÙŠÙ‚Ø§Ù</string>
+    <string name="enable">ØªÙØ¹ÙŠÙ„</string>
+    <string name="dock_edit">ØªØ¹Ø¯ÙŠÙ„ Ø´Ø±ÙŠØ· Ø§Ù„ØªØ·Ø¨ÙŠÙ‚Ø§Øª</string>
+    <string name="power_menu">Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„ØªØ´ØºÙŠÙ„â€¦</string>
+    <string name="dock_edit_hint">Ø§Ø®ØªØ± Ø§Ù„Ù…ÙˆØ¶Ø¹ Ø§Ù„Ø°ÙŠ ØªØ±ÙŠØ¯ ØªØºÙŠÙŠØ±Ù‡ ÙÙŠ Ø§Ù„Ø´Ø±ÙŠØ· ÙˆØ§Ø¶ØºØ· Ù…ÙˆØ§ÙÙ‚. Ø§Ø¶ØºØ· Ø±Ø¬ÙˆØ¹ Ù„Ù„Ø¥Ù†Ù‡Ø§Ø¡.</string>
+    <string name="dock_edit_pick_app">Ø§Ø®ØªØ± Ø§Ù„Ø¢Ù† Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ø§Ù„Ø°ÙŠ ØªØ±ÙŠØ¯ ÙˆØ¶Ø¹Ù‡ Ù‡Ù†Ø§Ùƒ ÙˆØ§Ø¶ØºØ· Ù…ÙˆØ§ÙÙ‚. Ø§Ø¶ØºØ· Ø±Ø¬ÙˆØ¹ Ù„Ø§Ø®ØªÙŠØ§Ø± Ù…ÙˆØ¶Ø¹ Ø¢Ø®Ø±.</string>
+    <string name="tile_add_to_dock">Ø¥Ø¶Ø§ÙØ© Ø¥Ù„Ù‰ Ø§Ù„Ø´Ø±ÙŠØ·</string>
+    <string name="tile_replace_in_dock">Ø§Ø³ØªØ¨Ø¯Ø§Ù„ Ø¨ØªØ·Ø¨ÙŠÙ‚ Ø¢Ø®Ø±</string>
+    <string name="dock_edit_pick_place">Ø§Ø®ØªØ± Ù…ÙˆØ¶Ø¹Ù‹Ø§ ÙÙŠ Ø§Ù„Ø´Ø±ÙŠØ· Ù„Ù‡Ø°Ø§ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ ÙˆØ§Ø¶ØºØ· Ù…ÙˆØ§ÙÙ‚. Ø§Ø¶ØºØ· Ø±Ø¬ÙˆØ¹ Ù„Ù„Ø¥Ù„ØºØ§Ø¡.</string>
+    <string name="reorder">Ø¥Ø¹Ø§Ø¯Ø© ØªØ±ØªÙŠØ¨ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚Ø§Øª</string>
+    <string name="tile_move">Ù†Ù‚Ù„</string>
+    <string name="reorder_hint">Ø§Ø¶ØºØ· Ù…ÙˆØ§ÙÙ‚ Ù„Ø§Ù„ØªÙ‚Ø§Ø· ØªØ·Ø¨ÙŠÙ‚ØŒ ÙˆØ§Ù„Ø£Ø³Ù‡Ù… Ù„ØªØ­Ø±ÙŠÙƒÙ‡ØŒ ÙˆØ±Ø¬ÙˆØ¹ Ù„ØªØ«Ø¨ÙŠØªÙ‡. Ø§Ø¶ØºØ· Ø±Ø¬ÙˆØ¹ Ù…Ø±Ø© Ø£Ø®Ø±Ù‰ Ù„Ù„Ø¥Ù†Ù‡Ø§Ø¡.</string>
+    <string name="reorder_not_saved">ØªØ¹Ø°Ù‘Ø± Ø­ÙØ¸ Ø§Ù„ØªØ±ØªÙŠØ¨ Ø§Ù„Ø¬Ø¯ÙŠØ¯</string>
+    <string name="app_library">Ù…ÙƒØªØ¨Ø© Ø§Ù„ØªØ·Ø¨ÙŠÙ‚Ø§Øª</string>
+    <string name="library_empty">Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ ØªØ·Ø¨ÙŠÙ‚Ø§Øª Ù‚Ø§Ø¨Ù„Ø© Ù„Ù„ØªØ´ØºÙŠÙ„</string>
+    <string name="library_on_home">Ø¹Ù„Ù‰ Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</string>
+    <string name="library_add_home">Ø¥Ø¶Ø§ÙØ© Ø¥Ù„Ù‰ Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</string>
+    <string name="library_remove_shortcut">Ø¥Ø²Ø§Ù„Ø© Ù…Ù† Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</string>
+    <string name="library_open">ÙØªØ­</string>
+    <string name="library_app_info">Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„ØªØ·Ø¨ÙŠÙ‚</string>
+    <string name="library_save_failed">ØªØ¹Ø°Ø± Ø­ÙØ¸ Ø§Ù„Ø§Ø®ØªØµØ§Ø±</string>
+    <string name="library_recent">Ø¬Ø¯ÙŠØ¯ Â· Ø¥Ø¶Ø§ÙØ© Ø¥Ù„Ù‰ Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©</string>
+    <string name="library_hint_add">Ø§Ø¶ØºØ· Ù„Ù„Ø¥Ø¶Ø§ÙØ© Ù„Ù„Ø±Ø¦ÙŠØ³ÙŠØ© Â· Ø§Ø¶ØºØ· Ù…Ø·ÙˆÙ„Ø§Ù‹ Ù„Ù„Ø®ÙŠØ§Ø±Ø§Øª</string>
+    <string name="library_hint_open">Ø§Ø¶ØºØ· Ù„Ù„ÙØªØ­ Â· Ø§Ø¶ØºØ· Ù…Ø·ÙˆÙ„Ø§Ù‹ Ù„Ù„Ø®ÙŠØ§Ø±Ø§Øª</string>
+    <plurals name="library_app_count">
+        <item quantity="zero">%1$d ØªØ·Ø¨ÙŠÙ‚</item>
+        <item quantity="one">%1$d ØªØ·Ø¨ÙŠÙ‚</item>
+        <item quantity="two">%1$d ØªØ·Ø¨ÙŠÙ‚Ø§Ù†</item>
+        <item quantity="few">%1$d ØªØ·Ø¨ÙŠÙ‚Ø§Øª</item>
+        <item quantity="many">%1$d ØªØ·Ø¨ÙŠÙ‚Ù‹Ø§</item>
+        <item quantity="other">%1$d ØªØ·Ø¨ÙŠÙ‚</item>
+    </plurals>
+    <string name="greeting_with_name">%1$sØŒ %2$s</string>
+    <string name="game_live">Ù…Ø¨Ø§Ø´Ø± Ø§Ù„Ø¢Ù†</string>
+    <string name="clock_format_system">Ø§Ù„Ù†Ø¸Ø§Ù…</string>
+    <string name="clock_format_12">12 Ø³Ø§Ø¹Ø©</string>
+    <string name="clock_format_24">24 Ø³Ø§Ø¹Ø©</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-ast\bools.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Asturian "miÃ©rcoles 21 d'ochobre" is cut off next to a wide clock; two lines, as in Spanish. -->
+    <bool name="date_single_line">false</bool>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-ast\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Aniciu</string>
+    <string name="inputs">Entraes</string>
+    <string name="settings">Axustes</string>
+    <string name="choose_input">Entraes</string>
+    <string name="connected">ConeutÃ¡u</string>
+    <string name="standby">N\'espera</string>
+    <string name="not_connected">Ensin dispositivu</string>
+    <string name="live_tv">TV en direutu</string>
+    <string name="no_inputs">Nun s\'atoparon entraes</string>
+    <string name="more_inputs">MÃ¡s entraes</string>
+    <string name="good_morning">Bonos dÃ­es</string>
+    <string name="good_afternoon">Bones tardes</string>
+    <string name="good_evening">Bones nueches</string>
+    <string name="good_forenoon">Bonos dÃ­es</string>
+    <string name="good_night">Bones nueches</string>
+    <string name="festival_dussehra_greeting">Feliz Dussehra</string>
+    <string name="festival_diwali_greeting">Feliz Diwali</string>
+    <string name="offline">Ensin conexÃ³n</string>
+    <string name="not_available">Non disponible nesta TV</string>
+    <string name="cant_open">Nun se pue abrir %1$s</string>
+    <string name="date_format">EEEE d MMMM</string>
+    <string name="date_format_home">EEEE\nd MMMM</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">Memoria %1$d / %2$d MB</string>
+    <string name="stats_storage">Almacenamientu %1$s llibre</string>
+    <string name="dream_name">RelÃ³</string>
+    <string name="vpn_off">VPN apagada</string>
+    <string name="home_settings">Escoyer pantalla d\'aniciu predeterminÃ¡</string>
+    <string name="home_settings_help">Escueyi la to pantalla d\'aniciu orixinal pa dexar d\'usar CleanYourTV como pantalla d\'aniciu, o CleanYourTV pa volver a Ã©l. El llanzador orixinal tien que tar activÃ¡u y el televisor tien qu\'ufiertar un seleutor de pantalles d\'aniciu; si taba desactivÃ¡u, usa enantes el script de restauraciÃ³n.</string>
+    <string name="launcher_settings">Axustes del llanzador</string>
+    <string name="native_settings">Axustes del fabricante</string>
+    <string name="columns_label">Aplicaciones por filera</string>
+    <string name="rows_below_dock_label">Fileres debaxo del dock</string>
+    <string name="dock_opacity_label">OpacidÃ¡ de la barra del dock</string>
+    <string name="wallpaper_label">Fondu</string>
+    <string name="wallpaper_state">Fondu: %1$s</string>
+    <string name="wallpaper_none">NengÃºn</string>
+    <string name="wallpaper_applied">Fondu camudÃ¡u</string>
+    <string name="wallpaper_theme_default">PredeterminÃ¡u del tema</string>
+    <string name="animations_state">Animaciones: %1$s</string>
+    <string name="advanced_effects">Efeutos avanzaos</string>
+    <string name="advanced_effects_state">Efeutos avanzaos: %1$s</string>
+    <string name="open_on_start_label">Abrir al aniciar</string>
+    <string name="open_on_start_state">Abrir al aniciar: %1$s</string>
+    <string name="advanced_effects_warning">Eleva les tarxetes, amplÃ­a los iconos y anidia les transiciones de color. Pue aumentar l\'usu de memoria; la diferencia real depende del to televisor.</string>
+    <string name="follow_theme">Siguir el tema (reestablecer axustes)</string>
+    <string name="follow_theme_hint">Usa\'l diseÃ±u y los efeutos del tema actual o los valores integraos. Aplicar o reestablecer un tema tamiÃ©n desanicia estos axustes.</string>
+    <string name="tv_settings">Axustes del televisor</string>
+    <string name="quick_picture">Imaxe</string>
+    <string name="quick_network">Rede</string>
+    <string name="quick_apps">Aplicaciones</string>
+    <string name="quick_apps_hint">Reactivar</string>
+    <string name="on">SÃ­</string>
+    <string name="off">Non</string>
+    <string name="enable">Activar</string>
+    <string name="input_key_service_description">Abre\'l seleutor d\'entraes al calcar el botÃ³n d\'Entrada del mandu.</string>
+    <string name="home_key_name">BotÃ³n d\'Aniciu</string>
+    <string name="home_key_description">Fai que\'l botÃ³n d\'Aniciu del mandu abra esti llanzador.</string>
+    <string name="card_prompt_title">Nueva tarxeta de %1$s</string>
+    <string name="card_prompt_body">%1$s pue amosar una tarxeta na to pantalla d\'aniciu. Si la caltienes ancultada, l\'iconu normal de l\'aplicaciÃ³n queda como ta.</string>
+    <string name="card_prompt_names">La tarxeta llÃ¡mase Â«%1$sÂ». L\'aplicaciÃ³n ye Â«%2$sÂ».</string>
+    <string name="card_prompt_resigned">%1$s anovÃ³se con otra clave de firma, poro la to rempuesta anterior yÃ¡ nun val. Vuelve decidir sobre la so tarxeta.</string>
+    <string name="card_prompt_relabelled">%1$s camudÃ³\'l nome de la so tarxeta dende que decidisti. Vuelve decidir sobre ella.</string>
+    <string name="card_prompt_hint">Pues camudalo dempuÃ©s: caltÃ©n calcÃ¡u OK n\'Axustes y escueyi Tarxetes de mÃ³dulos.</string>
+    <string name="card_prompt_identity">%1$s, clave %2$s</string>
+    <string name="card_keep_hidden">Caltener ancultada</string>
+    <string name="card_show">Amosar tarxeta</string>
+    <string name="card_not_saved">Nun se pudo guardar la eleiciÃ³n</string>
+    <string name="module_cards">Tarxetes de mÃ³dulos</string>
+    <string name="no_module_cards">Nun hai tarxetes de mÃ³dulos instalaes</string>
+    <string name="card_app_name">AplicaciÃ³n: %1$s</string>
+    <string name="card_state_shown">Visible</string>
+    <string name="card_state_over_limit">Visible, percima de la llende d\'8</string>
+    <string name="card_state_hidden">Ancultada</string>
+    <string name="card_state_new">Nueva</string>
+    <string name="card_state_new_key">Clave nueva</string>
+    <string name="card_state_new_label">Nome nuevu</string>
+    <string name="dock_edit">Editar el dock</string>
+    <string name="power_menu">Reaniciarâ€¦</string>
+    <string name="dock_edit_hint">Escueyi\'l sitiu del dock que quies camudar y calca OK. AtrÃ¡s pa finar.</string>
+    <string name="dock_edit_pick_app">Agora escueyi l\'aplicaciÃ³n que quies poner ende y calca OK. AtrÃ¡s pa escoyer otru sitiu.</string>
+    <string name="tile_add_to_dock">Amestar al dock</string>
+    <string name="tile_replace_in_dock">Cambear por otra aplicaciÃ³n</string>
+    <string name="dock_edit_pick_place">Escueyi\'l sitiu del dock pa esta aplicaciÃ³n y calca OK. AtrÃ¡s pa encaboxar.</string>
+    <string name="reorder">Reordenar aplicaciones</string>
+    <string name="tile_move">Mover</string>
+    <string name="reorder_hint">D\'acuerdu escueye una aplicaciÃ³n, les fleches muÃ©venla, AtrÃ¡s suÃ©ltala. AtrÃ¡s de nuevu pa finar.</string>
+    <string name="reorder_not_saved">Nun se pudo guardar el nuevu orde</string>
+    <string name="app_library">Biblioteca d\'aplicaciones</string>
+    <string name="library_empty">Nun s\'atoparon aplicaciones que se puean abrir</string>
+    <string name="library_on_home">N\'Aniciu</string>
+    <string name="library_add_home">Amestar a Aniciu</string>
+    <string name="library_remove_shortcut">Quitar d\'Aniciu</string>
+    <string name="library_open">Abrir</string>
+    <string name="library_app_info">InformaciÃ³n de l\'aplicaciÃ³n</string>
+    <string name="library_save_failed">Nun se pudo guardar l\'accesu direutu</string>
+    <string name="library_recent">Nueva Â· Amestar a Aniciu</string>
+    <string name="library_hint_add">Calca p\'amestar a Aniciu Â· CaltÃ©n calcÃ¡u pa opciones</string>
+    <string name="library_hint_open">Calca p\'abrir Â· CaltÃ©n calcÃ¡u pa opciones</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d aplicaciÃ³n</item>
+        <item quantity="other">%1$d aplicaciones</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="race_kicker">Ronda %1$d Â· %2$s Â· %3$s</string>
+    <string name="race_kicker_no_place">Ronda %1$d Â· %2$s</string>
+    <string name="race_next">%1$s en %2$s</string>
+    <string name="race_lights_out">Salida en %1$s</string>
+    <string name="race_live">%1$s Â· en direutu</string>
+    <string name="race_finished">Bandera a cuadros</string>
+    <string name="race_practice_1">Llibres 1</string>
+    <string name="race_practice_2">Llibres 2</string>
+    <string name="race_practice_3">Llibres 3</string>
+    <string name="race_sprint_qualifying">ClasificaciÃ³n sprint</string>
+    <string name="race_qualifying">ClasificaciÃ³n</string>
+    <string name="race_race">Carrera</string>
+    <string name="race_race_short">CARRERA</string>
+    <string name="last_opened">Abierta per Ãºltima vegada %1$s</string>
+    <string name="game_live">En direutu</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-b+es+419\bools.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spanish "miÃ©rcoles 21 de octubre" is cut off next to a wide clock; two lines, as in Portuguese. -->
+    <bool name="date_single_line">false</bool>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-b+es+419\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Inicio</string>
+    <string name="inputs">Entradas</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">ConfiguraciÃ³n</string>
+    <string name="power_menu">Reiniciarâ€¦</string>
+    <string name="choose_input">Entradas</string>
+    <string name="connected">Conectado</string>
+    <string name="standby">En espera</string>
+    <string name="not_connected">Sin dispositivo conectado</string>
+    <string name="live_tv">TV en vivo</string>
+    <string name="no_inputs">No se encontraron entradas</string>
+    <string name="more_inputs">MÃ¡s entradas</string>
+    <string name="good_morning">Buenos dÃ­as</string>
+    <string name="good_afternoon">Buenas tardes</string>
+    <string name="good_evening">Buenas noches</string>
+    <string name="good_forenoon">Buenos dÃ­as</string>
+    <string name="good_night">Buenas noches</string>
+    <string name="festival_dussehra_greeting">Feliz Dussehra</string>
+    <string name="festival_diwali_greeting">Feliz Diwali</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">Sin conexiÃ³n</string>
+    <string name="not_available">No disponible en este televisor</string>
+    <string name="cant_open">No se puede abrir %1$s</string>
+    <string name="date_format">EEEE d \'de\' MMMM</string>
+    <string name="date_format_home">EEEE\nd \'de\' MMMM</string>
+    <string name="shamsi_month_farvardin">FarvardÃ­n</string>
+    <string name="shamsi_month_ordibehesht">Ordibehesht</string>
+    <string name="shamsi_month_khordad">Jordad</string>
+    <string name="shamsi_month_tir">Tir</string>
+    <string name="shamsi_month_mordad">Mordad</string>
+    <string name="shamsi_month_shahrivar">Shahrivar</string>
+    <string name="shamsi_month_mehr">Mehr</string>
+    <string name="shamsi_month_aban">AbÃ¡n</string>
+    <string name="shamsi_month_azar">Azar</string>
+    <string name="shamsi_month_dey">Dey</string>
+    <string name="shamsi_month_bahman">BahmÃ¡n</string>
+    <string name="shamsi_month_esfand">Esfand</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">Memoria %1$d / %2$d MB</string>
+    <string name="stats_storage">Almacenamiento %1$s libre</string>
+    <string name="storage_gb_whole">%1$.0f GB</string>
+    <string name="storage_gb_decimal">%1$.1f GB</string>
+    <string name="dream_name">Reloj</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN apagada</string>
+    <string name="home_settings">Elegir pantalla de inicio predeterminada</string>
+    <string name="home_settings_help">Elige la pantalla de inicio original para dejar de usar CleanYourTV, o elige CleanYourTV para volver a usarlo. El launcher original debe estar activado y el televisor debe ofrecer un selector de inicio; si estaba desactivado, ejecuta primero el script de restauraciÃ³n.</string>
+    <string name="launcher_settings">ConfiguraciÃ³n del launcher</string>
+    <string name="native_settings">ConfiguraciÃ³n del fabricante</string>
+    <string name="columns_label">Aplicaciones por fila</string>
+    <string name="rows_below_dock_label">Filas debajo de la barra de favoritos</string>
+    <string name="dock_opacity_label">Opacidad de la barra de favoritos</string>
+    <string name="wallpaper_label">Fondo</string>
+    <string name="wallpaper_state">Fondo: %1$s</string>
+    <string name="wallpaper_none">Ninguno</string>
+    <string name="wallpaper_applied">Fondo cambiado</string>
+    <string name="wallpaper_theme_default">Predeterminado del tema</string>
+    <string name="animations_state">Animaciones: %1$s</string>
+    <string name="advanced_effects">Efectos avanzados</string>
+    <string name="advanced_effects_state">Efectos avanzados: %1$s</string>
+    <string name="open_on_start_label">Abrir al iniciar</string>
+    <string name="open_on_start_state">Abrir al iniciar: %1$s</string>
+    <string name="advanced_effects_warning">Eleva las tarjetas, amplÃ­a los iconos y suaviza los cambios de color. Puede aumentar el uso de memoria; depende del televisor.</string>
+    <string name="follow_theme">Usar el tema (restablecer configuraciÃ³n)</string>
+    <string name="follow_theme_hint">Usa el diseÃ±o y los efectos del tema actual o los valores predeterminados. Aplicar o restablecer un tema tambiÃ©n borra esta configuraciÃ³n.</string>
+    <string name="tv_settings">ConfiguraciÃ³n del televisor</string>
+    <string name="quick_picture">Imagen</string>
+    <string name="quick_network">Red</string>
+    <string name="quick_apps">Aplicaciones</string>
+    <string name="quick_apps_hint">Reactivar</string>
+    <string name="on">Activado</string>
+    <string name="off">Desactivado</string>
+    <string name="enable">Activar</string>
+    <string name="input_key_service_description">Abre el selector de entradas al presionar el botÃ³n Entrada del control remoto.</string>
+    <string name="home_key_name">BotÃ³n Inicio</string>
+    <string name="home_key_description">Hace que el botÃ³n Inicio del control remoto abra este launcher.</string>
+    <string name="card_prompt_title">Nueva tarjeta de %1$s</string>
+    <string name="card_prompt_body">%1$s puede mostrar una tarjeta en tu pantalla de inicio. Si la mantienes oculta, el icono normal de la aplicaciÃ³n queda como estÃ¡.</string>
+    <string name="card_prompt_names">La tarjeta se llama Â«%1$sÂ». La aplicaciÃ³n es Â«%2$sÂ».</string>
+    <string name="card_prompt_resigned">%1$s se actualizÃ³ con otra clave de firma, por lo que tu respuesta anterior ya no es vÃ¡lida. Vuelve a decidir si quieres mostrar su tarjeta.</string>
+    <string name="card_prompt_relabelled">%1$s cambiÃ³ el nombre de su tarjeta desde tu Ãºltima elecciÃ³n. Vuelve a decidir si quieres mostrarla.</string>
+    <string name="card_prompt_hint">Puedes cambiarlo despuÃ©s: mantÃ©n presionado OK sobre ConfiguraciÃ³n y elige Tarjetas de mÃ³dulos.</string>
+    <string name="card_prompt_identity">%1$s, clave %2$s</string>
+    <string name="card_keep_hidden">Mantener oculta</string>
+    <string name="card_show">Mostrar tarjeta</string>
+    <string name="card_not_saved">No se pudo guardar la elecciÃ³n</string>
+    <string name="module_cards">Tarjetas de mÃ³dulos</string>
+    <string name="no_module_cards">No hay tarjetas de mÃ³dulos instaladas</string>
+    <string name="card_app_name">AplicaciÃ³n: %1$s</string>
+    <string name="card_state_shown">Visible</string>
+    <string name="card_state_over_limit">Visible, por encima del lÃ­mite de 8</string>
+    <string name="card_state_hidden">Oculta</string>
+    <string name="card_state_new">Nueva</string>
+    <string name="card_state_new_key">Clave nueva</string>
+    <string name="card_state_new_label">Nombre nuevo</string>
+    <string name="dock_edit">Editar la barra de favoritos</string>
+    <string name="dock_edit_hint">Elige el espacio de la barra de favoritos que quieres cambiar y presiona OK. Presiona AtrÃ¡s para terminar.</string>
+    <string name="dock_edit_pick_app">Ahora elige la aplicaciÃ³n que quieres colocar ahÃ­ y presiona OK. Presiona AtrÃ¡s para elegir otro espacio.</string>
+    <string name="tile_add_to_dock">Agregar a favoritos</string>
+    <string name="tile_replace_in_dock">Reemplazar por otra aplicaciÃ³n</string>
+    <string name="dock_edit_pick_place">Elige el espacio de la barra de favoritos para esta aplicaciÃ³n y presiona OK. Presiona AtrÃ¡s para cancelar.</string>
+    <string name="reorder">Reordenar aplicaciones</string>
+    <string name="tile_move">Mover</string>
+    <string name="reorder_hint">Presiona OK para seleccionar una aplicaciÃ³n, usa las flechas para moverla y presiona AtrÃ¡s para colocarla. Presiona AtrÃ¡s otra vez para terminar.</string>
+    <string name="reorder_not_saved">No se pudo guardar el nuevo orden</string>
+    <string name="app_library">Biblioteca de aplicaciones</string>
+    <string name="library_empty">No hay aplicaciones que se puedan abrir</string>
+    <string name="library_on_home">En Inicio</string>
+    <string name="library_add_home">Agregar a Inicio</string>
+    <string name="library_remove_shortcut">Quitar de Inicio</string>
+    <string name="library_open">Abrir</string>
+    <string name="library_app_info">InformaciÃ³n de la aplicaciÃ³n</string>
+    <string name="library_save_failed">No se pudo guardar el acceso directo</string>
+    <string name="library_recent">Nueva Â· Agregar a Inicio</string>
+    <string name="library_hint_add">Presiona para agregar a Inicio Â· MantÃ©n presionado para ver opciones</string>
+    <string name="library_hint_open">Presiona para abrir Â· MantÃ©n presionado para ver opciones</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d aplicaciÃ³n</item>
+        <item quantity="other">%1$d aplicaciones</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="race_kicker">Ronda %1$d Â· %2$s Â· %3$s</string>
+    <string name="race_kicker_no_place">Ronda %1$d Â· %2$s</string>
+    <string name="race_next">%1$s en %2$s</string>
+    <string name="race_lights_out">Inicio en %1$s</string>
+    <string name="race_live">%1$s Â· en vivo</string>
+    <string name="race_finished">Bandera a cuadros</string>
+    <string name="race_practice_1">PrÃ¡ctica 1</string>
+    <string name="race_practice_2">PrÃ¡ctica 2</string>
+    <string name="race_practice_3">PrÃ¡ctica 3</string>
+    <string name="race_sprint_qualifying">ClasificaciÃ³n sprint</string>
+    <string name="race_sprint">Sprint</string>
+    <string name="race_qualifying">ClasificaciÃ³n</string>
+    <string name="race_race">Carrera</string>
+    <string name="race_practice_1_short">PL1</string>
+    <string name="race_practice_2_short">PL2</string>
+    <string name="race_practice_3_short">PL3</string>
+    <string name="race_sprint_qualifying_short">CS</string>
+    <string name="race_sprint_short">SPRINT</string>
+    <string name="race_qualifying_short">CLAS.</string>
+    <string name="race_race_short">CARRERA</string>
+    <string name="race_countdown_minutes">%1$d min</string>
+    <string name="race_countdown_hours">%1$dh %2$dm</string>
+    <string name="race_countdown_days">%1$dd %2$dh</string>
+    <string name="last_opened">Ãšltima apertura: %1$s</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-b+sr+Latn\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PoÄetni ekran</string>
+    <string name="inputs">Ulazi</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">PodeÅ¡avanja</string>
+    <string name="choose_input">Ulazi</string>
+    <string name="connected">Povezano</string>
+    <string name="standby">Mirovanje</string>
+    <string name="not_connected">Nema ureÄ‘aja</string>
+    <string name="live_tv">TV programi</string>
+    <string name="no_inputs">Nema pronaÄ‘enih ulaza</string>
+    <string name="more_inputs">JoÅ¡ ulaza</string>
+    <string name="good_morning">Dobro jutro</string>
+    <string name="good_afternoon">Dobar dan</string>
+    <string name="good_evening">Dobro veÄe</string>
+    <string name="good_night">Laku noÄ‡</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">Nema mreÅ¾e</string>
+    <string name="not_available">Nije dostupno na ovom televizoru</string>
+    <string name="cant_open">Nije moguÄ‡e otvoriti %1$s</string>
+    <string name="date_format">EEEE, d. MMMM</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">Memorija %1$d / %2$d MB</string>
+    <string name="stats_storage">SkladiÅ¡te %1$s slobodno</string>
+    <string name="dream_name">Sat</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN iskljuÄen</string>
+    <string name="home_settings">Podrazumevani poÄetni ekran</string>
+    <string name="home_settings_help">Izaberite originalni poÄetni ekran da CleanYourTV viÅ¡e ne bude podrazumevan ili izaberite CleanYourTV da se vratite. Originalni pokretaÄ mora biti omoguÄ‡en, a TV mora podrÅ¾avati izbor poÄetnog ekrana. Ako je iskljuÄen, prvo koristite skriptu za vraÄ‡anje.</string>
+    <string name="input_key_service_description">Otvara izbor ulaza kada se na daljinskom pritisne dugme Input.</string>
+    <string name="home_key_name">Dugme Home</string>
+    <string name="home_key_description">Dugme Home na daljinskom otvara ovaj poÄetni ekran.</string>
+    <string name="launcher_settings">PodeÅ¡avanja poÄetnog ekrana</string>
+    <string name="native_settings">PodeÅ¡avanja proizvoÄ‘aÄa</string>
+    <string name="columns_label">Aplikacija po redu</string>
+    <string name="dock_opacity_label">Prozirnost trake doka</string>
+    <string name="animations_state">Animacije: %1$s</string>
+    <string name="advanced_effects">Napredni efekti</string>
+    <string name="advanced_effects_state">Napredni efekti: %1$s</string>
+    <string name="open_on_start_label">Otvori pri pokretanju</string>
+    <string name="open_on_start_state">Otvori pri pokretanju: %1$s</string>
+    <string name="advanced_effects_warning">PodiÅ¾e ploÄice, uveÄ‡ava ikone i ublaÅ¾ava prelaze boja. MoÅ¾e poveÄ‡ati potroÅ¡nju memorije, zavisno od TV-a.</string>
+    <string name="follow_theme">Prati temu (resetuj izbore)</string>
+    <string name="follow_theme_hint">Koristi raspored i animacije tekuÄ‡e teme ili ugraÄ‘ene vrednosti. Primena ili resetovanje teme briÅ¡e i izbore na TV-u.</string>
+    <string name="tv_settings">Sistemska podeÅ¡avanja TV-a</string>
+    <string name="on">Uklj.</string>
+    <string name="off">Isklj.</string>
+    <string name="enable">UkljuÄi</string>
+    <string name="dock_edit">Uredi dok</string>
+    <string name="power_menu">Ponovo pokreniâ€¦</string>
+    <string name="dock_edit_hint">Izaberite mesto u doku i pritisnite OK. Nazad za kraj.</string>
+    <string name="dock_edit_pick_app">Sada izaberite aplikaciju za to mesto i pritisnite OK. Nazad da izaberete drugo mesto.</string>
+    <string name="tile_add_to_dock">Dodaj u dok</string>
+    <string name="tile_replace_in_dock">Zameni drugom aplikacijom</string>
+    <string name="dock_edit_pick_place">Izaberite mesto u doku za ovu aplikaciju i pritisnite OK. Nazad za otkazivanje.</string>
+    <string name="reorder">Promeni redosled aplikacija</string>
+    <string name="tile_move">Premesti</string>
+    <string name="reorder_hint">OK podiÅ¾e aplikaciju, strelice je pomeraju, Nazad je postavlja. Ponovo Nazad za kraj.</string>
+    <string name="reorder_not_saved">Novi redosled nije saÄuvan</string>
+    <string name="app_library">Biblioteka aplikacija</string>
+    <string name="library_empty">Nema aplikacija koje mogu da se pokrenu</string>
+    <string name="library_on_home">Na poÄetnom ekranu</string>
+    <string name="library_add_home">Dodaj na poÄetni ekran</string>
+    <string name="library_remove_shortcut">Ukloni sa poÄetnog ekrana</string>
+    <string name="library_open">Otvori</string>
+    <string name="library_app_info">Informacije o aplikaciji</string>
+    <string name="library_save_failed">PreÄica nije saÄuvana</string>
+    <string name="library_recent">Novo Â· Dodaj na poÄetni ekran</string>
+    <string name="library_hint_add">Pritisni za poÄetni ekran Â· ZadrÅ¾i za opcije</string>
+    <string name="library_hint_open">Pritisni za otvaranje Â· ZadrÅ¾i za opcije</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d aplikacija</item>
+        <item quantity="few">%1$d aplikacije</item>
+        <item quantity="other">%1$d aplikacija</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="game_live">UÅ¾ivo sada</string>
+    <string name="clock_format_system">Sistem</string>
+    <string name="clock_format_12">12-Äasovni</string>
+    <string name="clock_format_24">24-Äasovni</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-bn\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">à¦¹à§‹à¦®</string>
+    <string name="inputs">à¦‡à¦¨à¦ªà§à¦Ÿ</string>
+    <string name="wifi">à¦“à¦¯à¦¼à¦¾à¦‡-à¦«à¦¾à¦‡</string>
+    <string name="settings">à¦¸à§‡à¦Ÿà¦¿à¦‚à¦¸</string>
+    <string name="choose_input">à¦‡à¦¨à¦ªà§à¦Ÿ</string>
+    <string name="connected">à¦•à¦¾à¦¨à§‡à¦•à§à¦Ÿà§‡à¦¡</string>
+    <string name="standby">à¦¸à§à¦Ÿà§à¦¯à¦¾à¦¨à§à¦¡à¦¬à¦¾à¦‡</string>
+    <string name="not_connected">à¦•à§‹à¦¨à§‹ à¦¡à¦¿à¦­à¦¾à¦‡à¦¸ à¦¨à§‡à¦‡</string>
+    <string name="live_tv">à¦²à¦¾à¦‡à¦­ à¦Ÿà¦¿à¦­à¦¿</string>
+    <string name="no_inputs">à¦•à§‹à¦¨à§‹ à¦‡à¦¨à¦ªà§à¦Ÿ à¦ªà¦¾à¦“à¦¯à¦¼à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿</string>
+    <string name="more_inputs">à¦†à¦°à¦“ à¦‡à¦¨à¦ªà§à¦Ÿ</string>
+    <string name="good_morning">à¦¸à§à¦ªà§à¦°à¦­à¦¾à¦¤</string>
+    <string name="good_afternoon">à¦¶à§à¦­ à¦…à¦ªà¦°à¦¾à¦¹à§à¦¨</string>
+    <string name="good_evening">à¦¶à§à¦­ à¦¸à¦¨à§à¦§à§à¦¯à¦¾</string>
+    <string name="good_night">à¦¶à§à¦­ à¦°à¦¾à¦¤à§à¦°à¦¿</string>
+    <string name="ethernet">à¦‡à¦¥à¦¾à¦°à¦¨à§‡à¦Ÿ</string>
+    <string name="offline">à¦…à¦«à¦²à¦¾à¦‡à¦¨</string>
+    <string name="not_available">à¦à¦‡ à¦Ÿà¦¿à¦­à¦¿à¦¤à§‡ à¦à¦­à¦¾à¦‡à¦²à§‡à¦¬à¦² à¦¨à§‡à¦‡</string>
+    <string name="cant_open">%1$s à¦–à§‹à¦²à¦¾ à¦¯à¦¾à¦šà§à¦›à§‡ à¦¨à¦¾</string>
+    <!-- "à¦®à¦™à§à¦—à¦²à¦¬à¦¾à¦°, à§¨à§¦ à¦…à¦•à§à¦Ÿà§‹à¦¬à¦°"; Android writes the numbers in Bangla digits. -->
+    <string name="date_format">EEEE, d MMMM</string>
+    <string name="stats_cpu">à¦¸à¦¿à¦ªà¦¿à¦‡à¦‰ %1$d%%</string>
+    <string name="stats_memory">à¦®à§‡à¦®à¦°à¦¿ %1$d / %2$d MB</string>
+    <string name="stats_storage">à¦¸à§à¦Ÿà§‹à¦°à§‡à¦œ %1$s à¦–à¦¾à¦²à¦¿</string>
+    <string name="dream_name">à¦˜à¦¡à¦¼à¦¿</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN à¦¬à¦¨à§à¦§</string>
+    <string name="home_settings">à¦¡à¦¿à¦«à¦²à§à¦Ÿ à¦¹à§‹à¦® à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨</string>
+    <string name="home_settings_help">CleanYourTV-à¦•à§‡ à¦†à¦° à¦¹à§‹à¦® à¦¹à¦¿à¦¸à§‡à¦¬à§‡ à¦¬à§à¦¯à¦¬à¦¹à¦¾à¦° à¦¨à¦¾ à¦•à¦°à¦¤à§‡ à¦†à¦ªà¦¨à¦¾à¦° à¦†à¦—à§‡à¦° à¦¹à§‹à¦® à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨, à¦†à¦¬à¦¾à¦° à¦«à¦¿à¦°à¦¤à§‡ CleanYourTV à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤ à¦†à¦—à§‡à¦° à¦²à¦žà§à¦šà¦¾à¦°à¦Ÿà¦¿ à¦šà¦¾à¦²à§ à¦¥à¦¾à¦•à¦¤à§‡ à¦¹à¦¬à§‡ à¦à¦¬à¦‚ à¦†à¦ªà¦¨à¦¾à¦° à¦Ÿà¦¿à¦­à¦¿à¦¤à§‡ à¦¹à§‹à¦® à¦¬à§‡à¦›à§‡ à¦¨à§‡à¦“à¦¯à¦¼à¦¾à¦° à¦¬à§à¦¯à¦¬à¦¸à§à¦¥à¦¾ à¦¥à¦¾à¦•à¦¤à§‡ à¦¹à¦¬à§‡; à¦¸à§‡à¦Ÿà¦¿ à¦¬à¦¨à§à¦§ à¦•à¦°à¦¾ à¦¥à¦¾à¦•à¦²à§‡ à¦†à¦—à§‡ à¦°à¦¿à¦¸à§à¦Ÿà§‹à¦° à¦¸à§à¦•à§à¦°à¦¿à¦ªà§à¦Ÿ à¦šà¦¾à¦²à¦¾à¦¨à¥¤</string>
+    <string name="launcher_settings">à¦²à¦žà§à¦šà¦¾à¦° à¦¸à§‡à¦Ÿà¦¿à¦‚à¦¸</string>
+    <string name="native_settings">à¦¨à§‡à¦Ÿà¦¿à¦­ à¦¸à§‡à¦Ÿà¦¿à¦‚à¦¸</string>
+    <string name="columns_label">à¦ªà§à¦°à¦¤à¦¿ à¦¸à¦¾à¦°à¦¿à¦¤à§‡ à¦…à§à¦¯à¦¾à¦ª</string>
+    <string name="dock_opacity_label">à¦¡à¦• à¦¬à¦¾à¦°à§‡à¦° à¦…à¦¸à§à¦¬à¦šà§à¦›à¦¤à¦¾</string>
+    <string name="animations_state">à¦…à§à¦¯à¦¾à¦¨à¦¿à¦®à§‡à¦¶à¦¨: %1$s</string>
+    <string name="advanced_effects">à¦à¦¡à¦­à¦¾à¦¨à§à¦¸ à¦‡à¦«à§‡à¦•à§à¦Ÿà¦¸</string>
+    <string name="advanced_effects_state">à¦à¦¡à¦­à¦¾à¦¨à§à¦¸ à¦‡à¦«à§‡à¦•à§à¦Ÿà¦¸: %1$s</string>
+    <string name="open_on_start_label">à¦šà¦¾à¦²à§ à¦¹à¦²à§‡ à¦–à§à¦²à§à¦¨</string>
+    <string name="open_on_start_state">à¦šà¦¾à¦²à§ à¦¹à¦²à§‡ à¦–à§à¦²à§à¦¨: %1$s</string>
+    <string name="advanced_effects_warning">à¦à¦¤à§‡ à¦Ÿà¦¾à¦‡à¦² à¦à¦•à¦Ÿà§ à¦‰à¦ªà¦°à§‡ à¦‰à¦ à§‡ à¦†à¦¸à§‡, à¦†à¦‡à¦•à¦¨ à¦œà§à¦® à¦¹à¦¯à¦¼ à¦à¦¬à¦‚ à¦•à¦¾à¦²à¦¾à¦° à¦¸à§à¦®à§à¦¥à¦­à¦¾à¦¬à§‡ à¦¬à¦¦à¦²à¦¾à¦¯à¦¼à¥¤ à¦®à§‡à¦®à¦°à¦¿ à¦¬à§‡à¦¶à¦¿ à¦²à¦¾à¦—à¦¤à§‡ à¦ªà¦¾à¦°à§‡; à¦•à¦¤à¦Ÿà¦¾ à¦ªà¦¾à¦°à§à¦¥à¦•à§à¦¯ à¦¹à¦¬à§‡ à¦¤à¦¾ à¦†à¦ªà¦¨à¦¾à¦° à¦Ÿà¦¿à¦­à¦¿à¦° à¦‰à¦ªà¦° à¦¨à¦¿à¦°à§à¦­à¦° à¦•à¦°à§‡à¥¤</string>
+    <string name="follow_theme">à¦¥à¦¿à¦® à¦…à¦¨à§à¦¸à¦°à¦£ à¦•à¦°à§à¦¨ (à¦Ÿà¦¿à¦­à¦¿à¦¤à§‡ à¦•à¦°à¦¾ à¦ªà¦›à¦¨à§à¦¦ à¦®à§à¦›à§‡ à¦¦à¦¿à¦¨)</string>
+    <string name="follow_theme_hint">à¦¬à¦°à§à¦¤à¦®à¦¾à¦¨ à¦¥à¦¿à¦® à¦¬à¦¾ à¦¬à¦¿à¦²à§à¦Ÿ-à¦‡à¦¨ à¦²à§‡à¦†à¦‰à¦Ÿ à¦“ à¦®à§‹à¦¶à¦¨ à¦¸à§‡à¦Ÿà¦¿à¦‚à¦¸ à¦¬à§à¦¯à¦¬à¦¹à¦¾à¦° à¦•à¦°à§‡à¥¤ à¦¥à¦¿à¦® à¦ªà¦¾à¦ à¦¾à¦²à§‡ à¦¬à¦¾ à¦°à¦¿à¦¸à§‡à¦Ÿ à¦•à¦°à¦²à§‡à¦“ à¦Ÿà¦¿à¦­à¦¿à¦¤à§‡ à¦•à¦°à¦¾ à¦†à¦ªà¦¨à¦¾à¦° à¦ªà¦›à¦¨à§à¦¦ à¦®à§à¦›à§‡ à¦¯à¦¾à¦¯à¦¼à¥¤</string>
+    <string name="tv_settings">à¦Ÿà¦¿à¦­à¦¿à¦° à¦¸à¦¿à¦¸à§à¦Ÿà§‡à¦® à¦¸à§‡à¦Ÿà¦¿à¦‚à¦¸</string>
+    <string name="quick_picture">à¦¡à¦¿à¦¸à¦ªà§à¦²à§‡</string>
+    <string name="quick_network">à¦¨à§‡à¦Ÿà¦“à¦¯à¦¼à¦¾à¦°à§à¦•</string>
+    <string name="quick_apps">à¦…à§à¦¯à¦¾à¦ª</string>
+    <string name="quick_apps_hint">à¦†à¦¬à¦¾à¦° à¦šà¦¾à¦²à§ à¦•à¦°à§à¦¨</string>
+    <string name="on">à¦šà¦¾à¦²à§</string>
+    <string name="off">à¦¬à¦¨à§à¦§</string>
+    <string name="enable">à¦šà¦¾à¦²à§ à¦•à¦°à§à¦¨</string>
+    <string name="input_key_service_description">à¦°à¦¿à¦®à§‹à¦Ÿà§‡à¦° à¦‡à¦¨à¦ªà§à¦Ÿ à¦¬à§‹à¦¤à¦¾à¦® à¦šà¦¾à¦ªà¦²à§‡ à¦‡à¦¨à¦ªà§à¦Ÿ à¦¬à¦¦à¦²à¦¾à¦¨à§‹à¦° à¦¤à¦¾à¦²à¦¿à¦•à¦¾ à¦–à§‹à¦²à§‡à¥¤</string>
+    <string name="home_key_name">à¦¹à§‹à¦® à¦¬à§‹à¦¤à¦¾à¦®</string>
+    <string name="home_key_description">à¦°à¦¿à¦®à§‹à¦Ÿà§‡à¦° à¦¹à§‹à¦® à¦¬à§‹à¦¤à¦¾à¦® à¦¦à¦¿à¦¯à¦¼à§‡ à¦à¦‡ à¦²à¦žà§à¦šà¦¾à¦° à¦–à§‹à¦²à§‡à¥¤</string>
+    <string name="card_prompt_title">%1$s à¦¥à§‡à¦•à§‡ à¦¨à¦¤à§à¦¨ à¦•à¦¾à¦°à§à¦¡</string>
+    <string name="card_prompt_body">%1$s à¦†à¦ªà¦¨à¦¾à¦° à¦¹à§‹à¦® à¦¸à§à¦•à§à¦°à¦¿à¦¨à§‡ à¦à¦•à¦Ÿà¦¿ à¦•à¦¾à¦°à§à¦¡ à¦¦à§‡à¦–à¦¾à¦¤à§‡ à¦ªà¦¾à¦°à§‡à¥¤ à¦²à§à¦•à¦¿à¦¯à¦¼à§‡ à¦°à¦¾à¦–à¦²à§‡ à¦…à§à¦¯à¦¾à¦ªà§‡à¦° à¦¸à¦¾à¦§à¦¾à¦°à¦£ à¦Ÿà¦¾à¦‡à¦² à¦¯à§‡à¦®à¦¨ à¦†à¦›à§‡ à¦¤à§‡à¦®à¦¨à¦‡ à¦¥à¦¾à¦•à¦¬à§‡à¥¤</string>
+    <string name="card_prompt_names">à¦•à¦¾à¦°à§à¦¡à¦Ÿà¦¿à¦° à¦¨à¦¾à¦® \'%1$s\'à¥¤ à¦…à§à¦¯à¦¾à¦ªà¦Ÿà¦¿à¦° à¦¨à¦¾à¦® \'%2$s\'à¥¤</string>
+    <string name="card_prompt_resigned">%1$s à¦…à¦¨à§à¦¯ à¦à¦•à¦Ÿà¦¿ à¦¸à¦¾à¦‡à¦¨à¦¿à¦‚ à¦•à¦¿ à¦¦à¦¿à¦¯à¦¼à§‡ à¦†à¦ªà¦¡à§‡à¦Ÿ à¦¹à¦¯à¦¼à§‡à¦›à§‡, à¦¤à¦¾à¦‡ à¦†à¦ªà¦¨à¦¾à¦° à¦†à¦—à§‡à¦° à¦‰à¦¤à§à¦¤à¦° à¦†à¦° à¦ªà§à¦°à¦¯à§‹à¦œà§à¦¯ à¦¨à¦¯à¦¼à¥¤ à¦à¦° à¦•à¦¾à¦°à§à¦¡à§‡à¦° à¦œà¦¨à§à¦¯ à¦†à¦¬à¦¾à¦° à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤</string>
+    <string name="card_prompt_relabelled">à¦†à¦ªà¦¨à¦¿ à¦¬à§‡à¦›à§‡ à¦¨à§‡à¦“à¦¯à¦¼à¦¾à¦° à¦ªà¦° %1$s à¦¤à¦¾à¦° à¦•à¦¾à¦°à§à¦¡à§‡à¦° à¦¨à¦¾à¦® à¦¬à¦¦à¦²à§‡à¦›à§‡à¥¤ à¦à¦° à¦œà¦¨à§à¦¯ à¦†à¦¬à¦¾à¦° à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤</string>
+    <string name="card_prompt_hint">à¦ªà¦°à§‡ à¦¬à¦¦à¦²à¦¾à¦¤à§‡ à¦ªà¦¾à¦°à¦¬à§‡à¦¨: à¦¸à§‡à¦Ÿà¦¿à¦‚à¦¸à§‡ OK à¦šà§‡à¦ªà§‡ à¦§à¦°à§‡ à¦°à¦¾à¦–à§à¦¨, à¦¤à¦¾à¦°à¦ªà¦° à¦®à¦¡à¦¿à¦‰à¦² à¦•à¦¾à¦°à§à¦¡ à¦¬à§‡à¦›à§‡ à¦¨à¦¿à¦¨à¥¤</string>
+    <string name="card_prompt_identity">%1$s, à¦•à¦¿ %2$s</string>
+    <string name="card_keep_hidden">à¦²à§à¦•à¦¿à¦¯à¦¼à§‡ à¦°à¦¾à¦–à§à¦¨</string>
+    <string name="card_show">à¦•à¦¾à¦°à§à¦¡ à¦¦à§‡à¦–à¦¾à¦¨</string>
+    <string name="card_not_saved">à¦ªà¦›à¦¨à§à¦¦à¦Ÿà¦¿ à¦¸à§‡à¦­ à¦•à¦°à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿</string>
+    <string name="module_cards">à¦®à¦¡à¦¿à¦‰à¦² à¦•à¦¾à¦°à§à¦¡</string>
+    <string name="no_module_cards">à¦•à§‹à¦¨à§‹ à¦®à¦¡à¦¿à¦‰à¦² à¦•à¦¾à¦°à§à¦¡ à¦‡à¦¨à¦¸à§à¦Ÿà¦² à¦•à¦°à¦¾ à¦¨à§‡à¦‡</string>
+    <string name="card_app_name">à¦…à§à¦¯à¦¾à¦ª: %1$s</string>
+    <string name="card_state_shown">à¦¦à§‡à¦–à¦¾à¦¨à§‹ à¦¹à¦šà§à¦›à§‡</string>
+    <string name="card_state_over_limit">à¦¦à§‡à¦–à¦¾à¦¨à§‹ à¦¹à¦šà§à¦›à§‡, à§®à¦Ÿà¦¿à¦° à¦¸à§€à¦®à¦¾à¦° à¦¬à§‡à¦¶à¦¿</string>
+    <string name="card_state_hidden">à¦²à§à¦•à¦¾à¦¨à§‹</string>
+    <string name="card_state_new">à¦¨à¦¤à§à¦¨</string>
+    <string name="card_state_new_key">à¦¨à¦¤à§à¦¨ à¦•à¦¿</string>
+    <string name="card_state_new_label">à¦¨à¦¤à§à¦¨ à¦¨à¦¾à¦®</string>
+    <string name="reorder">à¦…à§à¦¯à¦¾à¦ª à¦¸à¦¾à¦œà¦¾à¦¨</string>
+    <string name="tile_move">à¦¸à¦°à¦¾à¦¨</string>
+    <string name="dock_edit">à¦à¦¡à¦¿à¦Ÿ à¦¡à¦•</string>
+    <string name="power_menu">à¦°à¦¿à¦¸à§à¦Ÿà¦¾à¦°à§à¦Ÿ à¦•à¦°à§à¦¨â€¦</string>
+    <string name="dock_edit_hint">à¦¡à¦•à§‡à¦° à¦¯à§‡ à¦œà¦¾à¦¯à¦¼à¦—à¦¾à¦Ÿà¦¿ à¦¬à¦¦à¦²à¦¾à¦¤à§‡ à¦šà¦¾à¦¨ à¦¸à§‡à¦Ÿà¦¿ à¦¬à§‡à¦›à§‡ OK à¦šà¦¾à¦ªà§à¦¨à¥¤ à¦¶à§‡à¦· à¦¹à¦²à§‡ Back à¦šà¦¾à¦ªà§à¦¨à¥¤</string>
+    <string name="dock_edit_pick_app">à¦“à¦‡ à¦œà¦¾à¦¯à¦¼à¦—à¦¾à¦¯à¦¼ à¦¯à§‡ à¦…à§à¦¯à¦¾à¦ª à¦°à¦¾à¦–à¦¤à§‡ à¦šà¦¾à¦¨ à¦¸à§‡à¦Ÿà¦¿ à¦¬à§‡à¦›à§‡ OK à¦šà¦¾à¦ªà§à¦¨à¥¤ à¦…à¦¨à§à¦¯ à¦œà¦¾à¦¯à¦¼à¦—à¦¾ à¦¬à¦¾à¦›à¦¤à§‡ Back à¦šà¦¾à¦ªà§à¦¨à¥¤</string>
+    <string name="tile_add_to_dock">à¦¡à¦•à§‡ à¦¯à§‹à¦— à¦•à¦°à§à¦¨</string>
+    <string name="tile_replace_in_dock">à¦…à¦¨à§à¦¯ à¦…à§à¦¯à¦¾à¦ª à¦¦à¦¿à¦¯à¦¼à§‡ à¦¬à¦¦à¦²à¦¾à¦¨</string>
+    <string name="dock_edit_pick_place">à¦à¦‡ à¦…à§à¦¯à¦¾à¦ªà§‡à¦° à¦œà¦¨à§à¦¯ à¦¡à¦•à§‡à¦° à¦à¦•à¦Ÿà¦¿ à¦œà¦¾à¦¯à¦¼à¦—à¦¾ à¦¬à§‡à¦›à§‡ OK à¦šà¦¾à¦ªà§à¦¨à¥¤ à¦¬à¦¾à¦¤à¦¿à¦² à¦•à¦°à¦¤à§‡ Back à¦šà¦¾à¦ªà§à¦¨à¥¤</string>
+    <string name="reorder_hint">OK à¦¦à¦¿à¦¯à¦¼à§‡ à¦…à§à¦¯à¦¾à¦ª à¦¤à§à¦²à§à¦¨, à¦¤à§€à¦° à¦¦à¦¿à¦¯à¦¼à§‡ à¦¸à¦°à¦¾à¦¨, Back à¦¦à¦¿à¦¯à¦¼à§‡ à¦¬à¦¸à¦¾à¦¨à¥¤ à¦¶à§‡à¦· à¦•à¦°à¦¤à§‡ à¦†à¦¬à¦¾à¦° Back à¦šà¦¾à¦ªà§à¦¨à¥¤</string>
+    <string name="reorder_not_saved">à¦¨à¦¤à§à¦¨ à¦•à§à¦°à¦® à¦¸à§‡à¦­ à¦•à¦°à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿</string>
+    <string name="app_library">à¦…à§à¦¯à¦¾à¦ª à¦²à¦¾à¦‡à¦¬à§à¦°à§‡à¦°à¦¿</string>
+    <string name="library_empty">à¦–à§‹à¦²à¦¾à¦° à¦®à¦¤à§‹ à¦•à§‹à¦¨à§‹ à¦…à§à¦¯à¦¾à¦ª à¦ªà¦¾à¦“à¦¯à¦¼à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿</string>
+    <string name="library_on_home">à¦¹à§‹à¦®à§‡ à¦†à¦›à§‡</string>
+    <string name="library_add_home">à¦¹à§‹à¦®à§‡ à¦¯à§‹à¦— à¦•à¦°à§à¦¨</string>
+    <string name="library_remove_shortcut">à¦¹à§‹à¦® à¦¥à§‡à¦•à§‡ à¦¸à¦°à¦¾à¦¨</string>
+    <string name="library_open">à¦–à§à¦²à§à¦¨</string>
+    <string name="library_app_info">à¦…à§à¦¯à¦¾à¦ªà§‡à¦° à¦¤à¦¥à§à¦¯</string>
+    <string name="library_save_failed">à¦¶à¦°à§à¦Ÿà¦•à¦¾à¦Ÿà¦Ÿà¦¿ à¦¸à§‡à¦­ à¦•à¦°à¦¾ à¦¯à¦¾à¦¯à¦¼à¦¨à¦¿</string>
+    <string name="library_recent">à¦¨à¦¤à§à¦¨ Â· à¦¹à§‹à¦®à§‡ à¦¯à§‹à¦— à¦•à¦°à§à¦¨</string>
+    <string name="library_hint_add">à¦¹à§‹à¦®à§‡ à¦¯à§‹à¦— à¦•à¦°à¦¤à§‡ à¦šà¦¾à¦ªà§à¦¨ Â· à¦…à¦ªà¦¶à¦¨à§‡à¦° à¦œà¦¨à§à¦¯ à¦šà§‡à¦ªà§‡ à¦§à¦°à§‡ à¦°à¦¾à¦–à§à¦¨</string>
+    <string name="library_hint_open">à¦–à§à¦²à¦¤à§‡ à¦šà¦¾à¦ªà§à¦¨ Â· à¦…à¦ªà¦¶à¦¨à§‡à¦° à¦œà¦¨à§à¦¯ à¦šà§‡à¦ªà§‡ à¦§à¦°à§‡ à¦°à¦¾à¦–à§à¦¨</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$dà¦Ÿà¦¿ à¦…à§à¦¯à¦¾à¦ª</item>
+        <item quantity="other">%1$dà¦Ÿà¦¿ à¦…à§à¦¯à¦¾à¦ª</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="game_live">à¦à¦–à¦¨ à¦¸à¦°à¦¾à¦¸à¦°à¦¿</string>
+    <string name="clock_format_system">à¦¸à¦¿à¦¸à§à¦Ÿà§‡à¦®</string>
+    <string name="clock_format_12">à§§à§¨ à¦˜à¦£à§à¦Ÿà¦¾</string>
+    <string name="clock_format_24">à§¨à§ª à¦˜à¦£à§à¦Ÿà¦¾</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-ca\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Inici</string>
+    <string name="inputs">Entrades</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">ConfiguraciÃ³</string>
+    <string name="choose_input">Entrades</string>
+    <string name="connected">Connectat</string>
+    <string name="standby">En espera</string>
+    <string name="not_connected">Cap dispositiu</string>
+    <string name="live_tv">TV en directe</string>
+    <string name="no_inputs">No s\'ha trobat cap entrada</string>
+    <string name="more_inputs">MÃ©s entrades</string>
+    <string name="good_morning">Bon dia</string>
+    <string name="good_afternoon">Bona tarda</string>
+    <string name="good_evening">Bon vespre</string>
+    <string name="good_night">Bona nit</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">Sense connexiÃ³</string>
+    <string name="not_available">No disponible en aquest televisor</string>
+    <string name="cant_open">No s\'ha pogut obrir %1$s</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">MemÃ²ria %1$d / %2$d MB</string>
+    <string name="stats_storage">Emmagatzematge %1$s lliure</string>
+    <string name="dream_name">Rellotge</string>
+    <string name="launcher_settings">ConfiguraciÃ³ del llanÃ§ador</string>
+    <string name="native_settings">ConfiguraciÃ³ del fabricant</string>
+    <string name="columns_label">Aplicacions per fila</string>
+    <string name="dock_opacity_label">Opacitat de la barra del dock</string>
+    <string name="animations_state">Animacions: %1$s</string>
+    <string name="advanced_effects">Efectes avanÃ§ats</string>
+    <string name="advanced_effects_state">Efectes avanÃ§ats: %1$s</string>
+    <string name="open_on_start_label">Obre en iniciar</string>
+    <string name="open_on_start_state">Obre en iniciar: %1$s</string>
+    <string name="advanced_effects_warning">Eleva les targetes, amplia les icones i suavitza els canvis de color. Pot augmentar lâ€™Ãºs de memÃ²ria; depÃ¨n del televisor.</string>
+    <string name="follow_theme">Segueix el tema (restableix els ajustos)</string>
+    <string name="follow_theme_hint">Utilitza la disposiciÃ³ i els efectes del tema actual o els valors integrats. Aplicar o restablir un tema tambÃ© esborra aquests ajustos.</string>
+    <string name="tv_settings">ConfiguraciÃ³ del televisor</string>
+    <string name="on">Activat</string>
+    <string name="off">Desactivat</string>
+    <string name="enable">Activa</string>
+    <string name="dock_edit">Edita el dock</string>
+    <string name="power_menu">Reiniciaâ€¦</string>
+    <string name="dock_edit_hint">Tria la posiciÃ³ del dock que vols canviar i prem D\'acord. Enrere per acabar.</string>
+    <string name="dock_edit_pick_app">Ara tria l\'aplicaciÃ³ que hi vols posar i prem D\'acord. Enrere per triar una altra posiciÃ³.</string>
+    <string name="tile_add_to_dock">Afegeix al dock</string>
+    <string name="tile_replace_in_dock">Substitueix per una altra aplicaciÃ³</string>
+    <string name="dock_edit_pick_place">Tria la posiciÃ³ del dock per a aquesta aplicaciÃ³ i prem D\'acord. Enrere per cancelÂ·lar.</string>
+    <string name="reorder">Reordena les aplicacions</string>
+    <string name="tile_move">Mou</string>
+    <string name="reorder_hint">D\'acord agafa una aplicaciÃ³, les fletxes la mouen, Enrere la deixa. Torna a prÃ©mer Enrere per acabar.</string>
+    <string name="reorder_not_saved">No s\'ha pogut desar el nou ordre</string>
+    <string name="app_library">Biblioteca dâ€™aplicacions</string>
+    <string name="library_empty">No sâ€™ha trobat cap aplicaciÃ³ que es pugui obrir</string>
+    <string name="library_on_home">A lâ€™inici</string>
+    <string name="library_add_home">Afegeix a lâ€™inici</string>
+    <string name="library_remove_shortcut">Elimina de lâ€™inici</string>
+    <string name="library_open">Obre</string>
+    <string name="library_app_info">InformaciÃ³ de lâ€™aplicaciÃ³</string>
+    <string name="library_save_failed">No sâ€™ha pogut desar la drecera</string>
+    <string name="library_recent">Nova Â· Afegeix a lâ€™inici</string>
+    <string name="library_hint_add">Prem per afegir a Inici Â· MantÃ©n per a opcions</string>
+    <string name="library_hint_open">Prem per obrir Â· MantÃ©n per a opcions</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d aplicaciÃ³</item>
+        <item quantity="other">%1$d aplicacions</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="vpn_off">VPN desactivada</string>
+    <string name="home_settings">Tria la pantalla d\'inici</string>
+    <string name="home_settings_help">Tria la teva pantalla d\'inici original per deixar d\'utilitzar CleanYourTV com a inici, o CleanYourTV per tornar-hi. El llanÃ§ador original ha d\'estar activat i el televisor ha de tenir un selector de pantalla d\'inici; si l\'havies desactivat, fes servir abans l\'script de restauraciÃ³.</string>
+    <string name="rows_below_dock_label">Files sota el dock</string>
+    <string name="wallpaper_label">Fons de pantalla</string>
+    <string name="wallpaper_state">Fons de pantalla: %1$s</string>
+    <string name="wallpaper_none">Cap</string>
+    <string name="wallpaper_applied">Fons de pantalla canviat</string>
+    <string name="wallpaper_theme_default">El del tema</string>
+    <string name="quick_picture">Pantalla</string>
+    <string name="quick_network">Xarxa</string>
+    <string name="quick_apps">Aplicacions</string>
+    <string name="quick_apps_hint">Reactiva</string>
+    <string name="input_key_service_description">Obre el selector d\'entrades quan prems el botÃ³ Input del comandament.</string>
+    <string name="home_key_name">BotÃ³ d\'inici</string>
+    <string name="home_key_description">Fa que el botÃ³ d\'inici del comandament obri aquest llanÃ§ador.</string>
+    <string name="card_prompt_title">Targeta nova de %1$s</string>
+    <string name="card_prompt_body">%1$s pot mostrar una targeta a la pantalla d\'inici. Si la mantens amagada, la icona habitual de l\'aplicaciÃ³ es queda com estÃ .</string>
+    <string name="card_prompt_names">La targeta es diu Â«%1$sÂ». L\'aplicaciÃ³ Ã©s Â«%2$sÂ».</string>
+    <string name="card_prompt_resigned">%1$s s\'ha actualitzat amb una clau de signatura diferent, aixÃ­ que la teva resposta anterior ja no val. Torna a decidir per a la seva targeta.</string>
+    <string name="card_prompt_relabelled">%1$s ha canviat el nom de la seva targeta des que vas decidir. Torna a decidir.</string>
+    <string name="card_prompt_hint">Ho pots canviar mÃ©s endavant: mantÃ©n premut OK a ConfiguraciÃ³ i tria Targetes de mÃ²duls.</string>
+    <string name="card_prompt_identity">%1$s, clau %2$s</string>
+    <string name="card_keep_hidden">MantÃ©n-la amagada</string>
+    <string name="card_show">Mostra la targeta</string>
+    <string name="card_not_saved">No s\'ha pogut desar l\'elecciÃ³</string>
+    <string name="module_cards">Targetes de mÃ²duls</string>
+    <string name="no_module_cards">No hi ha cap targeta de mÃ²dul instalÂ·lada</string>
+    <string name="card_app_name">AplicaciÃ³: %1$s</string>
+    <string name="card_state_shown">Visible</string>
+    <string name="card_state_over_limit">Visible, per sobre del lÃ­mit de 8</string>
+    <string name="card_state_hidden">Amagada</string>
+    <string name="card_state_new">Nova</string>
+    <string name="card_state_new_key">Clau nova</string>
+    <string name="card_state_new_label">Nom nou</string>
+    <string name="race_kicker">Ronda %1$d Â· %2$s Â· %3$s</string>
+    <string name="race_kicker_no_place">Ronda %1$d Â· %2$s</string>
+    <string name="race_next">%1$s d\'aquÃ­ a %2$s</string>
+    <string name="race_lights_out">Sortida d\'aquÃ­ a %1$s</string>
+    <string name="race_live">%1$s Â· en directe</string>
+    <string name="race_finished">Bandera de quadres</string>
+    <string name="last_opened">Obert per Ãºltim cop: %1$s</string>
+    <string name="game_live">En directe</string>
+    <string name="clock_format_system">Sistema</string>
+    <string name="clock_format_12">12 hores</string>
+    <string name="clock_format_24">24 hores</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-cs\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DomÅ¯</string>
+    <string name="inputs">Vstupy</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">NastavenÃ­</string>
+    <string name="choose_input">Vstupy</string>
+    <string name="connected">PÅ™ipojeno</string>
+    <string name="standby">V pohotovosti</string>
+    <string name="not_connected">Å½Ã¡dnÃ© zaÅ™Ã­zenÃ­</string>
+    <string name="live_tv">Televize</string>
+    <string name="no_inputs">NenaÅ¡ly se Å¾Ã¡dnÃ© vstupy</string>
+    <string name="more_inputs">DalÅ¡Ã­ vstupy</string>
+    <string name="good_morning">DobrÃ© rÃ¡no</string>
+    <string name="good_afternoon">DobrÃ© odpoledne</string>
+    <string name="good_evening">DobrÃ½ veÄer</string>
+    <string name="good_night">Dobrou noc</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">Bez pÅ™ipojenÃ­</string>
+    <string name="not_available">Na tÃ©to televizi nenÃ­ k dispozici</string>
+    <string name="cant_open">Nelze otevÅ™Ã­t: %1$s</string>
+    <string name="date_format">EEEE d. MMMM</string>
+    <string name="dream_name">Hodiny</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN vypnutÃ¡</string>
+    <string name="home_settings">VÃ½chozÃ­ domovskÃ¡ obrazovka</string>
+    <string name="home_settings_help">Vyberte pÅ¯vodnÃ­ domovskou obrazovku, pokud uÅ¾ nechcete CleanYourTV pouÅ¾Ã­vat jako domovskou, nebo CleanYourTV, pokud se k nÃ­ chcete vrÃ¡tit. PÅ¯vodnÃ­ launcher musÃ­ bÃ½t zapnutÃ½ a televize musÃ­ nabÃ­zet vÃ½bÄ›r domovskÃ© obrazovky. Pokud byl vypnutÃ½, spusÅ¥te nejdÅ™Ã­v skript pro obnovenÃ­.</string>
+    <string name="launcher_settings">NastavenÃ­ domovskÃ© obrazovky</string>
+    <string name="native_settings">NastavenÃ­ vÃ½robce</string>
+    <string name="columns_label">AplikacÃ­ v Å™Ã¡dku</string>
+    <string name="rows_below_dock_label">Å˜Ã¡dkÅ¯ pod dokem</string>
+    <string name="dock_opacity_label">KrytÃ­ pruhu docku</string>
+    <string name="wallpaper_label">Tapeta</string>
+    <string name="wallpaper_state">Tapeta: %1$s</string>
+    <string name="wallpaper_none">Å½Ã¡dnÃ¡</string>
+    <string name="wallpaper_applied">Tapeta zmÄ›nÄ›na</string>
+    <string name="wallpaper_theme_default">Podle motivu</string>
+    <string name="animations_state">Animace: %1$s</string>
+    <string name="advanced_effects">PokroÄilÃ© efekty</string>
+    <string name="advanced_effects_state">PokroÄilÃ© efekty: %1$s</string>
+    <string name="open_on_start_label">OtevÅ™Ã­t po spuÅ¡tÄ›nÃ­</string>
+    <string name="open_on_start_state">OtevÅ™Ã­t po spuÅ¡tÄ›nÃ­: %1$s</string>
+    <string name="advanced_effects_warning">PÅ™idÃ¡ zvednutou dlaÅ¾dici, zvÄ›tÅ¡enÃ­ ikon a plynulÃ© pÅ™echody barev. MÅ¯Å¾e zvÃ½Å¡it spotÅ™ebu pamÄ›ti, skuteÄnÃ½ rozdÃ­l zÃ¡leÅ¾Ã­ na televizi.</string>
+    <string name="follow_theme">Podle motivu (zruÅ¡it volby na TV)</string>
+    <string name="follow_theme_hint">PouÅ¾ije aktuÃ¡lnÃ­ motiv nebo vestavÄ›nÃ© nastavenÃ­ rozloÅ¾enÃ­ a animacÃ­. NahrÃ¡nÃ­ novÃ©ho motivu nebo jeho resetovÃ¡nÃ­ takÃ© zruÅ¡Ã­ volby provedenÃ© na televizi.</string>
+    <string name="tv_settings">SystÃ©movÃ¡ nastavenÃ­ TV</string>
+    <string name="on">Zapnuto</string>
+    <string name="off">Vypnuto</string>
+    <string name="enable">Zapnout</string>
+    <string name="input_key_service_description">Po stisknutÃ­ tlaÄÃ­tka Input na ovladaÄi otevÅ™e vÃ½bÄ›r vstupu.</string>
+    <string name="home_key_name">TlaÄÃ­tko DomÅ¯</string>
+    <string name="home_key_description">TlaÄÃ­tko DomÅ¯ na ovladaÄi otevÅ™e tuto domovskou obrazovku.</string>
+    <string name="card_prompt_title">NovÃ¡ karta z aplikace %1$s</string>
+    <string name="card_prompt_body">Aplikace %1$s mÅ¯Å¾e na domovskÃ© obrazovce zobrazit kartu. KdyÅ¾ ji nechÃ¡te skrytou, bÄ›Å¾nÃ¡ dlaÅ¾dice aplikace zÅ¯stane beze zmÄ›ny.</string>
+    <string name="card_prompt_names">Karta se jmenuje â€ž%1$sâ€œ. Aplikace se jmenuje â€ž%2$sâ€œ.</string>
+    <string name="card_prompt_resigned">Aplikace %1$s byla aktualizovÃ¡na s jinÃ½m podpisovÃ½m klÃ­Äem, takÅ¾e vaÅ¡e dÅ™Ã­vÄ›jÅ¡Ã­ volba uÅ¾ neplatÃ­. RozhodnÄ›te o jejÃ­ kartÄ› znovu.</string>
+    <string name="card_prompt_relabelled">Aplikace %1$s od vaÅ¡eho rozhodnutÃ­ zmÄ›nila nÃ¡zev svÃ© karty. RozhodnÄ›te o nÃ­ znovu.</string>
+    <string name="card_prompt_hint">PozdÄ›ji to mÅ¯Å¾ete zmÄ›nit: podrÅ¾te OK na tlaÄÃ­tku NastavenÃ­ a vyberte Karty modulÅ¯.</string>
+    <string name="card_prompt_identity">%1$s, klÃ­Ä %2$s</string>
+    <string name="card_keep_hidden">Nechat skrytou</string>
+    <string name="card_show">Zobrazit kartu</string>
+    <string name="card_not_saved">Volbu se nepodaÅ™ilo uloÅ¾it</string>
+    <string name="module_cards">Karty modulÅ¯</string>
+    <string name="no_module_cards">Nejsou nainstalovanÃ© Å¾Ã¡dnÃ© karty modulÅ¯</string>
+    <string name="card_app_name">Aplikace: %1$s</string>
+    <string name="card_state_shown">ZobrazenÃ¡</string>
+    <string name="card_state_over_limit">ZobrazenÃ¡, nad limit 8 karet</string>
+    <string name="card_state_hidden">SkrytÃ¡</string>
+    <string name="card_state_new">NovÃ¡</string>
+    <string name="card_state_new_key">NovÃ½ klÃ­Ä</string>
+    <string name="card_state_new_label">NovÃ½ nÃ¡zev</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">PamÄ›Å¥ %1$d / %2$d MB</string>
+    <string name="stats_storage">VolnÃ© mÃ­sto %1$s</string>
+    <string name="storage_gb_whole">%1$.0f GB</string>
+    <string name="storage_gb_decimal">%1$.1f GB</string>
+    <string name="quick_picture">Obraz</string>
+    <string name="quick_network">SÃ­Å¥</string>
+    <string name="quick_apps">Aplikace</string>
+    <string name="quick_apps_hint">Znovu zapnout</string>
+    <string name="dock_edit">Upravit dok</string>
+    <string name="power_menu">Restartovatâ€¦</string>
+    <string name="dock_edit_hint">Vyberte mÃ­sto v doku, kterÃ© chcete zmÄ›nit, a stisknÄ›te OK. TlaÄÃ­tkem ZpÄ›t skonÄÃ­te.</string>
+    <string name="dock_edit_pick_app">NynÃ­ vyberte aplikaci pro toto mÃ­sto a stisknÄ›te OK. TlaÄÃ­tkem ZpÄ›t vyberete jinÃ© mÃ­sto.</string>
+    <string name="tile_add_to_dock">PÅ™idat do doku</string>
+    <string name="tile_replace_in_dock">Nahradit jinou aplikacÃ­</string>
+    <string name="dock_edit_pick_place">Vyberte mÃ­sto v doku pro tuto aplikaci a stisknÄ›te OK. TlaÄÃ­tkem ZpÄ›t zruÅ¡Ã­te.</string>
+    <string name="reorder">SeÅ™adit aplikace</string>
+    <string name="tile_move">PÅ™esunout</string>
+    <string name="reorder_hint">OK zvedne aplikaci, Å¡ipky ji posunou, ZpÄ›t ji poloÅ¾Ã­. DalÅ¡Ã­m ZpÄ›t skonÄÃ­te.</string>
+    <string name="reorder_not_saved">NovÃ© poÅ™adÃ­ se nepodaÅ™ilo uloÅ¾it</string>
+    <string name="app_library">Knihovna aplikacÃ­</string>
+    <string name="library_empty">NenaÅ¡ly se Å¾Ã¡dnÃ© spustitelnÃ© aplikace</string>
+    <string name="library_on_home">Na domovskÃ© obrazovce</string>
+    <string name="library_add_home">PÅ™idat na domovskou obrazovku</string>
+    <string name="library_remove_shortcut">Odebrat z domovskÃ© obrazovky</string>
+    <string name="library_open">OtevÅ™Ã­t</string>
+    <string name="library_app_info">Informace o aplikaci</string>
+    <string name="library_save_failed">ZÃ¡stupce se nepodaÅ™ilo uloÅ¾it</string>
+    <string name="library_recent">NovÃ¡ Â· PÅ™idat na domovskou obrazovku</string>
+    <string name="library_hint_add">Stiskem pÅ™idÃ¡te na domovskou obrazovku Â· PodrÅ¾enÃ­m volby</string>
+    <string name="library_hint_open">Stiskem otevÅ™ete Â· PodrÅ¾enÃ­m volby</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d aplikace</item>
+        <item quantity="few">%1$d aplikace</item>
+        <item quantity="many">%1$d aplikace</item>
+        <item quantity="other">%1$d aplikacÃ­</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="last_opened">Naposledy otevÅ™eno: %1$s</string>
+    <string name="game_live">PrÃ¡vÄ› Å¾ivÄ›</string>
+    <string name="clock_format_system">SystÃ©m</string>
+    <string name="clock_format_12">12hodinovÃ©</string>
+    <string name="clock_format_24">24hodinovÃ©</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-da\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hjem</string>
+    <string name="inputs">Indgange</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">Indstillinger</string>
+    <string name="choose_input">Indgange</string>
+    <string name="connected">Tilsluttet</string>
+    <string name="standby">Standby</string>
+    <string name="not_connected">Ingen enhed</string>
+    <string name="live_tv">Live-TV</string>
+    <string name="no_inputs">Ingen indgange fundet</string>
+    <string name="more_inputs">Flere indgange</string>
+    <string name="good_morning">Godmorgen</string>
+    <string name="good_afternoon">God eftermiddag</string>
+    <string name="good_evening">Godaften</string>
+    <string name="good_forenoon">God formiddag</string>
+    <string name="good_night">Godnat</string>
+    <string name="festival_dussehra_greeting">GlÃ¦delig Dussehra</string>
+    <string name="festival_diwali_greeting">GlÃ¦delig Diwali</string>
+    <string name="festival_halloween_greeting">GlÃ¦delig halloween</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">Offline</string>
+    <string name="not_available">Ikke tilgÃ¦ngelig pÃ¥ dette TV</string>
+    <string name="cant_open">Kan ikke Ã¥bne %1$s</string>
+    <string name="date_format">EEEE d. MMMM</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">Hukommelse %1$d / %2$d MB</string>
+    <string name="stats_storage">Lager %1$s ledigt</string>
+    <string name="storage_gb_whole">%1$.0f GB</string>
+    <string name="storage_gb_decimal">%1$.1f GB</string>
+    <string name="dream_name">Ur</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN fra</string>
+    <string name="home_settings">VÃ¦lg standard-startskÃ¦rm</string>
+    <string name="launcher_settings">Launcher-indstillinger</string>
+    <string name="native_settings">Producentindstillinger</string>
+    <string name="columns_label">Apps pr. rÃ¦kke</string>
+    <string name="rows_below_dock_label">RÃ¦kker under docken</string>
+    <string name="dock_opacity_label">Docken: gennemsigtighed</string>
+    <string name="wallpaper_label">Baggrund</string>
+    <string name="wallpaper_state">Baggrund: %1$s</string>
+    <string name="wallpaper_none">Ingen</string>
+    <string name="wallpaper_applied">Baggrund Ã¦ndret</string>
+    <string name="wallpaper_theme_default">Temaets standard</string>
+    <string name="animations_state">Animationer: %1$s</string>
+    <string name="advanced_effects">Avancerede effekter</string>
+    <string name="advanced_effects_state">Avancerede effekter: %1$s</string>
+    <string name="follow_theme">FÃ¸lg tema (nulstil valg pÃ¥ TV)</string>
+    <string name="tv_settings">TV-systemindstillinger</string>
+    <string name="quick_picture">Billede</string>
+    <string name="quick_network">NetvÃ¦rk</string>
+    <string name="quick_apps">Apps</string>
+    <string name="quick_apps_hint">AktivÃ©r igen</string>
+    <string name="on">Til</string>
+    <string name="off">Fra</string>
+    <string name="enable">AktivÃ©r</string>
+    <string name="home_key_name">Hjem-knap</string>
+    <string name="home_key_description">FÃ¥r fjernbetjeningens Hjem-knap til at Ã¥bne denne launcher.</string>
+    <string name="module_cards">Modulkort</string>
+    <string name="no_module_cards">Ingen modulkort installeret</string>
+    <string name="card_keep_hidden">Skjul</string>
+    <string name="card_show">Vis kort</string>
+    <string name="card_state_shown">Vist</string>
+    <string name="card_state_hidden">Skjult</string>
+    <string name="card_state_new">Ny</string>
+    <string name="dock_edit">RedigÃ©r dock</string>
+    <string name="power_menu">Genstartâ€¦</string>
+    <string name="tile_add_to_dock">FÃ¸j til dock</string>
+    <string name="tile_replace_in_dock">Erstat med en anden app</string>
+    <string name="reorder">Flyt apps</string>
+    <string name="tile_move">Flyt</string>
+    <string name="app_library">App-bibliotek</string>
+    <string name="library_empty">Ingen apps fundet</string>
+    <string name="library_on_home">PÃ¥ startskÃ¦rmen</string>
+    <string name="library_add_home">FÃ¸j til startskÃ¦rm</string>
+    <string name="library_remove_shortcut">Fjern fra startskÃ¦rm</string>
+    <string name="library_open">Ã…bn</string>
+    <string name="library_app_info">App-oplysninger</string>
+    <string name="library_recent">Ny Â· FÃ¸j til startskÃ¦rm</string>
+    <string name="library_hint_add">Tryk for at fÃ¸je til startskÃ¦rm Â· Hold for valg</string>
+    <string name="library_hint_open">Tryk for at Ã¥bne Â· Hold for valg</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="race_finished">MÃ¥lflag</string>
+    <string name="race_practice_1">TrÃ¦ning 1</string>
+    <string name="race_practice_2">TrÃ¦ning 2</string>
+    <string name="race_practice_3">TrÃ¦ning 3</string>
+    <string name="race_sprint_qualifying">Sprintkvalifikation</string>
+    <string name="race_sprint">Sprint</string>
+    <string name="race_qualifying">Kvalifikation</string>
+    <string name="race_race">LÃ¸b</string>
+    <string name="race_countdown_minutes">%1$d min</string>
+    <string name="race_countdown_hours">%1$dt %2$dm</string>
+    <string name="race_countdown_days">%1$dd %2$dt</string>
+    <string name="last_opened">Sidst Ã¥bnet %1$s</string>
+    <string name="game_live">Live nu</string>
+    <string name="clock_format_system">System</string>
+    <string name="clock_format_12">12 timer</string>
+    <string name="clock_format_24">24 timer</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-de\bools.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- German weekday and month names need two lines (date_format_home has a line break). -->
+    <bool name="date_single_line">false</bool>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-de\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Home</string>
+    <string name="inputs">Quellen</string>
+    <string name="wifi">WLAN</string>
+    <string name="settings">Einstellungen</string>
+    <string name="choose_input">Quellen</string>
+    <string name="connected">Verbunden</string>
+    <string name="standby">Standby</string>
+    <string name="not_connected">Kein GerÃ¤t</string>
+    <string name="live_tv">Live TV</string>
+    <string name="no_inputs">Keine Quellen gefunden</string>
+    <string name="more_inputs">Weitere Quellen</string>
+    <string name="good_morning">Guten Morgen</string>
+    <string name="good_afternoon">Guten Tag</string>
+    <string name="good_evening">Guten Abend</string>
+    <string name="good_night">Gute Nacht</string>
+    <string name="ethernet">LAN</string>
+    <string name="offline">Offline</string>
+    <string name="not_available">Auf diesem TV nicht verfÃ¼gbar</string>
+    <string name="cant_open">%1$s lÃ¤sst sich nicht Ã¶ffnen</string>
+    <string name="date_format">EEEE, d. MMMM</string>
+    <!-- Two lines next to the clock: the long German weekday and month names do not fit on one. -->
+    <string name="date_format_home">EEEE\nd. MMMM</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">Speicher %1$d / %2$d MB</string>
+    <string name="stats_storage">Speicherplatz %1$s frei</string>
+    <string name="dream_name">Uhr</string>
+    <string name="input_key_service_description">Ã–ffnet die Quellenauswahl, wenn die Input-Taste der Fernbedienung gedrÃ¼ckt wird.</string>
+    <string name="launcher_settings">Launcher-Einstellungen</string>
+    <string name="native_settings">Herstellereinstellungen</string>
+    <string name="columns_label">Apps pro Zeile</string>
+    <string name="dock_opacity_label">Deckkraft der Dock-Leiste</string>
+    <string name="animations_state">Animationen: %1$s</string>
+    <string name="advanced_effects">Erweiterte Effekte</string>
+    <string name="advanced_effects_state">Erweiterte Effekte: %1$s</string>
+    <string name="open_on_start_label">Beim Start Ã¶ffnen</string>
+    <string name="open_on_start_state">Beim Start Ã¶ffnen: %1$s</string>
+    <string name="advanced_effects_warning">Hebt Kacheln an, vergrÃ¶ÃŸert Symbole und glÃ¤ttet FarbÃ¼bergÃ¤nge. Kann den Speicherverbrauch erhÃ¶hen; die Wirkung hÃ¤ngt vom TV ab.</string>
+    <string name="follow_theme">Design Ã¼bernehmen (TV-Auswahl zurÃ¼cksetzen)</string>
+    <string name="follow_theme_hint">Verwendet Layout und Bewegung des aktuellen Designs oder der integrierten Einstellungen. Ein neues oder zurÃ¼ckgesetztes Design lÃ¶scht die TV-Auswahl ebenfalls.</string>
+    <string name="tv_settings">TV-Systemeinstellungen</string>
+    <string name="on">Ein</string>
+    <string name="off">Aus</string>
+    <string name="enable">Aktivieren</string>
+    <string name="dock_edit">Dock bearbeiten</string>

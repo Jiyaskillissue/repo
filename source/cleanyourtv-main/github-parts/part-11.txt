@@ -1,0 +1,1500 @@
+﻿    /** AudioManager direction for a volume key, or 0 for any other key. */
+    static int direction(int keyCode) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) return AudioManager.ADJUST_RAISE;
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) return AudioManager.ADJUST_LOWER;
+        return 0;
+    }
+
+    /** Whether this event starts or ends a press; a repeated down event changes nothing. */
+    static boolean changesPress(int action, int repeatCount) {
+        return action != KeyEvent.ACTION_DOWN || repeatCount == 0;
+    }
+
+    /** Swallows a volume key (true) and repeats it while held; any other key is left alone (false). */
+    static boolean handle(Context context, KeyEvent event) {
+        int direction = direction(event.getKeyCode());
+        if (direction == 0) return false;
+        if (!changesPress(event.getAction(), event.getRepeatCount())) return true;
+        stop();
+        if (event.getAction() != KeyEvent.ACTION_DOWN) return true;
+        AudioManager audio = context.getSystemService(AudioManager.class);
+        if (audio == null) return true;
+        if (handler == null) handler = new Handler(Looper.getMainLooper());
+        step = new Runnable() {
+            @Override
+            public void run() {
+                audio.adjustVolume(direction, AudioManager.FLAG_SHOW_UI);
+                handler.postDelayed(this, REPEAT_INTERVAL_MS);
+            }
+        };
+        handler.postDelayed(step, REPEAT_DELAY_MS);
+        return true;
+    }
+
+    /** Ends a repeat in progress, e.g. when the service goes away while a key is held. */
+    static void stop() {
+        if (handler != null && step != null) handler.removeCallbacks(step);
+        step = null;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\VpnBadge.java ==========
+package com.gathin.tvhome;
+
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.StateListDrawable;
+import android.text.style.ReplacementSpan;
+
+import androidx.annotation.NonNull;
+
+/**
+ * The green "VPN" capsule drawn inside the network pill while a VPN is up: a lock and the word VPN, dark on
+ * green, so it reads on both the frosted and the focused (white) pill. With a VPN app configured and no VPN
+ * up, the same capsule turns red, without the lock, so a dropped VPN is noticed.
+ */
+final class VpnBadge extends ReplacementSpan {
+
+    static final int GREEN = 0xFF30D158;
+    static final int INK = 0xFF06290F;
+    static final int RED = 0xFFFF453A;
+    static final int INK_OFF = 0xFFFFFFFF;
+
+    private final Drawable lock;
+    private final float density;
+    private final int fill, ink;
+    private final RectF rect = new RectF();
+
+    /** @param lock the lock icon for the "up" badge, or null for the red "off" badge */
+    VpnBadge(Drawable lock, float density) {
+        this.fill = lock != null ? GREEN : RED;
+        this.ink = lock != null ? INK : INK_OFF;
+        this.lock = lock != null ? lock.mutate() : null;
+        if (this.lock != null) this.lock.setTint(ink);
+        this.density = density;
+    }
+
+    /** vpn_pill: what the VPN pill shows, from {@link #pillState}. */
+    static final int PILL_HIDDEN = 0, PILL_UP = 1, PILL_OFF = 2;
+
+    /**
+     * vpn_pill: green while any VPN is up, red "VPN off" while none is but the configured VPN app is installed (so a
+     * dropped VPN is noticed), hidden while neither is true: no pill on a TV without a VPN.
+     */
+    static int pillState(boolean vpnUp, boolean vpnAppInstalled) {
+        return vpnUp ? PILL_UP : vpnAppInstalled ? PILL_OFF : PILL_HIDDEN;
+    }
+
+    /** icon_only_vpn: the closed lock while a VPN is up, the open lock while none is. */
+    static int iconOnlyLock(boolean up) {
+        return up ? R.drawable.ic_lock : R.drawable.ic_lock_open;
+    }
+
+    /**
+     * vpn_pill: the pill's background. At rest it is dark glass outlined in the state colour and only the focused state is
+     * filled solid with a white ring â€” a solid pill at rest read as already selected, so OK pressed on a tile was
+     * taken for a press on the pill.
+     */
+    static StateListDrawable pillBackground(boolean up, float density) {
+        StateListDrawable bg = new StateListDrawable();
+        GradientDrawable focused = pillShape(up, density);
+        focused.setStroke(Math.round(3 * density), 0xFFFFFFFF);
+        bg.addState(new int[]{android.R.attr.state_focused}, focused);
+        // Dark glass, so the state colour reads over a bright wallpaper as well as a dark one.
+        GradientDrawable rest = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0xA6000000, 0x8C000000});
+        rest.setCornerRadius(21 * density);
+        rest.setStroke(Math.round(2 * density), up ? GREEN : RED);
+        bg.addState(new int[0], rest);
+        return bg;
+    }
+
+    /**
+     * vpn_pill: the pill's text and icon colour. At rest the pill is an outline, so the ink is the state colour;
+     * on the solid focused fill it is the contrasting ink.
+     */
+    static int pillInkColor(boolean up, boolean focused) {
+        if (up) return focused ? INK : GREEN;
+        return focused ? INK_OFF : RED;
+    }
+
+    private static GradientDrawable pillShape(boolean up, float density) {
+        GradientDrawable shape = new GradientDrawable();
+        shape.setColor(up ? GREEN : RED);
+        shape.setCornerRadius(21 * density);
+        return shape;
+    }
+
+    private float textSize(Paint p) {
+        return p.getTextSize() * 0.78f;
+    }
+
+    private float lockSize(Paint p) {
+        return lock != null ? p.getTextSize() * 0.8f : 0;
+    }
+
+    private float lockGap() {
+        return lock != null ? 4 * density : 2 * density;
+    }
+
+    @Override
+    public int getSize(@NonNull Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
+        float old = paint.getTextSize();
+        paint.setTextSize(textSize(paint));
+        float w = paint.measureText(text, start, end);
+        paint.setTextSize(old);
+        // margin + left pad + lock + gap + text + right pad
+        return (int) (8 * density + 7 * density + lockSize(paint) + lockGap() + w + 9 * density);
+    }
+
+    @Override
+    public void draw(@NonNull Canvas c, CharSequence text, int start, int end, float x, int top, int y, int bottom,
+                     @NonNull Paint paint) {
+        float base = paint.getTextSize();
+        float lockPx = lockSize(paint);
+        float h = base * 1.3f;
+        float cy = (top + bottom) / 2f;
+        float left = x + 8 * density;
+        float right = x + getSize(paint, text, start, end, null);
+        rect.set(left, cy - h / 2f, right, cy + h / 2f);
+
+        int oldColor = paint.getColor();
+        paint.setColor(fill);
+        c.drawRoundRect(rect, h / 2f, h / 2f, paint);
+
+        int lx = (int) (left + 7 * density);
+        if (lock != null) {
+            lock.setBounds(lx, (int) (cy - lockPx / 2f), (int) (lx + lockPx), (int) (cy + lockPx / 2f));
+            lock.draw(c);
+        }
+
+        paint.setColor(ink);
+        paint.setTextSize(textSize(paint));
+        Paint.FontMetrics fm = paint.getFontMetrics();
+        float ty = cy - (fm.ascent + fm.descent) / 2f;
+        c.drawText(text, start, end, lx + lockPx + lockGap(), ty, paint);
+        paint.setTextSize(base);
+        paint.setColor(oldColor);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\WallpaperCaptions.java ==========
+package com.gathin.tvhome;
+
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Names for a wallpaper collection (wallpaper_captions): {@code wallpapers/captions.txt}, one
+ * "filename<TAB>name" per line. Blank lines, lines starting with # and lines without a tab are skipped; a name
+ * is cut to {@link #MAX_LENGTH} characters. No Android types, so it is tested on the JVM.
+ */
+final class WallpaperCaptions {
+    static final String FILE_NAME = "captions.txt";
+    static final int MAX_LENGTH = 80;
+
+    private WallpaperCaptions() { }
+
+    static Map<String, String> parse(List<String> lines) {
+        Map<String, String> names = new HashMap<>();
+        for (String line : lines) {
+            if (line == null || line.trim().isEmpty() || line.trim().startsWith("#")) continue;
+            int tab = line.indexOf('\t');
+            if (tab <= 0) continue;
+            String file = line.substring(0, tab).trim();
+            String name = line.substring(tab + 1).trim();
+            if (file.isEmpty() || name.isEmpty()) continue;
+            if (name.length() > MAX_LENGTH) name = name.substring(0, MAX_LENGTH).trim();
+            names.put(file, name);
+        }
+        return names;
+    }
+
+    /** The names in {@code folder}/captions.txt, or none when the file is missing or unreadable. */
+    static Map<String, String> read(File folder) {
+        File file = folder == null ? null : new File(folder, FILE_NAME);
+        if (file == null || !file.isFile() || file.length() > 256 * 1024) return Collections.emptyMap();
+        try {
+            return parse(Files.readAllLines(file.toPath(), StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            return Collections.emptyMap();
+        }
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\WallpaperMood.java ==========
+package com.gathin.tvhome;
+
+import java.io.File;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * wallpaper_moods: which group of a rotating wallpaper collection fits the time of day. Morning from sunrise to noon,
+ * evening until half an hour after sunset, night the rest. The sun is the one at config.xml's latitude and longitude,
+ * worked out offline by {@link Sun} as the sky does, or 07:00 and 18:30 without a place. A group that is missing, or
+ * has none of the collection's pictures, falls back to the whole collection.
+ */
+final class WallpaperMood {
+    static final String MORNING = "morning", EVENING = "evening", NIGHT = "night";
+    static final String[] ALL = {MORNING, EVENING, NIGHT};
+    /** Sunrise and sunset in minutes of the day, without a place (or where the sun does not rise or set that day). */
+    static final int DEFAULT_SUNRISE = 7 * 60, DEFAULT_SUNSET = 18 * 60 + 30;
+    private static final int NOON = 12 * 60;
+    /** Evening lasts this long after sunset, while the sky still glows. */
+    private static final int DUSK_MINUTES = 30;
+
+    private WallpaperMood() {
+    }
+
+    /** The mood at this minute of the day, for a sunrise and sunset in minutes of the day. */
+    static String timeOfDay(int minute, int sunrise, int sunset) {
+        if (minute >= sunrise && minute < NOON) return MORNING;
+        if (minute >= NOON && minute < sunset + DUSK_MINUTES) return EVENING;
+        return NIGHT;
+    }
+
+    /** That day's {sunrise, sunset} at config.xml's latitude and longitude; the defaults when either is unusable. */
+    static int[] sun(LocalDate day, String latitude, String longitude, ZoneId zone) {
+        int[] times = null;
+        try {
+            if (!latitude.trim().isEmpty() && !longitude.trim().isEmpty()) {
+                times = Sun.riseAndSet(day, Double.parseDouble(latitude.trim()), Double.parseDouble(longitude.trim()), zone);
+            }
+        } catch (NumberFormatException ignored) {
+            // not a number: the defaults
+        }
+        return times != null ? times : new int[]{DEFAULT_SUNRISE, DEFAULT_SUNSET};
+    }
+
+    /** The pictures in the mood's group, in the collection's order; all of them when the group has none. */
+    static List<File> select(List<File> all, Map<String, Set<String>> groups, String mood) {
+        Set<String> names = groups.get(mood);
+        if (names == null) return all;
+        List<File> group = new ArrayList<>();
+        for (File file : all) if (names.contains(file.getName())) group.add(file);
+        return group.isEmpty() ? all : group;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\WallpaperPlayer.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.io.File;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/** Displays and rotates a theme's local wallpaper images while Home is visible. */
+final class WallpaperPlayer {
+    private final FrameLayout root;
+    private final ImageView image;
+    private final int backgroundColor;
+    private final List<File> files;
+    private final long interval;
+    private final String order;
+    private final SharedPreferences preferences;
+    private final ExecutorService decoder = Executors.newSingleThreadExecutor();
+    private final Random random = new Random();
+    private final int width;
+    /** config wallpaper_true_color: ARGB_8888 instead of RGB_565. */
+    private final Bitmap.Config bitmapConfig;
+    private final int height;
+    /** wallpaper_dim as an ARGB black, painted into each picture once instead of a full-screen shade view. */
+    private final int dimColor;
+    /** The picture on screen, released once the next one has been drawn. */
+    private Bitmap current;
+    private boolean active;
+    private boolean closed;
+    private boolean loading;
+    private String displayed = "";
+    /** wallpaper_captions: the shown picture's name from wallpapers/captions.txt; null when off or there are none. */
+    private final TextView caption;
+    private final Map<String, String> names;
+    /** wallpaper_moods: the collection's groups by time of day; empty rotates through all of it. */
+    private final Map<String, Set<String>> moods;
+    /** config.xml latitude and longitude for the sun's times, and today's {sunrise, sunset} once worked out. */
+    private final String latitude, longitude;
+    private LocalDate sunDay;
+    private int[] sun;
+
+    WallpaperPlayer(Context context, FrameLayout root, Config config) {
+        this.root = root;
+        backgroundColor = config.backgroundColor;
+        files = new ArrayList<>(config.wallpapers);
+        interval = config.wallpaperRotationMinutes * 60_000L;
+        bitmapConfig = config.wallpaperTrueColor ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
+        // The dim is painted into the picture (decode), so no full-screen shade layer is drawn on every frame.
+        dimColor = config.wallpaperDim > 0 ? (config.wallpaperDim * 255 / 100) << 24 : 0;
+        order = config.wallpaperOrder;
+        preferences = context.getSharedPreferences("wallpaper_rotation", Context.MODE_PRIVATE);
+        moods = config.wallpaperMoods;
+        latitude = moods.isEmpty() ? "" : context.getString(R.string.latitude);
+        longitude = moods.isEmpty() ? "" : context.getString(R.string.longitude);
+        // Playback state belongs to one collection. Changing the collection starts from its first
+        // picture instead of resuming a filename that belonged to the previous one.
+        String collection = collectionKey(files);
+        if (!collection.equals(preferences.getString("collection", ""))) {
+            preferences.edit().putString("collection", collection)
+                    .remove("image").remove("changed").apply();
+        }
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        width = metrics.widthPixels;
+        height = metrics.heightPixels;
+        image = new ImageView(context);
+        image.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        image.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        names = config.wallpaperCaptions && config.wallpaperEnabled && !files.isEmpty()
+                ? WallpaperCaptions.read(files.get(0).getParentFile()) : Collections.emptyMap();
+        caption = names.isEmpty() ? null : makeCaption(context, root);
+        if (config.wallpaperEnabled && !files.isEmpty()) {
+            root.addView(image, 0, new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            showFirst();
+        }
+    }
+
+    /**
+     * The picture Home opens with is decoded right here, on the main thread, as the single wallpaper always was:
+     * Home's first frame already has it instead of drawing the plain colour and the picture popping in later.
+     * Only the later changes of a rotation decode in the background.
+     */
+    private void showFirst() {
+        String previous = preferences.getString("image", "");
+        List<File> playable = playable();
+        File first = WallpaperRotation.find(playable, previous);
+        if (first == null) first = WallpaperRotation.pick(playable, previous, order, random);
+        while (first != null) {
+            Bitmap bitmap = decode(first);
+            if (bitmap != null) {
+                show(bitmap);
+                // The picture covers the whole screen: the root's plain colour under it is overdraw.
+                root.setBackground(null);
+                displayed = first.getName();
+                showCaption(false);
+                if (!displayed.equals(previous)) {
+                    preferences.edit().putString("image", displayed)
+                            .putLong("changed", System.currentTimeMillis()).apply();
+                }
+                return;
+            }
+            files.remove(first);   // unreadable or over 4K: try another, or keep the plain colour
+            playable = playable();
+            first = WallpaperRotation.pick(playable, previous, order, random);
+        }
+    }
+
+    void start() {
+        active = true;
+        update();
+    }
+
+    void stop() {
+        active = false;
+    }
+
+    /** Drops the wallpaper texture when Home is hidden and Android asks the process to free memory. */
+    void releaseForMemoryPressure() {
+        if (current == null) return;
+        image.setImageDrawable(null);
+        // The renderer may still have a queued frame that references this hardware bitmap. Drop our references and
+        // let Android reclaim its native buffer after rendering releases it instead of recycling it mid-frame.
+        current = null;
+        displayed = "";
+        root.setBackgroundColor(backgroundColor);
+    }
+
+    /** The pictures the rotation picks from now: wallpaper_moods' group for the time of day, or the whole collection. */
+    private List<File> playable() {
+        if (moods.isEmpty()) return files;
+        LocalDateTime now = LocalDateTime.now();
+        if (!now.toLocalDate().equals(sunDay)) {
+            sunDay = now.toLocalDate();
+            sun = WallpaperMood.sun(sunDay, latitude, longitude, ZoneId.systemDefault());
+        }
+        return WallpaperMood.select(files, moods, WallpaperMood.timeOfDay(now.getHour() * 60 + now.getMinute(), sun[0], sun[1]));
+    }
+
+    void close() {
+        active = false;
+        closed = true;
+        decoder.shutdownNow();
+    }
+
+    void update() {
+        if (!active || closed || loading || files.isEmpty()) return;
+        String previous = preferences.getString("image", "");
+        // A picture outside the time of day's group (the group changed) is replaced at once, not after the interval.
+        List<File> playable = playable();
+        File selected = WallpaperRotation.find(playable, previous);
+        long changed = preferences.getLong("changed", 0);
+        if (selected == null || WallpaperRotation.due(changed, System.currentTimeMillis(), interval)) {
+            selected = WallpaperRotation.pick(playable, previous, order, random);
+        }
+        if (selected == null || selected.getName().equals(displayed)) return;
+        File next = selected;
+        loading = true;
+        decoder.execute(() -> {
+            Bitmap bitmap = decode(next);
+            root.post(() -> {
+                loading = false;
+                if (closed || !active) {
+                    if (bitmap != null) bitmap.recycle();
+                    return;
+                }
+                if (bitmap == null) {
+                    files.remove(next);
+                    Log.w("TvHome.Wallpaper", "Skipping unreadable image: " + next.getName());
+                    update();
+                    return;
+                }
+                show(bitmap);
+                displayed = next.getName();
+                showCaption(true);
+                if (!displayed.equals(previous) || changed == 0) {
+                    preferences.edit().putString("image", displayed)
+                            .putLong("changed", System.currentTimeMillis()).apply();
+                }
+            });
+        });
+    }
+
+    /**
+     * Small light text under the top-right buttons, above everything else and never focusable. It sits where the
+     * top bar ends in every layout, so it does not cover the clock, the stats line or the tiles.
+     */
+    private static TextView makeCaption(Context context, FrameLayout root) {
+        float dp = context.getResources().getDisplayMetrics().density;
+        TextView text = new TextView(context);
+        text.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+        text.setTextColor(0xD9FFFFFF);
+        text.setShadowLayer(6 * dp, 0, dp, 0xCC000000);
+        text.setSingleLine(true);
+        text.setEllipsize(TextUtils.TruncateAt.END);
+        text.setMaxWidth(Math.round(520 * dp));
+        text.setFocusable(false);
+        text.setAlpha(0f);
+        try {
+            text.setTypeface(UiFont.get(context, R.string.font_regular));
+        } catch (Exception ignored) {
+            // the system font is fine
+        }
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.END);
+        params.topMargin = Math.round(110 * dp);
+        params.setMarginEnd(Math.round(62 * dp));
+        root.addView(text, params);
+        return text;
+    }
+
+    /** The displayed picture's name, faded across a change; a picture without a name hides the caption. */
+    private void showCaption(boolean fade) {
+        if (caption == null) return;
+        String name = names.get(displayed);
+        caption.animate().cancel();
+        if (name == null) {
+            caption.setAlpha(0f);
+            return;
+        }
+        caption.setContentDescription(name);
+        if (!fade || caption.getAlpha() == 0f) {
+            caption.setText(name);
+            caption.setAlpha(1f);
+            return;
+        }
+        caption.animate().alpha(0f).setDuration(250).withEndAction(() -> {
+            caption.setText(name);
+            caption.animate().alpha(1f).setDuration(350).start();
+        }).start();
+    }
+
+    /** Names plus sizes: enough to notice a different collection without hashing every image. */
+    private static String collectionKey(List<File> images) {
+        StringBuilder key = new StringBuilder();
+        for (File file : images) key.append(file.getName()).append(':').append(file.length()).append(';');
+        return key.toString();
+    }
+
+    /** Puts a picture on screen and releases the previous one after a frame has drawn the new one. */
+    private void show(Bitmap bitmap) {
+        Bitmap old = current;
+        current = bitmap;
+        // The wallpaper covers the whole root; avoid drawing the fallback colour under it.
+        root.setBackground(null);
+        image.setImageBitmap(bitmap);
+        if (old != null && old != bitmap) image.postDelayed(old::recycle, 500);
+    }
+
+    private Bitmap decode(File file) {
+        try {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(file.getPath(), options);
+            int width = options.outWidth, height = options.outHeight;
+            if (width <= 0 || height <= 0) return null;
+            int sample = WallpaperSize.sampleSize(width, height, this.width, this.height);
+            if (!WallpaperSize.accepted(width / sample, height / sample)) return null;
+            options.inJustDecodeBounds = false;
+            options.inSampleSize = sample;
+            int[] scale = WallpaperSize.coverScale(width / sample, height / sample, this.width, this.height);
+            if (scale != null) {
+                options.inScaled = true;
+                options.inDensity = scale[0];
+                options.inTargetDensity = scale[1];
+            }
+            options.inPreferredConfig = bitmapConfig;
+            options.inMutable = dimColor != 0;
+            Bitmap decoded = BitmapFactory.decodeFile(file.getPath(), options);
+            if (decoded == null) return null;
+            if (dimColor != 0) new Canvas(decoded).drawColor(dimColor);
+            // One copy in GPU memory instead of a software bitmap plus its texture; the decode stays off the UI
+            // thread for rotations, and Home's return no longer uploads 4-8 MB to the GPU.
+            Bitmap gpu = decoded.copy(Bitmap.Config.HARDWARE, false);
+            if (gpu == null) return decoded;
+            decoded.recycle();
+            return gpu;
+        } catch (Exception | OutOfMemoryError failure) {
+            return null;
+        }
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\WallpaperRotation.java ==========
+package com.gathin.tvhome;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+
+final class WallpaperRotation {
+    /** Playback orders persisted in config.json (wallpaper_order). */
+    static final String ORDER_SEQUENTIAL = "sequential";
+    static final String ORDER_SHUFFLE = "shuffle";
+
+    static boolean validOrder(String order) {
+        return ORDER_SEQUENTIAL.equals(order) || ORDER_SHUFFLE.equals(order);
+    }
+
+    static List<File> images(File directory) {
+        List<File> result = new ArrayList<>();
+        File[] entries = directory == null ? null : directory.listFiles();
+        if (entries == null) return result;
+        Arrays.sort(entries, Comparator.comparing(File::getName));
+        for (File entry : entries) {
+            String name = entry.getName().toLowerCase(Locale.ROOT);
+            if (entry.isFile() && entry.length() > 0 && entry.length() <= 10 * 1024 * 1024
+                    && (name.endsWith(".jpg") || name.endsWith(".jpeg")
+                    || name.endsWith(".png") || name.endsWith(".webp"))) {
+                result.add(entry);
+                if (result.size() == 100) break;
+            }
+        }
+        return result;
+    }
+
+    static File find(List<File> images, String name) {
+        for (File image : images) if (image.getName().equals(name)) return image;
+        return null;
+    }
+
+    /** The on-TV choice (Launcher settings, Wallpaper) that turns the wallpaper off. */
+    static final String CHOICE_NONE = "none";
+
+    /**
+     * What an on-TV wallpaper choice puts on Home in place of the theme's rotation: null when the theme decides
+     * (no choice, or a picture that is no longer there), an empty list for {@link #CHOICE_NONE}, or the one picture
+     * chosen from the theme's collection or its single {@code single} wallpaper.
+     */
+    static List<File> chosen(List<File> collection, File single, String choice) {
+        if (choice == null) return null;
+        if (CHOICE_NONE.equals(choice)) return Collections.emptyList();
+        File picked = find(collection, choice);
+        if (picked == null && single != null && choice.equals(single.getName())) picked = single;
+        return picked == null ? null : Collections.singletonList(picked);
+    }
+
+    static File pick(List<File> images, String previous, Random random) {
+        List<File> candidates = new ArrayList<>(images);
+        if (candidates.size() > 1) candidates.removeIf(image -> image.getName().equals(previous));
+        return candidates.isEmpty() ? null : candidates.get(random.nextInt(candidates.size()));
+    }
+
+    /**
+     * The next picture in the sorted collection, wrapping to the first at the end. The list from
+     * {@link #images(File)} is sorted by filename, so this is a stable order across restarts. A
+     * previous name that is no longer in the collection starts again at the first picture.
+     */
+    static File next(List<File> images, String previous) {
+        if (images.isEmpty()) return null;
+        for (int i = 0; i < images.size(); i++) {
+            if (images.get(i).getName().equals(previous)) {
+                return images.get((i + 1) % images.size());
+            }
+        }
+        return images.get(0);
+    }
+
+    /** Picks the next picture for {@code order}; an unknown order keeps the historical shuffle. */
+    static File pick(List<File> images, String previous, String order, Random random) {
+        return ORDER_SEQUENTIAL.equals(order) ? next(images, previous) : pick(images, previous, random);
+    }
+
+    static boolean due(long previous, long now, long interval) {
+        // The minute tick is a Handler postDelayed, so it drifts by tens of milliseconds and often lands a few
+        // hundred short of the interval. Compared exactly, that pass is skipped and the picture waits a whole
+        // extra interval - a one-minute collection then changes every two. Two seconds of slack absorbs the
+        // drift without letting a genuinely early call advance the picture.
+        long slack = Math.min(2_000L, interval / 10);
+        return interval > 0 && (previous == 0 || now < previous || now - previous >= interval - slack);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\WallpaperSize.java ==========
+package com.gathin.tvhome;
+
+/**
+ * How big a theme's wallpaper may be and what size it is decoded at (#166). A 1 GB TV cannot afford a
+ * picture decoded at full size: a 65535x2159 image is about 283 MB even in RGB_565.
+ */
+final class WallpaperSize {
+    private WallpaperSize() { }
+
+    /** 4K UHD (3840x2160, 8.3 M pixels) and a little more; anything bigger is refused. */
+    static final long MAX_PIXELS = 8_400_000L;
+
+    static boolean accepted(int width, int height) {
+        return width > 0 && height > 0 && (long) width * height <= MAX_PIXELS;
+    }
+
+    /** The largest power-of-two sample size that still covers the screen in both directions. */
+    static int sampleSize(int width, int height, int screenW, int screenH) {
+        int sample = 1;
+        while (width / (sample * 2) >= screenW && height / (sample * 2) >= screenH) sample *= 2;
+        return sample;
+    }
+
+    /**
+     * {inDensity, inTargetDensity} that scale a (sampled) picture down to what CENTER_CROP shows: the
+     * side that limits the cover lands on the screen size. Null when it is already that small.
+     */
+    static int[] coverScale(int width, int height, int screenW, int screenH) {
+        if ((long) screenW * height >= (long) screenH * width) {   // width limits the cover
+            return width > screenW ? new int[]{width, screenW} : null;
+        }
+        return height > screenH ? new int[]{height, screenH} : null;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\res\anim\app_open_enter.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/decelerate_cubic"
+    android:duration="200">
+    <alpha android:fromAlpha="0.65" android:toAlpha="1.0" />
+    <scale android:fromXScale="0.97" android:toXScale="1.0"
+        android:fromYScale="0.97" android:toYScale="1.0"
+        android:pivotX="50%" android:pivotY="50%" />
+</set>
+`n`n========== FILE: launcher\app\src\main\res\anim\app_open_exit.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/decelerate_cubic"
+    android:duration="200">
+    <alpha android:fromAlpha="1.0" android:toAlpha="0.25" />
+    <scale android:fromXScale="1.0" android:toXScale="1.025"
+        android:fromYScale="1.0" android:toYScale="1.025"
+        android:pivotX="50%" android:pivotY="50%" />
+</set>
+`n`n========== FILE: launcher\app\src\main\res\anim\tile_enter.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:interpolator/decelerate_cubic"
+    android:duration="420">
+    <alpha android:fromAlpha="0.0" android:toAlpha="1.0" />
+    <translate android:fromYDelta="22%" android:toYDelta="0%" />
+    <scale
+        android:fromXScale="0.94" android:toXScale="1.0"
+        android:fromYScale="0.94" android:toYScale="1.0"
+        android:pivotX="50%" android:pivotY="50%" />
+</set>
+`n`n========== FILE: launcher\app\src\main\res\color\pill_icon_no_internet.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- wifi_status_warnings: the Wi-Fi pill's icon while connected but not validated (a captive portal waiting for its
+     login page), orange; dark on the focused pill, as pill_icon_online. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#FF111111" />
+    <item android:color="#FFFF9F0A" />
+</selector>
+`n`n========== FILE: launcher\app\src\main\res\color\pill_icon_offline.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- wifi_status_warnings: the Wi-Fi pill's icon while offline, red; dark on the focused pill, as pill_icon_online. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#FF111111" />
+    <item android:color="#FFFF453A" />
+</selector>
+`n`n========== FILE: launcher\app\src\main\res\color\pill_icon_online.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- wifi_status_color: the Wi-Fi pill's icon while online, green like status_dot; dark on the focused pill, as pill_text. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#FF111111" />
+    <item android:color="#FF34C759" />
+</selector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\banner_tv.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Banner for a Live TV app tile (config.xml, app_banners): a magenta field with the Live TV glyph. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="320dp" android:height="180dp">
+        <shape android:shape="rectangle">
+            <gradient android:angle="315" android:startColor="#FFE20074" android:endColor="#FF8C0049" />
+        </shape>
+    </item>
+    <item android:width="76dp" android:height="76dp" android:gravity="center"
+        android:drawable="@drawable/ic_livetv" />
+</layer-list>
+`n`n========== FILE: launcher\app\src\main\res\drawable\glass_panel.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#FF2A2A2E" android:endColor="#FF161618" />
+            <stroke android:width="1dp" android:color="#33FFFFFF" />
+            <corners android:radius="20dp" />
+        </shape>
+    </item>
+</layer-list>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_apps.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp" android:height="22dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M4,4h4v4H4zM10,4h4v4h-4zM16,4h4v4h-4zM4,10h4v4H4zM10,10h4v4h-4zM16,10h4v4h-4zM4,16h4v4H4zM10,16h4v4h-4zM16,16h4v4h-4z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_apps_pill.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The grid icon for the library pill; drawable-zh nudges it down to sit level with CJK text. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_apps" />
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_av.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp" android:height="20dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M5,2c0,-0.55 -0.45,-1 -1,-1S3,1.45 3,2v4H1v6c0,1.3 0.84,2.4 2,2.82V23h2v-8.18C6.16,14.4 7,13.3 7,12V6H5V2zM13,2c0,-0.55 -0.45,-1 -1,-1s-1,0.45 -1,1v4H9v6c0,1.3 0.84,2.4 2,2.82V23h2v-8.18c1.16,-0.41 2,-1.51 2,-2.82V6h-2V2zM21,2c0,-0.55 -0.45,-1 -1,-1s-1,0.45 -1,1v4h-2v6c0,1.3 0.84,2.4 2,2.82V23h2v-8.18c1.16,-0.41 2,-1.51 2,-2.82V6h-2V2z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_ethernet.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp" android:height="22dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M7.77,6.76L6.23,5.48 0.82,12l5.41,6.52 1.54,-1.28L3.42,12l4.35,-5.24zM7,13h2v-2L7,11v2zM17,11h-2v2h2v-2zM11,13h2v-2h-2v2zM17.77,5.48l-1.54,1.28L20.58,12l-4.35,5.24 1.54,1.28L23.18,12l-5.41,-6.52z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_home_settings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M12,3L2,12H5V21H10V15H14V21H19V12H22Z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_home_settings_pill.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp" android:height="22dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M12,3L2,12H5V21H10V15H14V21H19V12H22Z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_input.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp" android:height="22dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M18,7V4c0,-1.1 -0.9,-2 -2,-2H8C6.9,2 6,2.9 6,4v3H5v6l3,6v3h8v-3l3,-6V7H18zM8,4h8v3h-2V5h-1v2h-2V5h-1v2H8V4z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_livetv.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp" android:height="20dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M21,6h-7.59l3.29,-3.29L16,2l-4,4l-4,-4l-0.71,0.71L10.59,6H3c-1.1,0 -2,0.89 -2,2v12c0,1.1 0.9,2 2,2h18c1.1,0 2,-0.89 2,-2V8C23,6.89 22.1,6 21,6zM21,20H3V8h18V20zM9,10v8l7,-4L9,10z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_lock.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M18,8h-1V6c0,-2.76 -2.24,-5 -5,-5S7,3.24 7,6v2H6c-1.1,0 -2,0.9 -2,2v10c0,1.1 0.9,2 2,2h12c1.1,0 2,-0.9 2,-2V10C20,8.9 19.1,8 18,8zM12,17c-1.1,0 -2,-0.9 -2,-2s0.9,-2 2,-2 2,0.9 2,2 -0.9,2 -2,2zM15.1,8H8.9V6c0,-1.71 1.39,-3.1 3.1,-3.1s3.1,1.39 3.1,3.1V8z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_lock_open.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material "lock_open", the open counterpart of ic_lock, for icon_only_vpn while no VPN is up. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M18,8h-1V6c0,-2.76 -2.24,-5 -5,-5S7,3.24 7,6h1.9c0,-1.71 1.39,-3.1 3.1,-3.1s3.1,1.39 3.1,3.1v2H6c-1.1,0 -2,0.9 -2,2v10c0,1.1 0.9,2 2,2h12c1.1,0 2,-0.9 2,-2V10C20,8.9 19.1,8 18,8zM12,17c-1.1,0 -2,-0.9 -2,-2s0.9,-2 2,-2 2,0.9 2,2 -0.9,2 -2,2z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_picture.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp" android:height="22dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M21,3H3C1.9,3 1,3.9 1,5v12c0,1.1 0.9,2 2,2h5v2h8v-2h5c1.1,0 1.99,-0.9 1.99,-2L23,5C23,3.9 22.1,3 21,3zM21,17H3V5h18V17z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_settings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp" android:height="22dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M19.14,12.94c0.04,-0.3 0.06,-0.61 0.06,-0.94c0,-0.32 -0.02,-0.64 -0.07,-0.94l2.03,-1.58c0.18,-0.14 0.23,-0.41 0.12,-0.61l-1.92,-3.32c-0.12,-0.22 -0.37,-0.29 -0.59,-0.22l-2.39,0.96c-0.5,-0.38 -1.03,-0.7 -1.62,-0.94L14.4,2.81c-0.04,-0.24 -0.24,-0.41 -0.48,-0.41h-3.84c-0.24,0 -0.43,0.17 -0.47,0.41L9.25,5.35C8.66,5.59 8.12,5.92 7.63,6.29L5.24,5.33c-0.22,-0.08 -0.47,0 -0.59,0.22L2.74,8.87C2.62,9.08 2.66,9.34 2.86,9.48l2.03,1.58C4.84,11.36 4.8,11.69 4.8,12s0.02,0.64 0.07,0.94l-2.03,1.58c-0.18,0.14 -0.23,0.41 -0.12,0.61l1.92,3.32c0.12,0.22 0.37,0.29 0.59,0.22l2.39,-0.96c0.5,0.38 1.03,0.7 1.62,0.94l0.36,2.54c0.05,0.24 0.24,0.41 0.48,0.41h3.84c0.24,0 0.44,-0.17 0.47,-0.41l0.36,-2.54c0.59,-0.24 1.13,-0.56 1.62,-0.94l2.39,0.96c0.22,0.08 0.47,0 0.59,-0.22l1.92,-3.32c0.12,-0.22 0.07,-0.47 -0.12,-0.61L19.14,12.94zM12,15.6c-1.98,0 -3.6,-1.62 -3.6,-3.6s1.62,-3.6 3.6,-3.6s3.6,1.62 3.6,3.6S13.98,15.6 12,15.6z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_swap_vert.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material "swap_vert": two opposed arrows, for the reorder button. Tinted by the pill's text colour. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp" android:height="22dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M16,17.01V10h-2v7.01h-3L15,21l4,-3.99h-3zM9,3L5,6.99h3V14h2V6.99h3L9,3z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\ic_wifi.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp" android:height="22dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M1,9l2,2c4.97,-4.97 13.03,-4.97 18,0l2,-2C16.93,2.93 7.08,2.93 1,9zM9,17l3,3 3,-3c-1.65,-1.66 -4.34,-1.66 -6,0zM5,13l2,2c2.76,-2.76 7.24,-2.76 10,0l2,-2C15.14,9.14 8.87,9.14 5,13z" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\input_row_bg.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#F5FFFFFF" />
+            <corners android:radius="13dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#00000000" />
+            <corners android:radius="13dp" />
+        </shape>
+    </item>
+</selector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\library_check.xml ==========
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="18dp" android:height="18dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#246E58"
+        android:pathData="M12,1a11,11 0,1 0,0 22a11,11 0,1 0,0 -22" />
+    <path android:fillColor="@android:color/transparent" android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M6.5,12l3.7,3.7L17.5,8.5" />
+</vector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\pill_bg.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#F5FFFFFF" />
+            <corners android:radius="21dp" />
+        </shape>
+    </item>
+    <!-- Reorder button while reorder mode is on (focus is on the tiles then). -->
+    <item android:state_activated="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#596EC1FF" />
+            <stroke android:width="1.5dp" android:color="#FF6EC1FF" />
+            <corners android:radius="21dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="270" android:startColor="#2EFFFFFF" android:endColor="#14FFFFFF" />
+            <stroke android:width="1dp" android:color="#38FFFFFF" />
+            <corners android:radius="21dp" />
+        </shape>
+    </item>
+</selector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\pill_text.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#FF111111" />
+    <item android:color="#FFFFFFFF" />
+</selector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\pill_text_mid.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Secondary lines of a focused list row (package, signing key, an input's "Connected"): dark enough
+     to read on the white focused background at 10sp; unfocused a dim white on the dark glass. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="#E6111111" />
+    <item android:color="#73FFFFFF" />
+</selector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\race_bar.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FFFF3B2F" />
+    <corners android:radius="1.5dp" />
+</shape>
+`n`n========== FILE: launcher\app\src\main\res\drawable\settings_choice_bg.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#5574A987" />
+            <corners android:radius="14dp" />
+            <stroke android:width="2dp" android:color="#FFB9E7C7" />
+        </shape>
+    </item>
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#334DAE6D" />
+            <corners android:radius="14dp" />
+            <stroke android:width="1dp" android:color="#FF4DAE6D" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FF242B34" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+</selector>
+`n`n========== FILE: launcher\app\src\main\res\drawable\status_dot.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="#FF34C759" />
+</shape>
+`n`n========== FILE: launcher\app\src\main\res\drawable\tile_bg.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FF1C1C1E" />
+    <corners android:radius="16dp" />
+</shape>
+`n`n========== FILE: launcher\app\src\main\res\drawable-zh\ic_apps_pill.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chinese text renders low in the line: the icon moves 2dp down to sit level with it. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_apps"
+    android:insetTop="2dp" />
+`n`n========== FILE: launcher\app\src\main\res\font\outfit_extralight.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Outfit at weight 200, built once per process. android:fontVariationSettings on each TextView rebuilt
+     the variable font for every view (about 10 ms each on a TV CPU). Android 8 ignores the weight here, as
+     it did on the views, and draws the default instance. -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <font
+        android:font="@font/outfit"
+        android:fontStyle="normal"
+        android:fontWeight="200"
+        android:fontVariationSettings="'wght' 200"
+        tools:targetApi="28" />
+</font-family>
+`n`n========== FILE: launcher\app\src\main\res\font\outfit_light.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Outfit at weight 300, built once per process. android:fontVariationSettings on each TextView rebuilt
+     the variable font for every view (about 10 ms each on a TV CPU). Android 8 ignores the weight here, as
+     it did on the views, and draws the default instance. -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <font
+        android:font="@font/outfit"
+        android:fontStyle="normal"
+        android:fontWeight="300"
+        android:fontVariationSettings="'wght' 300"
+        tools:targetApi="28" />
+</font-family>
+`n`n========== FILE: launcher\app\src\main\res\font\outfit_medium.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Outfit at weight 500, built once per process. android:fontVariationSettings on each TextView rebuilt
+     the variable font for every view (about 10 ms each on a TV CPU). Android 8 ignores the weight here, as
+     it did on the views, and draws the default instance. -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <font
+        android:font="@font/outfit"
+        android:fontStyle="normal"
+        android:fontWeight="500"
+        android:fontVariationSettings="'wght' 500"
+        tools:targetApi="28" />
+</font-family>
+`n`n========== FILE: launcher\app\src\main\res\font\outfit_regular.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Outfit at weight 400, built once per process. android:fontVariationSettings on each TextView rebuilt
+     the variable font for every view (about 10 ms each on a TV CPU). Android 8 ignores the weight here, as
+     it did on the views, and draws the default instance. -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <font
+        android:font="@font/outfit"
+        android:fontStyle="normal"
+        android:fontWeight="400"
+        android:fontVariationSettings="'wght' 400"
+        tools:targetApi="28" />
+</font-family>
+`n`n========== FILE: launcher\app\src\main\res\layout\activity_launcher_settings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF101419"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="72dp"
+        android:paddingEnd="72dp"
+        android:paddingTop="38dp"
+        android:paddingBottom="38dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/launcher_settings"
+            android:textColor="#FFFFFFFF"
+            android:textSize="34sp" />
+
+        <TextView
+            android:id="@+id/reorderChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="28dp"
+            android:text="@string/reorder"
+            android:visibility="gone" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="@string/columns_label"
+            android:textColor="#FFFFFFFF"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <TextView android:id="@+id/columns4" style="@style/SettingsColumnChoice" android:text="4" />
+            <TextView android:id="@+id/columns5" style="@style/SettingsColumnChoice" android:text="5" />
+            <TextView android:id="@+id/columns6" style="@style/SettingsColumnChoice" android:text="6" />
+            <TextView android:id="@+id/columns7" style="@style/SettingsColumnChoice" android:text="7" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/rows_below_dock_label"
+            android:textColor="#FFFFFFFF"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <TextView android:id="@+id/rows0" style="@style/SettingsColumnChoice" android:text="0" />
+            <TextView android:id="@+id/rows1" style="@style/SettingsColumnChoice" android:text="1" />
+            <TextView android:id="@+id/rows2" style="@style/SettingsColumnChoice" android:text="2" />
+            <TextView android:id="@+id/rows3" style="@style/SettingsColumnChoice" android:text="3" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/dock_opacity_label"
+            android:textColor="#FFFFFFFF"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <TextView android:id="@+id/dock100" style="@style/SettingsColumnChoice" android:text="100%" />
+            <TextView android:id="@+id/dock70" style="@style/SettingsColumnChoice" android:text="70%" />
+            <TextView android:id="@+id/dock50" style="@style/SettingsColumnChoice" android:text="50%" />
+            <TextView android:id="@+id/dock30" style="@style/SettingsColumnChoice" android:text="30%" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/dream_name"
+            android:textColor="#FFFFFFFF"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <TextView android:id="@+id/clockSystem" style="@style/SettingsColumnChoice" android:text="@string/clock_format_system" />
+            <TextView android:id="@+id/clock12" style="@style/SettingsColumnChoice" android:text="@string/clock_format_12" />
+            <TextView android:id="@+id/clock24" style="@style/SettingsColumnChoice" android:text="@string/clock_format_24" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/wallpaperChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="28dp" />
+
+        <TextView
+            android:id="@+id/animationsChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="28dp" />
+
+        <TextView
+            android:id="@+id/advancedChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/advanced_effects_warning"
+            android:textColor="#FFACB8C1"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/openOnStartChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="28dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/followThemeChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="18dp"
+            android:text="@string/follow_theme" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:text="@string/follow_theme_hint"
+            android:textColor="#FFACB8C1"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/defaultHomeChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="28dp"
+            android:text="@string/home_settings" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:text="@string/home_settings_help"
+            android:textColor="#FFACB8C1"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvSettingsChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="18dp"
+            android:text="@string/tv_settings" />
+    </LinearLayout>
+</ScrollView>
+`n`n========== FILE: launcher\app\src\main\res\layout\activity_main.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF000000">
+
+    <!-- Time-of-day backdrop, drawn once a minute (config.xml sky_intensity; 0 keeps it hidden). -->
+    <com.gathin.tvhome.SkyView
+        android:id="@+id/sky"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no" />
+
+    <!-- Cinematic top shelf (cinematic_home): the focused dock app's artwork, a few pixels across and
+         stretched over the screen, which softens it like a blur without the cost of one. Hidden otherwise. -->
+    <ImageView
+        android:id="@+id/heroArt"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:alpha="0"
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
+
+    <!-- Ambient glow in the colour of the focused dock app. -->
+    <View
+        android:id="@+id/ambient"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0" />
+
+    <!-- Race-weekend panel (a theme's race_calendar, see RaceWeekend): in the free space under the clock,
+         shown only from shortly before a weekend's first session until the race is over. Updated once a
+         minute with the clock, never animated. -->
+    <LinearLayout
+        android:id="@+id/racePanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|left"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="158dp"
+        android:orientation="vertical"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- A short kerb-red bar, the panel's one accent. -->
+            <View
+                android:layout_width="3dp"
+                android:layout_height="13dp"
+                android:layout_marginEnd="10dp"
+                android:id="@+id/raceBar"
+                android:background="@drawable/race_bar" />
+
+            <TextView
+                android:id="@+id/raceKicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textColor="#B3FFFFFF"
+                android:textSize="12sp"
+                android:fontFamily="@string/font_medium"
+                android:letterSpacing="0.22"
+                android:textAllCaps="true" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/raceHeadline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:singleLine="true"
+            android:textColor="#FFFFFFFF"
+            android:textSize="34sp"
+            android:fontFamily="@string/font_light"
+            android:letterSpacing="-0.01"
+            android:includeFontPadding="false" />
+
+        <TextView
+            android:id="@+id/raceSessions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:singleLine="true"
+            android:textColor="#99FFFFFF"
+            android:textSize="12sp"
+            android:fontFamily="@string/font_medium"
+            android:letterSpacing="0.12" />
+
+        <!-- game_day: one dot per turn when the panel rotates between games (and the F1 weekend). -->
+        <LinearLayout
+            android:id="@+id/racePager"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- Cinematic top shelf: darkens the edge behind the shelf and the lower half, so the text and the
+         dock stay readable over the artwork. -->
+    <View
+        android:id="@+id/heroScrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
+
+    <!-- Top shelf: the focused dock app's name, positioned above the dock in code. -->
+    <LinearLayout
+        android:id="@+id/hero"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="68dp"
+        android:orientation="vertical"
+        android:alpha="0">
+
+        <TextView
+            android:id="@+id/heroName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFFFF"
+            android:textSize="48sp"
+            android:fontFamily="@string/font_light"
+            android:letterSpacing="-0.02"
+            android:includeFontPadding="false"
+            android:singleLine="true" />
+
+        <!-- Cinematic shelf only: when the app was last opened, and the dock position dots. -->
+        <TextView
+            android:id="@+id/heroMeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="12dp"
+            android:singleLine="true"
+            android:textColor="#B3FFFFFF"
+            android:textSize="15sp"
+            android:fontFamily="@string/font_light"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/heroDots"
+            android:layout_width="wrap_content"
+            android:layout_height="6dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="56dp"
+        android:paddingEnd="56dp"
+        android:paddingTop="26dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <!-- No clipping down to the pills: with advanced effects a focused pill scales up past its row. -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <LinearLayout
+                android:id="@+id/leftBlock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/topButtons"
+                android:layout_marginEnd="16dp"
+                android:orientation="vertical">
+
+                <!-- The header texts use gravity left, not start: the launcher lays out left to right
+                     (no supportsRtl), and with start a right-to-left script such as Arabic would move to the
+                     right edge of these full-width lines instead of staying under the clock. -->
+                <TextView
+                    android:id="@+id/greeting"
+                    android:gravity="left"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:layout_marginStart="4dp"
+                    android:textColor="#8CFFFFFF"
+                    android:textSize="12sp"
+                    android:fontFamily="@string/font_medium"
+                    android:letterSpacing="0.22"
+                    android:textAllCaps="true" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:baselineAligned="true">
+
+                    <TextClock
+                        android:id="@+id/clock"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:format12Hour="h:mm"
+                        android:format24Hour="HH:mm"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="52sp"
+                        android:fontFamily="@string/font_light"
+                        android:letterSpacing="-0.04"
+                        android:fontFeatureSettings="tnum"
+                        android:includeFontPadding="false" />
+
+                    <TextClock
+                        android:id="@+id/ampm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:layout_gravity="bottom"
+                        android:layout_marginBottom="8dp"
+                        android:format12Hour="a"
+                        android:format24Hour=""
+                        android:textColor="#B3FFFFFF"
+                        android:textSize="15sp"
+                        android:fontFamily="@string/font_medium"
+                        android:letterSpacing="0.08"
+                        android:textAllCaps="true" />
+
+                    <View
+                        android:id="@+id/clockDivider"
+                        android:layout_width="1dp"
+                        android:layout_height="26dp"
+                        android:layout_gravity="bottom"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:background="#33FFFFFF" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"

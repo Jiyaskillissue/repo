@@ -1,0 +1,1500 @@
+﻿        this.okOpens = okOpens && !selectionMode;
+        this.onHome = onHome;
+        this.changed = changed;
+        this.dismissed = dismissed;
+        this.excludedApps = excludedApps;
+        density = activity.getResources().getDisplayMetrics().density;
+        panel = new LinearLayout(activity);
+        panel.setLayoutDirection(rtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+        panel.setOrientation(LinearLayout.VERTICAL);
+        panel.setPadding(dp(12), dp(8), dp(12), dp(12));
+        panel.setBackgroundResource(R.drawable.glass_panel);
+        View decor = activity.getWindow().getDecorView();
+        catalogWidth = Math.min(dp(800), Math.max(dp(200), decor.getWidth() - dp(64)));
+        int width = catalogWidth;
+        int height = dp(280);
+        popup = new PopupWindow(panel, width, height, true);
+        popup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        popup.setOutsideTouchable(true);
+        popup.setAnimationStyle(0);
+        popup.setOnDismissListener(() -> {
+            closed = true;
+            dismissActions();
+            stopHighlight();
+            icons.clear();
+            dismissed.run();
+        });
+    }
+
+    void close() {
+        dismissActions();
+        if (popup.isShowing()) {
+            popup.dismiss();
+        } else if (!closed) {
+            closed = true;   // still loading: it never shows
+            dismissed.run();
+        }
+    }
+
+    void show() {
+        load(true);
+    }
+
+    private void reveal() {
+        popup.showAtLocation(activity.getWindow().getDecorView(), Gravity.CENTER, 0, 0);
+        View container = panel.getRootView();
+        if (container.getLayoutParams() instanceof WindowManager.LayoutParams) {
+            WindowManager.LayoutParams params = (WindowManager.LayoutParams) container.getLayoutParams();
+            params.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+            params.dimAmount = 0.55f;
+            activity.getWindowManager().updateViewLayout(container, params);
+        }
+        panel.setAlpha(0f);
+        panel.animate().alpha(1f).setDuration(reducedMotion ? Motion.REDUCED_MS : 180).start();
+    }
+
+    /** Called by the activity's existing package receiver; an uninstall cannot leave a stale action. */
+    /** Packages with a leanback entry, from the last refresh. */
+    private final java.util.Set<String> tvPackages = new java.util.HashSet<>();
+
+    void refresh() {
+        load(false);
+    }
+
+    /**
+     * Reads the catalogue on LOADER, then fills it on the UI thread. reveal: from opening the library; the popup
+     * appears once the latest load has filled it, even when a refresh replaced the opening's own load.
+     */
+    private void load(boolean reveal) {
+        dismissActions();
+        int load = loads.start(reveal);
+        PackageManager pm = activity.getPackageManager();
+        String self = activity.getPackageName();
+        LOADER.execute(() -> {
+            Map<String, ResolveInfo> unique = new LinkedHashMap<>();
+            Set<String> tv = new HashSet<>();
+            // Prefer the TV entry when an app declares both categories.
+            for (String category : new String[]{Intent.CATEGORY_LEANBACK_LAUNCHER, Intent.CATEGORY_LAUNCHER}) {
+                for (ResolveInfo info : pm.queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(category), 0)) {
+                    if (info.activityInfo == null || !info.activityInfo.exported) continue;
+                    String pkg = info.activityInfo.packageName;
+                    if (Intent.CATEGORY_LEANBACK_LAUNCHER.equals(category)) tv.add(pkg);
+                    if (!pkg.equals(self) && !LibraryApps.excludedFromCatalog(excludedApps, pkg) && !unique.containsKey(pkg)) unique.put(pkg, info);
+                }
+            }
+            Map<String, String> names = new HashMap<>();
+            Map<String, Long> installed = new HashMap<>();
+            for (Map.Entry<String, ResolveInfo> entry : unique.entrySet()) {
+                String pkg = entry.getKey();
+                long updated = 0;
+                try {
+                    PackageInfo info = pm.getPackageInfo(pkg, 0);
+                    installed.put(pkg, info.firstInstallTime);
+                    updated = info.lastUpdateTime;
+                } catch (PackageManager.NameNotFoundException | RuntimeException unavailable) {
+                    installed.put(pkg, 0L);
+                }
+                Known known = KNOWN.get(pkg);
+                if (known == null || known.updated != updated) {
+                    known = new Known(updated, loadLabel(pm, entry.getValue()));
+                    KNOWN.put(pkg, known);
+                }
+                names.put(pkg, known.label);
+            }
+            KNOWN.keySet().retainAll(unique.keySet());
+            main.post(() -> {
+                if (closed || !loads.isLatest(load)) return;
+                tvPackages.clear();
+                tvPackages.addAll(tv);
+                installTimes.clear();
+                installTimes.putAll(installed);
+                labels.clear();
+                labels.putAll(names);
+                fill(new ArrayList<>(unique.values()));
+                if (loads.takeReveal()) reveal();
+            });
+        });
+    }
+
+    private void fill(List<ResolveInfo> catalogue) {
+        totalApps = catalogue.size();
+        apps = catalogue;
+        Map<String, Boolean> home = new HashMap<>();
+        for (ResolveInfo app : apps) {
+            String pkg = app.activityInfo.packageName;
+            home.put(pkg, onHome.test(pkg));
+        }
+        catalogTime = System.currentTimeMillis();
+        Collator collator = Collator.getInstance();
+        apps.sort((a, b) -> {
+            String pa = a.activityInfo.packageName, pb = b.activityInfo.packageName;
+            if (selectionMode) return LibraryApps.compareCatalog(home.get(pa), label(a), pa,
+                    home.get(pb), label(b), pb, collator);
+            int priority = LibraryApps.comparePriority(home.get(pa), installTimes.get(pa),
+                    home.get(pb), installTimes.get(pb), catalogTime);
+            if (priority != 0) return priority;
+            int byLabel = collator.compare(label(a), label(b));
+            return byLabel != 0 ? byLabel : pa.compareTo(pb);
+        });
+        showCatalog();
+    }
+
+    private String label(ResolveInfo app) {
+        String pkg = app.activityInfo.packageName;
+        String cached = labels.get(pkg);
+        if (cached != null) return cached;
+        String value = loadLabel(activity.getPackageManager(), app);
+        labels.put(pkg, value);
+        return value;
+    }
+
+    private static String loadLabel(PackageManager pm, ResolveInfo app) {
+        String pkg = app.activityInfo.packageName;
+        try { return Cards.cleanLabel(String.valueOf(app.loadLabel(pm)), pkg); }
+        catch (RuntimeException unavailable) { return pkg; }
+    }
+
+    /** The app's icon from this opening's cache, or loaded on LOADER and set once it arrives. */
+    private void bindIcon(ImageView icon, ResolveInfo app) {
+        String pkg = app.activityInfo.packageName;
+        icon.setTag(pkg);
+        Drawable cached = icons.get(pkg);
+        icon.setImageDrawable(cached);
+        if (cached != null || !iconsLoading.add(pkg)) return;
+        PackageManager pm = activity.getPackageManager();
+        LOADER.execute(() -> {
+            Drawable loaded;
+            try { loaded = app.loadIcon(pm); }
+            catch (RuntimeException unavailable) { loaded = null; }
+            Drawable result = loaded;
+            main.post(() -> {
+                iconsLoading.remove(pkg);
+                if (closed) return;
+                Drawable shown = result != null ? result : activity.getDrawable(R.drawable.ic_apps);
+                icons.put(pkg, shown);
+                // The view may show another app by now; a view bound to it later takes it from the cache.
+                if (pkg.equals(icon.getTag())) icon.setImageDrawable(shown);
+            });
+        });
+    }
+
+    private void heading(String text) {
+        TextView title = text(text, 18, 0xFFFFFFFF);
+        title.setMaxLines(1);
+        title.setEllipsize(TextUtils.TruncateAt.END);
+        title.setPadding(dp(12), dp(10), dp(12), dp(8));
+        panel.addView(title, new LinearLayout.LayoutParams(-1, -2));
+    }
+
+    /** Reuse translated actions instead of shipping another hint in every locale. */
+    private String hint(boolean home) {
+        if (selectionMode) return activity.getString(android.R.string.ok) + ": "
+                + activity.getString(home ? R.string.library_remove_shortcut : R.string.library_add_home);
+        return activity.getString(home || okOpens ? R.string.library_hint_open : R.string.library_hint_add);
+    }
+
+    private void showCatalog() {
+        stopHighlight();
+        resize(catalogWidth, dp(280));
+        panel.removeAllViews();
+        LinearLayout header = new LinearLayout(activity);
+        header.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        header.setPadding(dp(12), dp(4), dp(8), dp(4));
+        TextView title = text(activity.getString(R.string.app_library), 22, Color.WHITE);
+        header.addView(title, new LinearLayout.LayoutParams(0, dp(36), 1));
+        title.setGravity(Gravity.CENTER_VERTICAL | (rtl ? Gravity.RIGHT : Gravity.LEFT));
+        title.setSingleLine(true);
+        title.setEllipsize(TextUtils.TruncateAt.END);
+        TextView count = text(activity.getResources().getQuantityString(
+                R.plurals.library_app_count, totalApps, totalApps), 13, 0xA6FFFFFF);
+        count.setSingleLine(true);
+        header.addView(count, new LinearLayout.LayoutParams(-2, -2));
+        // The launcher has no global supportsRtl: explicitly mirror this horizontal row.
+        if (rtl) {
+            header.removeView(count);
+            header.addView(count, 0);
+            count.setPadding(0, 0, dp(12), 0);
+        }
+        panel.addView(header, new LinearLayout.LayoutParams(-1, dp(44)));
+        instructions = text(hint(false), 13, 0xBBFFFFFF);
+        instructions.setSingleLine(true);
+        instructions.setEllipsize(TextUtils.TruncateAt.END);
+        instructions.setPadding(dp(12), 0, dp(12), dp(6));
+        panel.addView(instructions, new LinearLayout.LayoutParams(-1, dp(26)));
+        panel.setFocusableInTouchMode(apps.isEmpty());
+        if (apps.isEmpty()) {
+            instructions.setVisibility(View.GONE);
+            heading(activity.getString(R.string.library_empty));
+            panel.setFocusableInTouchMode(true);
+            panel.requestFocus();
+            return;
+        }
+        shelf = new FrameLayout(activity);
+        // The glass uses physical x coordinates; only the catalogue mirrors its item order.
+        shelf.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+        shelf.setClipChildren(false);
+        RecyclerView list = new RecyclerView(activity);
+        list.setLayoutDirection(rtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
+        catalog = list;
+        list.setLayoutManager(new LinearLayoutManager(activity, RecyclerView.HORIZONTAL, false) {
+            @Override protected boolean isLayoutRTL() { return rtl; }
+        });
+        list.setItemAnimator(null);
+        list.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        list.setClipToPadding(false);
+        list.setPadding(dp(10), dp(8), dp(10), dp(8));
+        list.setAdapter(new Catalog());
+        shelf.addView(list, new FrameLayout.LayoutParams(-1, -1));
+        highlight = new GlassView(activity, null);
+        highlight.setRadius(dp(20));
+        highlight.setAlpha(0f);
+        highlight.setFocusable(false);
+        highlight.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        shelf.addView(highlight, new FrameLayout.LayoutParams(dp(144), dp(180)));
+        scrollOffset = 0;
+        spring = new SpringAnimation(highlight, new FloatPropertyCompat<View>("libraryScrollX") {
+            @Override public float getValue(View view) { return view.getTranslationX() + scrollOffset; }
+            @Override public void setValue(View view, float value) { view.setTranslationX(value - scrollOffset); }
+        });
+        if (reducedMotion) Motion.reduce(spring);
+        else spring.setSpring(new SpringForce().setStiffness(260f).setDampingRatio(0.58f));
+        list.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+                scrollOffset += dx;
+                highlight.setTranslationX(highlight.getTranslationX() - dx);
+            }
+        });
+        panel.addView(shelf, new LinearLayout.LayoutParams(-1, 0, 1));
+        int position = Math.min(selectedPosition, apps.size() - 1);
+        for (int i = 0; i < apps.size(); i++) {
+            if (apps.get(i).activityInfo.packageName.equals(selectedPackage)) { position = i; break; }
+        }
+        ((LinearLayoutManager) list.getLayoutManager()).scrollToPositionWithOffset(position, selectedOffset);
+        final int target = position;
+        list.post(() -> {
+            if (catalog != list || !popup.isShowing()) return;
+            RecyclerView.ViewHolder holder = list.findViewHolderForAdapterPosition(target);
+            if (holder != null) holder.itemView.requestFocus();
+        });
+    }
+
+    private void dismissActions() {
+        PopupWindow menu = actionPopup;
+        actionPopup = null;
+        if (menu != null) menu.dismiss();
+    }
+
+    private void restoreCardFocus() {
+        if (catalog == null || !popup.isShowing()) return;
+        catalog.post(() -> {
+            if (catalog == null || !popup.isShowing() || actionPopup != null) return;
+            RecyclerView.ViewHolder holder = catalog.findViewHolderForAdapterPosition(selectedPosition);
+            if (holder != null) holder.itemView.requestFocus();
+        });
+    }
+
+    private void changeHome(ResolveInfo app, boolean add) {
+        if (!LibraryApps.save(activity, app.activityInfo.packageName, add)) {
+            Toast.makeText(activity, R.string.library_save_failed, Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (selectionMode) {
+            updateSelectionFocus(app, add);
+            changed.run();
+            fill(new ArrayList<>(apps));
+            return;
+        }
+        selectedOffset = 0;
+        if (add && catalog != null) {
+            RecyclerView.ViewHolder holder = catalog.findViewHolderForAdapterPosition(selectedPosition);
+            if (holder != null) {
+                View card = holder.itemView;
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) card.getLayoutParams();
+                selectedOffset = rtl
+                        ? catalog.getWidth() - catalog.getPaddingRight()
+                            - catalog.getLayoutManager().getDecoratedRight(card) - params.rightMargin
+                        : catalog.getLayoutManager().getDecoratedLeft(card)
+                            - params.leftMargin - catalog.getPaddingLeft();
+            }
+            // Advance through missing shortcuts instead of following the newly checked app
+            // into the Home group. Preserve its screen slot when the catalogue is rebuilt.
+            int next = LibraryApps.nextFocus(selectedPosition, apps.size(),
+                    index -> !onHome.test(apps.get(index).activityInfo.packageName));
+            if (next >= 0) {
+                selectedPackage = apps.get(next).activityInfo.packageName;
+                selectedPosition = next;
+            }
+        }
+        dismissActions();
+        changed.run();
+        refresh();
+    }
+
+    private void updateSelectionFocus(ResolveInfo app, boolean add) {
+        int position = apps.indexOf(app);
+        int next = add ? -1 : LibraryApps.nextAfterRemoval(position, apps.size());
+        selectedOffset = 0;
+        if (!add && catalog != null) {
+            RecyclerView.ViewHolder holder = catalog.findViewHolderForAdapterPosition(position);
+            if (holder != null) {
+                View card = holder.itemView;
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) card.getLayoutParams();
+                selectedOffset = rtl
+                        ? catalog.getWidth() - catalog.getPaddingRight()
+                            - catalog.getLayoutManager().getDecoratedRight(card) - params.rightMargin
+                        : catalog.getLayoutManager().getDecoratedLeft(card)
+                            - params.leftMargin - catalog.getPaddingLeft();
+            }
+        }
+        selectedPackage = next >= 0 ? apps.get(next).activityInfo.packageName : app.activityInfo.packageName;
+    }
+
+    private void open(ResolveInfo app) {
+        close();
+        Intent intent = new Intent(Intent.ACTION_MAIN).setComponent(
+                new ComponentName(app.activityInfo.packageName, app.activityInfo.name));
+        // TV apps keep the leanback launch intent, so an app already running resumes instead of restarting.
+        if (tvPackages.contains(app.activityInfo.packageName)) intent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        try { activity.startActivity(intent); }
+        catch (ActivityNotFoundException | SecurityException e) {
+            Toast.makeText(activity, activity.getString(R.string.cant_open, label(app)), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showActions(ResolveInfo app, View anchor) {
+        dismissActions();
+        selectedPackage = app.activityInfo.packageName;
+        String pkg = selectedPackage;
+        if (spring != null) spring.cancel();
+        View menuPanel = activity.getLayoutInflater().inflate(R.layout.popup_inputs, panel, false);
+        LinearLayout rows = menuPanel.findViewById(R.id.rows);
+        PopupWindow menu = new PopupWindow(menuPanel, dp(220), ViewGroup.LayoutParams.WRAP_CONTENT, true);
+        actionPopup = menu;
+        menu.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        menu.setOutsideTouchable(true);
+        menu.setAnimationStyle(0);
+        menu.setElevation(0f);
+        menu.setOnDismissListener(() -> {
+            if (actionPopup == menu) actionPopup = null;
+            restoreCardFocus();
+        });
+        addAction(rows, R.string.library_open, () -> open(app));
+        boolean home = onHome.test(pkg);
+        addAction(rows, home ? R.string.library_remove_shortcut : R.string.library_add_home,
+                () -> changeHome(app, !home));
+        Intent info = SystemSettings.appInfo(activity, pkg);
+        if (info != null) addAction(rows, R.string.library_app_info, () -> {
+            close();
+            try {
+                activity.startActivity(info);
+            } catch (ActivityNotFoundException | SecurityException e) {
+                Toast.makeText(activity, activity.getString(R.string.cant_open, label(app)), Toast.LENGTH_SHORT).show();
+            }
+        });
+        int menuWidth = dp(220);
+        for (int i = 0; i < rows.getChildCount(); i++) {
+            TextView title = rows.getChildAt(i).findViewById(R.id.title);
+            menuWidth = Math.max(menuWidth, (int) Math.ceil(title.getPaint().measureText(title.getText().toString())) + dp(58));
+            title.setEllipsize(TextUtils.TruncateAt.END);
+        }
+        menuWidth = Math.min(menuWidth, panel.getWidth() - dp(24));
+        menu.setWidth(menuWidth);
+        menuPanel.measure(View.MeasureSpec.makeMeasureSpec(menuWidth, View.MeasureSpec.EXACTLY), View.MeasureSpec.UNSPECIFIED);
+        int[] location = new int[2];
+        anchor.getLocationOnScreen(location);
+        int[] panelLocation = new int[2];
+        panel.getLocationOnScreen(panelLocation);
+        Rect screen = new Rect(panelLocation[0], panelLocation[1],
+                panelLocation[0] + panel.getWidth(), panelLocation[1] + panel.getHeight());
+        int x = Math.max(screen.left + dp(12), Math.min(location[0] + anchor.getWidth() - dp(12), screen.right - menuWidth - dp(12)));
+        int y = Math.max(screen.top + dp(12), Math.min(location[1] + dp(8), screen.bottom - menuPanel.getMeasuredHeight() - dp(12)));
+        menuPanel.setAlpha(0f);
+        menuPanel.setPivotY(0f);
+        menuPanel.setScaleY(0.92f);
+        menuPanel.setTranslationY(-dp(8));
+        menu.showAtLocation(activity.getWindow().getDecorView(), Gravity.TOP | Gravity.START, x, y);
+        menuPanel.animate().alpha(1f).scaleY(1f).translationY(0f).setDuration(reducedMotion ? Motion.REDUCED_MS : 220)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f)).start();
+        rows.getChildAt(0).requestFocus();
+    }
+
+    private void addAction(LinearLayout rows, int label, Runnable action) {
+        View row = activity.getLayoutInflater().inflate(R.layout.item_input, rows, false);
+        ((TextView) row.findViewById(R.id.title)).setText(label);
+        row.setFocusableInTouchMode(true);
+        row.findViewById(R.id.icon).setVisibility(View.GONE);
+        row.findViewById(R.id.dot).setVisibility(View.GONE);
+        row.findViewById(R.id.status).setVisibility(View.GONE);
+        row.setOnClickListener(v -> action.run());
+        rows.addView(row);
+        row.setOnKeyListener((v, key, event) -> {
+            int index = rows.indexOfChild(v);
+            return event.getAction() == KeyEvent.ACTION_DOWN && (key == KeyEvent.KEYCODE_DPAD_LEFT
+                    || key == KeyEvent.KEYCODE_DPAD_RIGHT || key == KeyEvent.KEYCODE_DPAD_UP && index == 0
+                    || key == KeyEvent.KEYCODE_DPAD_DOWN && index == rows.getChildCount() - 1);
+        });
+    }
+
+    private TextView text(String value, int size, int color) {
+        TextView view = new TextView(activity);
+        view.setText(value);
+        view.setTextDirection(rtl ? View.TEXT_DIRECTION_RTL : View.TEXT_DIRECTION_FIRST_STRONG);
+        view.setGravity(rtl ? Gravity.RIGHT : Gravity.LEFT);
+        view.setTextSize(size);
+        view.setTextColor(color);
+        view.setTypeface(UiFont.get(activity, R.string.font_medium));
+        view.setLetterSpacing(0.01f);
+        view.setIncludeFontPadding(false);
+        return view;
+    }
+
+    private int dp(int value) { return Math.round(value * density); }
+
+    private final class Catalog extends RecyclerView.Adapter<Row> {
+        @NonNull @Override public Row onCreateViewHolder(@NonNull ViewGroup parent, int type) {
+            FrameLayout row = new FrameLayout(activity);
+            RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(dp(132), dp(170));
+            params.setMargins(dp(6), dp(2), dp(6), dp(2));
+            row.setLayoutParams(params);
+            row.setPadding(dp(10), dp(12), dp(10), dp(10));
+            row.setFocusableInTouchMode(true);
+            row.setClickable(true);
+            LinearLayout content = new LinearLayout(activity);
+            content.setOrientation(LinearLayout.VERTICAL);
+            content.setGravity(Gravity.CENTER_HORIZONTAL);
+            row.addView(content, new FrameLayout.LayoutParams(-1, -1));
+            ImageView icon = new ImageView(activity);
+            icon.setId(R.id.icon);
+            icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            content.addView(icon, new LinearLayout.LayoutParams(dp(60), dp(60)));
+            TextView name = text("", 15, Color.WHITE);
+            name.setId(R.id.title);
+            name.setGravity(Gravity.CENTER);
+            name.setMaxLines(2);
+            LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(-1, dp(44));
+            nameParams.topMargin = dp(10);
+            content.addView(name, nameParams);
+            TextView status = text("", 11, 0xBBFFFFFF);
+            status.setId(R.id.status);
+            status.setGravity(Gravity.CENTER);
+            status.setMaxLines(2);
+            content.addView(status, new LinearLayout.LayoutParams(-1, -2));
+            View check = new View(activity);
+            check.setId(R.id.dot);
+            FrameLayout.LayoutParams badge = new FrameLayout.LayoutParams(dp(18), dp(18), Gravity.TOP | Gravity.END);
+            badge.setMargins(0, dp(2), dp(2), 0);
+            row.addView(check, badge);
+            return new Row(row);
+        }
+        @Override public void onBindViewHolder(@NonNull Row holder, int position) {
+            ResolveInfo app = apps.get(position);
+            String pkg = app.activityInfo.packageName;
+            bindIcon(holder.itemView.findViewById(R.id.icon), app);
+            TextView name = holder.itemView.findViewById(R.id.title);
+            name.setText(label(app));
+            name.setEllipsize(TextUtils.TruncateAt.END);
+            TextView status = holder.itemView.findViewById(R.id.status);
+            boolean home = onHome.test(pkg);
+            boolean recent = !selectionMode && LibraryApps.recent(installTimes.getOrDefault(pkg, 0L), catalogTime);
+            status.setText(home ? R.string.library_on_home : recent ? R.string.library_recent : R.string.library_add_home);
+            status.setVisibility(home || !okOpens ? View.VISIBLE : View.INVISIBLE);
+            holder.itemView.setBackground(surface(home ? 0x1475BBA4 : 0x0CFFFFFF, 18));
+            View check = holder.itemView.findViewById(R.id.dot);
+            check.getLayoutParams().width = dp(home ? 18 : 8);
+            check.getLayoutParams().height = dp(home ? 18 : 8);
+            if (home) check.setBackgroundResource(R.drawable.library_check);
+            else check.setBackground(surface(0xFF70D9A0, 8));
+            check.setVisibility(home || recent ? View.VISIBLE : View.GONE);
+            holder.itemView.setOnClickListener(v -> {
+                boolean onHomeNow = onHome.test(pkg);
+                if (LibraryApps.okOpens(selectionMode, okOpens, onHomeNow)) open(app);
+                else changeHome(app, !onHomeNow);
+            });
+            holder.itemView.setOnLongClickListener(selectionMode ? null : v -> { showActions(app, v); return true; });
+            holder.itemView.setOnFocusChangeListener((v, focused) -> {
+                if (focused) {
+                    selectedPackage = pkg;
+                    instructions.setText(hint(onHome.test(pkg)));
+                    v.post(() -> { if (v.hasFocus() && catalog != null) highlight(v, true); });
+                    int index = holder.getBindingAdapterPosition();
+                    if (index != RecyclerView.NO_POSITION) selectedPosition = index;
+                }
+            });
+            holder.itemView.setOnKeyListener((v, key, event) -> {
+                int index = holder.getBindingAdapterPosition();
+                return event.getAction() == KeyEvent.ACTION_DOWN && (key == KeyEvent.KEYCODE_DPAD_UP
+                        || key == KeyEvent.KEYCODE_DPAD_DOWN
+                        || (rtl ? key == KeyEvent.KEYCODE_DPAD_RIGHT : key == KeyEvent.KEYCODE_DPAD_LEFT) && index == 0
+                        || (rtl ? key == KeyEvent.KEYCODE_DPAD_LEFT : key == KeyEvent.KEYCODE_DPAD_RIGHT) && index == apps.size() - 1);
+            });
+        }
+        @Override public int getItemCount() { return apps.size(); }
+    }
+
+    private static final class Row extends RecyclerView.ViewHolder {
+        Row(View view) { super(view); }
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\BatFlightView.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.os.SystemClock;
+import android.view.View;
+
+import java.util.Random;
+
+/**
+ * The Halloween skin's greeting for the first Home of the day: a transparent full-screen overlay where a colony of
+ * bats rises from the bottom of the screen and scatters out over the top, beating their wings, then the callback
+ * runs on the main thread. The bat is a picture (Microsoft's Fluent Emoji 3D, MIT), squeezed in time with each
+ * wing beat and mirrored for half the colony. Like {@link PetalShowerView} it takes no focus, clicks or
+ * accessibility and allocates nothing per frame.
+ */
+public final class BatFlightView extends View {
+
+    private static final double TAU = 2 * Math.PI;
+
+    private final float density;
+    private final Bitmap bat;
+    private final Random rnd = new Random();
+    private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private final RectF dst = new RectF();
+
+    private int count;
+    private float[] x0 = new float[0], drift = new float[0], delay = new float[0], life = new float[0],
+            size = new float[0], beatHz = new float[0], phase = new float[0], weave = new float[0];
+    private boolean[] mirror = new boolean[0];
+
+    private boolean playing;
+    private long start, duration;
+    private Runnable onDone;
+    private final Runnable finish = this::finish;
+
+    public BatFlightView(Context context) {
+        super(context);
+        density = context.getResources().getDisplayMetrics().density;
+        bat = BitmapFactory.decodeResource(context.getResources(), R.drawable.halloween_bat);
+        setFocusable(false);
+        setClickable(false);
+        setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+        setWillNotDraw(false);
+    }
+
+    /**
+     * Sends {@code bats} bats up over {@code durationMs}, then runs {@code done} on the main thread. Playing again
+     * before the last flight ends finishes that one first (its callback runs).
+     */
+    public void play(int bats, long durationMs, Runnable done) {
+        if (playing) {
+            removeCallbacks(finish);
+            finish();
+        }
+        int n = Math.max(0, bats);
+        ensureCapacity(n);
+        count = n;
+        duration = Math.max(1, durationMs);
+        onDone = done;
+        for (int i = 0; i < n; i++) {
+            x0[i] = (i + rnd.nextFloat()) / n;               // spread across the width
+            drift[i] = (rnd.nextFloat() - 0.5f) * 0.5f;      // fraction of the width moved sideways
+            delay[i] = rnd.nextFloat() * 0.35f;              // fractions of the duration
+            life[i] = 0.55f + rnd.nextFloat() * (1f - delay[i] - 0.55f);
+            size[i] = 26f + rnd.nextFloat() * 30f;           // dp
+            beatHz[i] = 5f + rnd.nextFloat() * 3f;
+            phase[i] = rnd.nextFloat() * (float) TAU;
+            weave[i] = 8f + rnd.nextFloat() * 18f;           // dp of side-to-side weave
+            mirror[i] = drift[i] < 0f;                       // face the way it is heading
+        }
+        playing = true;
+        start = SystemClock.uptimeMillis();
+        postDelayed(finish, duration);
+        postInvalidateOnAnimation();
+    }
+
+    private void finish() {
+        if (!playing) return;
+        playing = false;
+        invalidate();
+        Runnable done = onDone;
+        onDone = null;
+        if (done != null) done.run();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (playing) {
+            removeCallbacks(finish);
+            finish();
+        }
+    }
+
+    @Override
+    protected void onDraw(Canvas c) {
+        if (!playing) return;
+        long now = SystemClock.uptimeMillis();
+        float elapsed = (now - start) / (float) duration;
+        float secs = (now - start) / 1000f;
+        float w = getWidth(), h = getHeight();
+        for (int i = 0; i < count; i++) {
+            float p = (elapsed - delay[i]) / life[i];
+            if (p <= 0f || p >= 1f) continue;
+            float s = size[i] * density;
+            float rise = p * (0.6f + 0.4f * p);              // takes off, then speeds up
+            float y = h + s - (h + 2.5f * s) * rise;
+            float x = (x0[i] + drift[i] * p) * w
+                    + weave[i] * density * (float) Math.sin(TAU * 0.8 * secs + phase[i]);
+            float beat = (float) Math.sin(TAU * beatHz[i] * secs + phase[i]);
+            float sy = 0.62f + 0.38f * Math.abs(beat);       // wings folding and opening
+            int a = p < 0.12f ? (int) (255 * p / 0.12f) : p > 0.8f ? (int) (255 * (1f - (p - 0.8f) / 0.2f)) : 255;
+            paint.setAlpha(a);
+            c.save();
+            c.translate(x, y);
+            c.scale(mirror[i] ? -1f : 1f, sy);
+            dst.set(-s / 2f, -s / 2f, s / 2f, s / 2f);
+            c.drawBitmap(bat, null, dst, paint);
+            c.restore();
+        }
+        postInvalidateOnAnimation();
+    }
+
+    private void ensureCapacity(int n) {
+        if (x0.length >= n) return;
+        x0 = new float[n];
+        drift = new float[n];
+        delay = new float[n];
+        life = new float[n];
+        size = new float[n];
+        beatHz = new float[n];
+        phase = new float[n];
+        weave = new float[n];
+        mirror = new boolean[n];
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\BellDrawable.java ==========
+package com.gathin.tvhome;
+
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PixelFormat;
+import android.graphics.RadialGradient;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
+import android.view.animation.LinearInterpolator;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+/**
+ * A brass temple bell (ghanta): a loop and knob on top, a domed body with two engraved bands and a flared lip,
+ * and the clapper hanging below. {@link #ring()} swings it about the loop, a damped swing of about 16 degrees
+ * that dies away within a second, with the clapper trailing the body. Each ring starts the other way from the
+ * last one, and ringing again mid-swing carries on from where the bell is. The highlight stays put as the bell
+ * swings, as if lit from the top left. Drawn in a 24 x 24 unit box scaled into the bounds; the swing is sized so
+ * the bell stays inside it.
+ */
+public final class BellDrawable extends Drawable {
+
+    private static final float BOX = 24f;
+    /** The pivot: the top of the loop. */
+    private static final float PX = 12f, PY = 1.3f;
+    private static final float AMPLITUDE = 16f;
+    private static final float OMEGA = (float) (2 * Math.PI * 3.4), TAU = 0.3f;
+    private static final long RING_MS = 1000;
+    /** The clapper follows the body this many seconds late, and never more than CLAPPER_MAX degrees apart. */
+    private static final float LAG = 0.055f, CLAPPER_MAX = 7f;
+
+    private final float density;
+    private final Path body = new Path(), lip = new Path(), lipTop = new Path();
+    private final Path band1 = new Path(), band2 = new Path(), sheen = new Path();
+    private final RectF crown = new RectF(10.3f, 3.1f, 13.7f, 5.5f);
+
+    private final Paint bodyPaint, lipPaint, crownPaint, outline, groove, bandDark, bandLight, sheenPaint,
+            loopDark, loopBrass, rodPaint, ballPaint, ballEdge;
+    private final Paint[] paints;
+    private final ValueAnimator animator;
+
+    private float angle, clapperAngle;
+    private float startAngle, amplitude;
+    private int direction = -1;
+    private boolean reduced;
+    private int alpha = 255;
+
+    public BellDrawable(float density) {
+        this.density = density;
+        buildPaths();
+
+        int[] brass = {0xFF6B430E, 0xFFB98424, 0xFFF0CF72, 0xFFD6A13A, 0xFF9C6A1A, 0xFF5C380A};
+        float[] stops = {0f, 0.16f, 0.33f, 0.52f, 0.8f, 1f};
+        bodyPaint = fill();
+        bodyPaint.setShader(new LinearGradient(5f, 0f, 19f, 0f, brass, stops, Shader.TileMode.CLAMP));
+        lipPaint = fill();
+        lipPaint.setShader(new LinearGradient(4.8f, 0f, 19.2f, 0f,
+                new int[]{0xFF7A4E12, 0xFFD9A43A, 0xFFFBE08A, 0xFFE3B04A, 0xFFA87420, 0xFF60400E},
+                stops, Shader.TileMode.CLAMP));
+        crownPaint = fill();
+        crownPaint.setShader(new LinearGradient(crown.left, 0f, crown.right, 0f, brass, stops,
+                Shader.TileMode.CLAMP));
+        outline = stroke(0xFF452A05, 0.55f);
+        groove = stroke(0xFF5A3608, 0.35f);
+        bandDark = stroke(0x995A3608, 0.38f);
+        bandLight = stroke(0x66FFF2C0, 0.25f);
+        sheenPaint = stroke(0xB3FFF4D2, 0.9f);
+        loopDark = stroke(0xFF452A05, 1.15f);
+        loopBrass = stroke(0xFFD6A13A, 0.55f);
+        rodPaint = stroke(0xFF4E3208, 0.75f);
+        ballPaint = fill();
+        ballPaint.setShader(new RadialGradient(11.6f, 20.7f, 1.7f,
+                new int[]{0xFFF2D27A, 0xFFB07E22, 0xFF5A3A0A}, new float[]{0f, 0.55f, 1f}, Shader.TileMode.CLAMP));
+        ballEdge = stroke(0xFF3E2604, 0.4f);
+        paints = new Paint[]{bodyPaint, lipPaint, crownPaint, outline, groove, bandDark, bandLight, sheenPaint,
+                loopDark, loopBrass, rodPaint, ballPaint, ballEdge};
+
+        animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(RING_MS);
+        animator.setInterpolator(new LinearInterpolator());
+        animator.addUpdateListener(a -> {
+            float t = (float) a.getAnimatedValue() * RING_MS / 1000f;
+            angle = swing(t);
+            float lagged = swing(Math.max(0f, t - LAG));
+            clapperAngle = Math.max(angle - CLAPPER_MAX, Math.min(angle + CLAPPER_MAX, lagged));
+            invalidateSelf();
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator a) {
+                angle = clapperAngle = 0f;
+                invalidateSelf();
+            }
+        });
+    }
+
+    /** Rings the bell: a damped swing about the loop, with the clapper trailing. */
+    public void ring() {
+        if (reduced) return;
+        startAngle = angle;
+        direction = -direction;
+        amplitude = AMPLITUDE * direction;
+        animator.cancel();
+        animator.start();
+    }
+
+    /** With reduced motion {@link #ring()} does nothing and a swing in progress stops at rest. */
+    public void setReducedMotion(boolean reducedMotion) {
+        reduced = reducedMotion;
+        if (reduced && animator.isRunning()) animator.cancel();
+    }
+
+    /** Angle in degrees t seconds into a ring, carrying on from where the bell was when it was rung. */
+    private float swing(float t) {
+        float wt = OMEGA * t;
+        float a = (float) Math.exp(-t / TAU) * (startAngle * (float) Math.cos(wt) + amplitude * (float) Math.sin(wt));
+        if (t > 0.85f) {
+            float f = Math.min(1f, (t - 0.85f) / 0.15f);
+            a *= 1f - f * f * (3f - 2f * f);
+        }
+        return Math.max(-AMPLITUDE, Math.min(AMPLITUDE, a));
+    }
+
+    private void buildPaths() {
+        body.moveTo(9.8f, 5.0f);
+        body.cubicTo(7.6f, 5.3f, 7.0f, 7.8f, 7.0f, 10.6f);
+        body.cubicTo(7.0f, 13.6f, 6.6f, 15.6f, 5.3f, 16.9f);
+        body.quadTo(5.0f, 17.5f, 5.5f, 18.0f);
+        body.cubicTo(8.6f, 18.9f, 15.4f, 18.9f, 18.5f, 18.0f);
+        body.quadTo(19.0f, 17.5f, 18.7f, 16.9f);
+        body.cubicTo(17.4f, 15.6f, 17.0f, 13.6f, 17.0f, 10.6f);
+        body.cubicTo(17.0f, 7.8f, 16.4f, 5.3f, 14.2f, 5.0f);
+        body.quadTo(12.0f, 4.6f, 9.8f, 5.0f);
+        body.close();
+
+        lip.moveTo(5.3f, 16.9f);
+        lip.quadTo(5.0f, 17.5f, 5.5f, 18.0f);
+        lip.cubicTo(8.6f, 18.9f, 15.4f, 18.9f, 18.5f, 18.0f);
+        lip.quadTo(19.0f, 17.5f, 18.7f, 16.9f);
+        lip.cubicTo(15.4f, 17.7f, 8.6f, 17.7f, 5.3f, 16.9f);
+        lip.close();
+        lipTop.moveTo(5.3f, 16.9f);
+        lipTop.cubicTo(8.6f, 17.7f, 15.4f, 17.7f, 18.7f, 16.9f);
+
+        band1.moveTo(7.15f, 9.0f);
+        band1.cubicTo(9.5f, 9.7f, 14.5f, 9.7f, 16.85f, 9.0f);
+        band2.moveTo(6.8f, 14.9f);
+        band2.cubicTo(9.2f, 15.7f, 14.8f, 15.7f, 17.2f, 14.9f);
+
+        sheen.moveTo(9.2f, 6.2f);
+        sheen.cubicTo(8.3f, 7.8f, 8.2f, 11.4f, 8.0f, 15.0f);
+    }
+
+    @Override
+    public void draw(@NonNull Canvas c) {
+        Rect b = getBounds();
+        if (b.isEmpty()) return;
+        float s = Math.min(b.width(), b.height()) / BOX;
+        int save = alpha < 255 ? c.saveLayerAlpha(b.left, b.top, b.right, b.bottom, alpha) : c.save();
+        c.clipRect(b);
+        c.translate(b.exactCenterX() - 12f * s, b.exactCenterY() - 12f * s);
+        c.scale(s, s);
+
+        // clapper first: the body hides its top half
+        c.save();
+        c.rotate(clapperAngle, PX, PY);
+        c.drawLine(12f, 8f, 12f, 20.1f, rodPaint);
+        c.drawCircle(12f, 21.15f, 1.15f, ballPaint);
+        c.drawCircle(12f, 21.15f, 1.15f, ballEdge);
+        c.restore();
+
+        c.save();
+        c.rotate(angle, PX, PY);
+        c.drawCircle(12f, 2.35f, 1.0f, loopDark);
+        c.drawCircle(12f, 2.35f, 1.0f, loopBrass);
+        c.drawRoundRect(crown, 1.2f, 1.2f, crownPaint);
+        c.drawRoundRect(crown, 1.2f, 1.2f, outline);
+        c.drawPath(body, bodyPaint);
+        drawBand(c, band1);
+        drawBand(c, band2);
+        c.drawPath(lip, lipPaint);
+        c.drawPath(lipTop, groove);
+        // the light is fixed, so the highlight slides against the swing
+        float shift = -angle * 0.035f;
+        c.translate(shift, 0f);
+        c.drawPath(sheen, sheenPaint);
+        c.drawLine(7.0f, 17.55f, 8.6f, 17.95f, sheenPaint);
+        c.translate(-shift, 0f);
+        c.drawPath(body, outline);
+        c.restore();
+
+        c.restoreToCount(save);
+    }
+
+    private void drawBand(Canvas c, Path band) {
+        c.drawPath(band, bandDark);
+        c.translate(0f, 0.38f);
+        c.drawPath(band, bandLight);
+        c.translate(0f, -0.38f);
+    }
+
+    private static Paint fill() {
+        return new Paint(Paint.ANTI_ALIAS_FLAG);
+    }
+
+    private static Paint stroke(int color, float width) {
+        Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+        p.setColor(color);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(width);
+        p.setStrokeCap(Paint.Cap.ROUND);
+        p.setStrokeJoin(Paint.Join.ROUND);
+        return p;
+    }
+
+    @Override
+    public int getIntrinsicWidth() {
+        return Math.round(BOX * density);
+    }
+
+    @Override
+    public int getIntrinsicHeight() {
+        return Math.round(BOX * density);
+    }
+
+    @Override
+    public void setAlpha(int alpha) {
+        if (this.alpha == alpha) return;
+        this.alpha = alpha;
+        invalidateSelf();
+    }
+
+    @Override
+    public int getAlpha() {
+        return alpha;
+    }
+
+    @Override
+    public void setColorFilter(@Nullable ColorFilter filter) {
+        for (Paint p : paints) p.setColorFilter(filter);
+        invalidateSelf();
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public int getOpacity() {
+        return PixelFormat.TRANSLUCENT;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\CardFeature.java ==========
+package com.gathin.tvhome;
+
+import android.util.Log;
+
+/**
+ * The guard around the module card feature: every call from the home screen into {@link Cards}
+ * goes through {@link #run}. The first failure of any kind that is safe to catch (an exception, or
+ * the class failing to load or initialise) is logged once and switches cards off for the rest of
+ * the process, so Home keeps working exactly as with module_cards false. Out of memory and other
+ * virtual machine errors are not caught.
+ */
+final class CardFeature {
+
+    interface Step<T> {
+        T run() throws Exception;
+    }
+
+    interface Reporter {
+        void failed(Throwable t);
+    }
+
+    private static boolean broken;
+    /** Where the one failure line goes; tests replace it, since android.util.Log is not available there. */
+    static Reporter reporter = t -> Log.w(Cards.TAG, "module cards switched off for this session: " + t);
+
+    private CardFeature() {
+    }
+
+    /** True while the feature has not failed in this process. */
+    static boolean working() {
+        return !broken;
+    }
+
+    /** Runs one step and returns its value, or the fallback once the feature is off or the step fails. */
+    static <T> T run(Step<T> step, T fallback) {
+        if (broken) return fallback;
+        try {
+            return step.run();
+        } catch (Exception | LinkageError e) {
+            // LinkageError covers ExceptionInInitializerError and NoClassDefFoundError: a static
+            // initialiser that throws on this device's runtime must not take the home screen down.
+            broken = true;
+            try {
+                reporter.failed(e);
+            } catch (Exception ignored) {
+            }
+            return fallback;
+        }
+    }
+
+    /** For tests only: forget a failure. */
+    static void reset() {
+        broken = false;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\Cards.java ==========
+package com.gathin.tvhome;
+
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.pm.Signature;
+import android.content.pm.SigningInfo;
+import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
+import android.os.Build;
+import android.util.AtomicFile;
+import android.util.Log;
+
+import org.xmlpull.v1.XmlPullParser;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.function.Supplier;
+
+/**
+ * Module cards (docs/specs/card.md): an installed app can declare a card for its tile, with its own
+ * label, caption and glow colour. Nothing is shown until the TV owner says so on the prompt; the
+ * decision is pinned to the app's signing certificate in the launcher's private storage.
+ *
+ * Discovery, parsing, the signer digest and the decision file live here, with no UI code, so the
+ * part that reads untrusted input can be read on its own. Every module input is bounded and every
+ * card is read inside its own try: a bad card is dropped with one log line, never a crash.
+ *
+ * No regular expressions and nothing in a static initialiser that can throw: the launcher's regex
+ * engine (ICU) differs from the desktop JVM's, and a failure while loading this class would take
+ * Home down. Every check is a plain character loop; see {@link CardFeature} for the guard around
+ * every call into this class.
+ */
+final class Cards {
+
+    /** One place for the names a module declares; see docs/specs/card.md. */
+    static final String CATEGORY = "com.gathin.tvhome.category.DOCK_CARD";
+    static final String META_DATA = "com.gathin.tvhome.card";
+    static final int SPEC_SUPPORTED = 1;
+    /** logcat tag for every rejection: `logcat -s TvHomeCards`. */
+    static final String TAG = "TvHomeCards";
+
+    // Limits. Declared: cards read per resume. Shown: cards rendered as tiles. Records: decisions remembered.
+    static final int MAX_DECLARED = 32;
+    static final int MAX_SHOWN = 8;
+    static final int MAX_RECORDS = 128;
+    // XML: events walked and nesting depth before the card is rejected; attributes read on the root.
+    static final int MAX_EVENTS = 64;
+    static final int MAX_DEPTH = 2;
+    static final int MAX_ATTRIBUTES = 16;
+    static final int LABEL_MAX = 24;
+    static final int CAPTION_MAX = 32;
+
+    static final String STORE_FILE = "cards.json";
+    static final String DECISION_SHOW = "show";
+    static final String DECISION_HIDE = "hide";
+
+    /** Label and caption punctuation; letters, digits and the space are the rest of the alphabet (ASCII only). */
+    private static final String TEXT_PUNCTUATION = ".&+'-";
+
+    /** Words that imply endorsement: rejected anywhere in a label (folded form). */
+    private static final String[] RESERVED_ANYWHERE = {"verified", "official"};
+    /** Names the launcher's own UI renders (pills, tiles, the Inputs menu): rejected as a whole label. */
+    private static final Set<String> RESERVED_EXACT = new HashSet<>(Arrays.asList(
+            "tvvibehack", "cleanyourtv", "settings", "inputs", "livetv", "home", "defaulthome", "wifi", "av"));
+    /** "HDMI", "HDMI 1", "HDMI2"... */
+    private static final String RESERVED_PREFIX = "hdmi";
+
+    enum State {
+        /** No record for this package: the prompt is due. */
+        NEW,
+        /** The record was made for a different signing key: it no longer applies and the prompt is due. */
+        RESIGNED,
+        /** The card's label changed since the owner decided: the decision was for another name, the prompt is due. */
+        RELABELLED,
+        SHOWN,
+        HIDDEN
+    }
+
+    /** A valid card found on this TV, with the owner's decision for its current signer. */
+    static final class Card {
+        final String pkg;
+        final ComponentName component;
+        final String label;
+        /** The app's own label, the one Settings shows. */
+        final String appLabel;
+        /** Null when the card has none. */
+        final String caption;
+        /** Opaque ARGB, or 0 when the card sets none. */
+        final int accent;
+        /** SHA-256 of the signing certificate, 64 lower case hex characters. */
+        final String digest;
+        final State state;
+
+        Card(String pkg, ComponentName component, String label, String appLabel, String caption, int accent,
+             String digest, State state) {
+            this.pkg = pkg;
+            this.component = component;
+            this.label = label;
+            this.appLabel = appLabel;
+            this.caption = caption;
+            this.accent = accent;
+            this.digest = digest;
+            this.state = state;
+        }
+
+        boolean pending() {
+            return state == State.NEW || state == State.RESIGNED || state == State.RELABELLED;
+        }
+    }
+
+    /**
+     * The owner's decision for one package, valid only while the package is signed with this key and
+     * its card keeps the name (folded) it had when the owner decided.
+     */
+    static final class Record {
+        final String pkg;
+        final String digest;
+        /** The card's label as {@link #fold} wrote it at decision time. */
+        final String label;
+        final String decision;
+        final long firstSeen;
+        final long decidedAt;
+
+        Record(String pkg, String digest, String label, String decision, long firstSeen, long decidedAt) {
+            this.pkg = pkg;
+            this.digest = digest;
+            this.label = label;
+            this.decision = decision;
+            this.firstSeen = firstSeen;
+            this.decidedAt = decidedAt;
+        }
+    }
+
+    /** The attributes of a `<card>` element after the limits were checked. */
+    static final class Declared {
+        final int spec;
+        final String label;
+        final String caption;
+        final int accent;
+
+        Declared(int spec, String label, String caption, int accent) {
+            this.spec = spec;
+            this.label = label;
+            this.caption = caption;
+            this.accent = accent;
+        }
+    }
+
+    /** A card rejected for a stated reason; the reason goes to logcat under {@link #TAG}. */
+    static final class CardException extends Exception {
+        CardException(String reason) {
+            super(reason);
+        }
+    }
+
+    private Cards() {
+    }
+
+    // ---- discovery -------------------------------------------------------------------------------
+
+    /**
+     * Every valid card installed on this TV, with its state under the given records. One cheap
+     * PackageManager query when no app declares a card; the app list is only walked when one does.
+     * hidden is the launcher's hidden_apps as in force (config.xml or a theme overlay): no card for those.
+     * The decision records are only read when some app declares a card, and leanback is the launcher's
+     * own LEANBACK_LAUNCHER query, so the app list isn't queried twice.
+     */
+    static List<Card> discover(Context ctx, Set<String> hidden, Supplier<Map<String, Record>> recordSource,
+                               List<ResolveInfo> leanback) {
+        if ((ctx.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) selfCheck();
+        List<Card> out = new ArrayList<>();
+        PackageManager pm = ctx.getPackageManager();
+        List<ResolveInfo> declared;
+        try {
+            declared = pm.queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(CATEGORY),
+                    PackageManager.GET_META_DATA);
+        } catch (Exception e) {
+            Log.w(TAG, "card query failed: " + e);
+            return out;
+        }
+        if (declared.isEmpty()) return out;
+        Map<String, Record> records = recordSource.get();
+
+        // What the card must agree with: the activities shown as tiles, and the names already on screen.
+        Set<String> tiles = new HashSet<>();
+        Map<String, Set<String>> names = new HashMap<>();
+        for (ResolveInfo ri : leanback) {
+            if (ri.activityInfo == null) continue;
+            String pkg = ri.activityInfo.packageName;
+            tiles.add(new ComponentName(pkg, ri.activityInfo.name).flattenToString());
+            try {
+                addName(names, String.valueOf(ri.loadLabel(pm)), pkg);
+                addName(names, String.valueOf(ri.activityInfo.applicationInfo.loadLabel(pm)), pkg);
+            } catch (Exception e) {
+                Log.w(TAG, pkg + ": label unreadable, " + e);   // an app with broken resources; not a card problem
+            }
+        }
+        Set<String> uiNames = uiNames(ctx.getResources());
+        Set<String> seen = new HashSet<>();
+
+        int n = 0;
+        for (ResolveInfo ri : declared) {
+            if (++n > MAX_DECLARED) {
+                Log.w(TAG, "more than " + MAX_DECLARED + " cards declared; the rest are ignored");
+                break;
+            }
+            String pkg = ri.activityInfo != null ? ri.activityInfo.packageName : "?";
+            try {
+                Card card = read(ctx, pm, ri, tiles, names, uiNames, hidden, seen, records);
+                seen.add(card.pkg);
+                out.add(card);
+            } catch (CardException e) {
+                Log.w(TAG, pkg + ": " + e.getMessage());
+            } catch (Exception e) {
+                // Package gone between the query and the read, a resource that is not XML, and anything else.
+                Log.w(TAG, pkg + ": " + e);
+            }
+        }
+
+        List<Card> kept = resolveClashes(out, records);
+        for (Card c : out) {
+            if (!kept.contains(c)) Log.w(TAG, c.pkg + ": another card is also named '" + c.label + "'");
+        }
+        return kept;
+    }
+
+    /**
+     * Cards that share a folded label: the one the owner already decided on keeps its name (the
+     * oldest decision wins, then the smaller package name), every other card in the group is
+     * dropped. A group without a decided card is dropped entirely, so nobody is asked about a
+     * contested name. A decision the owner made is never undone by a newer install.
+     */
+    static List<Card> resolveClashes(List<Card> cards, Map<String, Record> records) {
+        Map<String, List<Card>> groups = new HashMap<>();
+        for (Card c : cards) {
+            String key = fold(c.label);
+            List<Card> group = groups.get(key);
+            if (group == null) groups.put(key, group = new ArrayList<>());
+            group.add(c);
+        }
+        List<Card> kept = new ArrayList<>();
+        for (Card c : cards) {
+            List<Card> group = groups.get(fold(c.label));
+            if (group.size() == 1) {
+                kept.add(c);
+                continue;
+            }
+            Card winner = null;
+            for (Card g : group) {
+                if (g.pending()) continue;
+                if (winner == null || olderDecision(g, winner, records)) winner = g;
+            }
+            if (winner == c) kept.add(c);
+        }
+        return kept;
+    }
+
+    /** True when a's record was made before b's (tie: smaller package name). */
+    private static boolean olderDecision(Card a, Card b, Map<String, Record> records) {
+        Record ra = records.get(a.pkg), rb = records.get(b.pkg);
+        long fa = ra != null ? ra.firstSeen : Long.MAX_VALUE, fb = rb != null ? rb.firstSeen : Long.MAX_VALUE;
+        if (fa != fb) return fa < fb;
+        return a.pkg.compareTo(b.pkg) < 0;
+    }
+
+    private static Card read(Context ctx, PackageManager pm, ResolveInfo ri, Set<String> tiles,
+                             Map<String, Set<String>> names, Set<String> uiNames, Set<String> hidden,
+                             Set<String> seen, Map<String, Record> records) throws Exception {
+        ActivityInfo ai = ri.activityInfo;
+        if (ai == null) throw new CardException("not an activity");
+        String pkg = ai.packageName;
+        if (pkg.equals(ctx.getPackageName())) throw new CardException("the launcher itself");
+        if (hidden.contains(pkg)) throw new CardException("listed in hidden_apps");
+        if (seen.contains(pkg)) throw new CardException("declares a second card; one per package is read");
+        if (!ai.exported || !ai.enabled || !ai.applicationInfo.enabled) {
+            throw new CardException("card activity is not exported and enabled");
+        }
+        ComponentName component = new ComponentName(pkg, ai.name);
+        if (!tiles.contains(component.flattenToString())) {
+            throw new CardException("card activity has no LEANBACK_LAUNCHER intent filter");
+        }
+
+        XmlResourceParser xml = ai.loadXmlMetaData(pm, META_DATA);
+        if (xml == null) throw new CardException("no <meta-data android:name=\"" + META_DATA + "\" android:resource=...>");
+        Declared d;
+        try {
+            d = parse(xml);
+        } finally {
+            xml.close();
+        }
+        if (d.spec != SPEC_SUPPORTED) throw new CardException("spec " + d.spec + " is not supported (this launcher reads spec " + SPEC_SUPPORTED + ")");
+
+        String digest = digest(pm, pkg);
+        String folded = fold(d.label);
+        Record r = records.get(pkg);
+        State state;
+        if (r == null) state = State.NEW;
+        else if (!r.digest.equals(digest)) state = State.RESIGNED;
+        else if (!r.label.equals(folded)) state = State.RELABELLED;   // the owner said yes to another name
+        else state = DECISION_SHOW.equals(r.decision) ? State.SHOWN : State.HIDDEN;
+        boolean pending = state == State.NEW || state == State.RESIGNED || state == State.RELABELLED;
+
+        // Reserved words are policy and always apply. Name collisions only matter while the prompt is
+        // due: they stop a newcomer from borrowing a name, and never undo a decision the owner made.
+        // A decided card that changes its label becomes pending again (RELABELLED), so it cannot take
+        // another app's name on an update either.
+        if (isReserved(folded, uiNames)) throw new CardException("label '" + d.label + "' is reserved");
+        if (pending && isTaken(folded, pkg, names)) throw new CardException("label '" + d.label + "' is the name of another installed app");
+        String appLabel = cleanLabel(String.valueOf(ai.applicationInfo.loadLabel(pm)), pkg);
+        if (pending && isTaken(fold(appLabel), pkg, names)) throw new CardException("app label '" + appLabel + "' is the name of another installed app");
+
+        return new Card(pkg, component, d.label, appLabel, d.caption, d.accent, digest, state);
+    }
+
+    private static void addName(Map<String, Set<String>> names, String label, String pkg) {
+        String key = fold(label);
+        if (key.isEmpty()) return;
+        Set<String> pkgs = names.get(key);
+        if (pkgs == null) names.put(key, pkgs = new HashSet<>());
+        pkgs.add(pkg);
+    }
+
+    /** The launcher's own UI names in the TV's language, folded. */
+    private static Set<String> uiNames(Resources res) {
+        int[] ids = {R.string.app_name, R.string.settings, R.string.inputs, R.string.choose_input, R.string.wifi,
+                R.string.live_tv, R.string.home_settings, R.string.app_library, R.string.dream_name};
+        Set<String> out = new HashSet<>();
+        for (int id : ids) out.add(fold(res.getString(id)));
+        return out;
+    }
+
+    /** Shown cards in the order they take on screen: by label, at most {@link #MAX_SHOWN}. */
+    static List<Card> shown(List<Card> cards) {
+        List<Card> out = new ArrayList<>();
+        for (Card c : cards) if (c.state == State.SHOWN) out.add(c);
+        Collections.sort(out, Cards::byLabel);
+        return out.size() > MAX_SHOWN ? new ArrayList<>(out.subList(0, MAX_SHOWN)) : out;
+    }
+
+    /** The card whose prompt is due next, or null. Package order, so repeated prompts come in one order. */
+    static Card firstPending(List<Card> cards) {
+        Card best = null;
+        for (Card c : cards) {
+            if (c.pending() && (best == null || c.pkg.compareTo(best.pkg) < 0)) best = c;
+        }
+        return best;
+    }
+
+    static int byLabel(Card a, Card b) {
+        int c = a.label.compareToIgnoreCase(b.label);
+        return c != 0 ? c : a.pkg.compareTo(b.pkg);
+    }
+
+    // ---- parser ----------------------------------------------------------------------------------
+
+    /**
+     * Reads one `<card spec="1" label=".." caption=".." accent="#RRGGBB"/>`. The document may hold at
+     * most {@link #MAX_EVENTS} events and nest at most {@link #MAX_DEPTH} deep; child elements and
+     * unknown attributes are ignored. Rejects, never guesses.
+     */
+    static Declared parse(XmlPullParser p) throws Exception {
+        int events = 0;
+        Declared found = null;
+        for (int type = p.getEventType(); type != XmlPullParser.END_DOCUMENT; type = p.next()) {
+            if (++events > MAX_EVENTS) throw new CardException("more than " + MAX_EVENTS + " XML events");
+            if (type != XmlPullParser.START_TAG) continue;
+            if (p.getDepth() > MAX_DEPTH) throw new CardException("XML nested deeper than " + MAX_DEPTH);
+            if (p.getDepth() != 1) continue;
+            if (found != null) throw new CardException("more than one root element");
+            String name = p.getName();
+            if (!"card".equals(name)) throw new CardException("root element is <" + name + ">, expected <card>");
+            found = readCard(p);
+        }
+        if (found == null) throw new CardException("no <card> element");
+        return found;
+    }
+
+    private static Declared readCard(XmlPullParser p) throws Exception {
+        int count = p.getAttributeCount();
+        if (count > MAX_ATTRIBUTES) throw new CardException("more than " + MAX_ATTRIBUTES + " attributes on <card>");
+        String spec = null, label = null, caption = null, accent = null;
+        for (int i = 0; i < count; i++) {
+            String ns = p.getAttributeNamespace(i);
+            if (ns != null && !ns.isEmpty()) continue;
+            String name = p.getAttributeName(i);
+            if (name == null || name.length() > 8) continue;
+            switch (name) {
+                case "spec":
+                    spec = p.getAttributeValue(i);
+                    break;
+                case "label":
+                    label = p.getAttributeValue(i);
+                    break;
+                case "caption":
+                    caption = p.getAttributeValue(i);
+                    break;
+                case "accent":
+                    accent = p.getAttributeValue(i);
+                    break;
+                default:
+                    break;
+            }
+        }
+        // Lengths first, before any pattern or comparison touches the value.
+        // The compiler stores spec="1" as an integer; the parser hands it back as the decimal text "1".
+        if (spec == null || spec.isEmpty() || spec.length() > 3 || !isDigits(spec)) throw new CardException("spec is missing or not a small integer");
+        String reason = checkLabel(label);
+        if (reason != null) throw new CardException(reason);
+        reason = checkCaption(caption);
+        if (reason != null) throw new CardException(reason);
+        int colour = 0;
+        if (accent != null && !accent.isEmpty()) {
+            if (isReference(accent)) throw new CardException("accent is a resource reference; write #RRGGBB itself");
+            colour = parseAccent(accent);
+            if (colour == 0) throw new CardException("accent is not #RRGGBB");
+        }
+        return new Declared(Integer.parseInt(spec), label, caption == null || caption.isEmpty() ? null : caption, colour);
+    }
+
+    // ---- validators (pure Java, unit tested) -----------------------------------------------------
+
+    /** Null when the label is acceptable, else the reason. */
+    static String checkLabel(String label) {
+        if (label == null || label.isEmpty()) return "label is missing";
+        if (label.length() > LABEL_MAX) return "label is longer than " + LABEL_MAX + " characters";
+        if (isReference(label)) return "label is a resource reference; write the text itself";
+        if (!isText(label)) return "label has characters outside A-Z a-z 0-9 space . & + ' -";
+        if (label.charAt(0) == ' ' || label.charAt(label.length() - 1) == ' ') return "label starts or ends with a space";
+        if (fold(label).isEmpty()) return "label has no letter or digit";
+        return null;
+    }
+
+    /** Null when the caption is acceptable (absent counts as acceptable), else the reason. */
+    static String checkCaption(String caption) {
+        if (caption == null || caption.isEmpty()) return null;
+        if (caption.length() > CAPTION_MAX) return "caption is longer than " + CAPTION_MAX + " characters";
+        if (isReference(caption)) return "caption is a resource reference; write the text itself";
+        if (!isText(caption)) return "caption has characters outside A-Z a-z 0-9 space . & + ' -";
+        if (caption.charAt(0) == ' ' || caption.charAt(caption.length() - 1) == ' ') return "caption starts or ends with a space";
+        String folded = fold(caption);
+        for (String word : RESERVED_ANYWHERE) if (folded.contains(word)) return "caption claims endorsement ('" + word + "')";
+        return null;
+    }
+
+    /**
+     * An app's own label as the prompt shows it: control, format (bidi overrides, zero width joiners),
+     * line and paragraph separator characters become spaces, runs of spaces collapse, at most 40
+     * characters (never cutting a surrogate pair), the fallback (package name) when nothing is left.
+     */
+    static String cleanLabel(String s, String fallback) {
+        if (s == null) return fallback;
+        StringBuilder b = new StringBuilder(Math.min(s.length(), 48));
+        boolean space = true;   // leading spaces are dropped too
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            int type = Character.getType(c);
+            boolean blank = c == ' ' || Character.isISOControl(c) || Character.isWhitespace(c) || type == Character.FORMAT
+                    || type == Character.LINE_SEPARATOR || type == Character.PARAGRAPH_SEPARATOR
+                    || type == Character.SPACE_SEPARATOR;
+            if (blank) {
+                if (!space) b.append(' ');
+                space = true;
+                continue;
+            }
+            boolean pair = Character.isHighSurrogate(c) && i + 1 < s.length() && Character.isLowSurrogate(s.charAt(i + 1));
+            if (b.length() + (pair ? 2 : 1) > 40) break;
+            b.append(c);
+            if (pair) b.append(s.charAt(++i));
+            space = false;
+        }
+        String out = b.toString().trim();
+        return out.isEmpty() ? fallback : out;
+    }
+
+    /**
+     * A compiled `@string/x` or `?attr/x` reference: the resource compiler stores it as an id and the
+     * parser hands back "@2131..." or "?2130...". Spec 1 takes literal text only.
+     */
+    static boolean isReference(String value) {
+        return value.startsWith("@") || value.startsWith("?");
+    }
+
+    /** Lower case with everything but ASCII letters and digits removed: the form every name comparison uses. */
+    static String fold(String s) {
+        if (s == null) return "";

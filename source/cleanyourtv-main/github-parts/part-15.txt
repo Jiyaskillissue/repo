@@ -1,0 +1,1292 @@
+﻿    <string name="race_practice_2_short">TL2</string>
+    <string name="race_practice_3_short">TL3</string>
+    <string name="race_sprint_qualifying_short">CS</string>
+    <string name="race_sprint_short">SPRINT</string>
+    <string name="race_qualifying_short">CLASS</string>
+    <string name="race_race_short">CORRIDA</string>
+    <string name="race_countdown_minutes">%1$d min</string>
+    <string name="race_countdown_hours">%1$dh %2$dmin</string>
+    <string name="race_countdown_days">%1$dd %2$dh</string>
+    <string name="last_opened">Aberto %1$s</string>
+    <string name="game_live">Ao vivo agora</string>
+    <string name="clock_format_system">Sistema</string>
+    <string name="clock_format_12">12 horas</string>
+    <string name="clock_format_24">24 horas</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-pt-rPT\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- European Portuguese: only the strings that differ from values-pt, which is Brazilian Portuguese.
+     Everything not listed here falls back to values-pt. -->
+<resources>
+    <string name="dock_edit">Editar a dock</string>
+    <string name="power_menu">Reiniciarâ€¦</string>
+    <string name="dock_edit_hint">Escolha o lugar da dock a mudar e prima OK. Voltar para terminar.</string>
+    <string name="dock_edit_pick_app">Agora escolha a app a colocar lÃ¡ e prima OK. Voltar para escolher outro lugar.</string>
+    <string name="tile_add_to_dock">Adicionar Ã  dock</string>
+    <string name="tile_replace_in_dock">Substituir por outra app</string>
+    <string name="dock_edit_pick_place">Escolha o lugar da dock para esta app e prima OK. Voltar para cancelar.</string>
+    <string name="more_inputs">Mais entradas</string>
+    <string name="game_live">Em direto</string>
+    <string name="clock_format_system">System</string>
+    <string name="clock_format_12">12-hour</string>
+    <string name="clock_format_24">24-hour</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-ru\bools.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Russian weekday and month names need two lines (date_format_home has a line break). -->
+    <bool name="date_single_line">false</bool>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-ru\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ð“Ð»Ð°Ð²Ð½Ñ‹Ð¹ ÑÐºÑ€Ð°Ð½</string>
+    <string name="inputs">Ð˜ÑÑ‚Ð¾Ñ‡Ð½Ð¸ÐºÐ¸</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸</string>
+    <string name="choose_input">Ð˜ÑÑ‚Ð¾Ñ‡Ð½Ð¸ÐºÐ¸</string>
+    <string name="connected">ÐŸÐ¾Ð´ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¾</string>
+    <string name="standby">ÐžÐ¶Ð¸Ð´Ð°Ð½Ð¸Ðµ</string>
+    <string name="not_connected">ÐÐµÑ‚ ÑƒÑÑ‚Ñ€Ð¾Ð¹ÑÑ‚Ð²Ð°</string>
+    <string name="live_tv">Ð¢ÐµÐ»ÐµÐºÐ°Ð½Ð°Ð»Ñ‹</string>
+    <string name="no_inputs">Ð˜ÑÑ‚Ð¾Ñ‡Ð½Ð¸ÐºÐ¸ Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ñ‹</string>
+    <string name="more_inputs">Ð”Ñ€ÑƒÐ³Ð¸Ðµ Ð¸ÑÑ‚Ð¾Ñ‡Ð½Ð¸ÐºÐ¸</string>
+    <string name="good_morning">Ð”Ð¾Ð±Ñ€Ð¾Ðµ ÑƒÑ‚Ñ€Ð¾</string>
+    <string name="good_afternoon">Ð”Ð¾Ð±Ñ€Ñ‹Ð¹ Ð´ÐµÐ½ÑŒ</string>
+    <string name="good_evening">Ð”Ð¾Ð±Ñ€Ñ‹Ð¹ Ð²ÐµÑ‡ÐµÑ€</string>
+    <string name="good_night">Ð”Ð¾Ð±Ñ€Ð¾Ð¹ Ð½Ð¾Ñ‡Ð¸</string>
+    <string name="festival_dussehra_greeting">Ð¡ Ð¿Ñ€Ð°Ð·Ð´Ð½Ð¸ÐºÐ¾Ð¼ Ð”Ð°ÑˆÐ°Ñ…Ñ€Ð°!</string>
+    <string name="festival_diwali_greeting">Ð¡ Ð¿Ñ€Ð°Ð·Ð´Ð½Ð¸ÐºÐ¾Ð¼ Ð”Ð¸Ð²Ð°Ð»Ð¸!</string>
+    <string name="festival_halloween_greeting">Ð¡Ñ‡Ð°ÑÑ‚Ð»Ð¸Ð²Ð¾Ð³Ð¾ Ð¥ÑÐ»Ð»Ð¾ÑƒÐ¸Ð½Ð°!</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">ÐÐµÑ‚ ÑÐµÑ‚Ð¸</string>
+    <string name="not_available">ÐÐµÐ´Ð¾ÑÑ‚ÑƒÐ¿Ð½Ð¾ Ð½Ð° ÑÑ‚Ð¾Ð¼ Ñ‚ÐµÐ»ÐµÐ²Ð¸Ð·Ð¾Ñ€Ðµ</string>
+    <string name="cant_open">ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚ÑŒ %1$s</string>
+    <string name="date_format">EEEE, d MMMM</string>
+    <string name="date_format_home">EEEE\nd MMMM</string>
+    <string name="shamsi_month_farvardin">Ñ„Ð°Ñ€Ð²Ð°Ñ€Ð´Ð¸Ð½Ð°</string>
+    <string name="shamsi_month_ordibehesht">Ð¾Ñ€Ð´Ð¸Ð±ÐµÑ…ÐµÑˆÑ‚Ð°</string>
+    <string name="shamsi_month_khordad">Ñ…Ð¾Ñ€Ð´Ð°Ð´Ð°</string>
+    <string name="shamsi_month_tir">Ñ‚Ð¸Ñ€Ð°</string>
+    <string name="shamsi_month_mordad">Ð¼Ð¾Ñ€Ð´Ð°Ð´Ð°</string>
+    <string name="shamsi_month_shahrivar">ÑˆÐ°Ñ…Ñ€Ð¸Ð²Ð°Ñ€Ð°</string>
+    <string name="shamsi_month_mehr">Ð¼ÐµÑ…Ñ€Ð°</string>
+    <string name="shamsi_month_aban">Ð°Ð±Ð°Ð½Ð°</string>
+    <string name="shamsi_month_azar">Ð°Ð·Ð°Ñ€Ð°</string>
+    <string name="shamsi_month_dey">Ð´ÐµÑ</string>
+    <string name="shamsi_month_bahman">Ð±Ð°Ñ…Ð¼Ð°Ð½Ð°</string>
+    <string name="shamsi_month_esfand">ÑÑÑ„Ð°Ð½Ð´Ð°</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">ÐŸÐ°Ð¼ÑÑ‚ÑŒ %1$d / %2$d ÐœÐ‘</string>
+    <string name="stats_storage">ÐÐ°ÐºÐ¾Ð¿Ð¸Ñ‚ÐµÐ»ÑŒ %1$s ÑÐ²Ð¾Ð±Ð¾Ð´Ð½Ð¾</string>
+    <string name="storage_gb_whole">%1$.0f Ð“Ð‘</string>
+    <string name="storage_gb_decimal">%1$.1f Ð“Ð‘</string>
+    <string name="dream_name">Ð§Ð°ÑÑ‹</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ñ‘Ð½</string>
+    <string name="home_settings">Ð“Ð»Ð°Ð²Ð½Ñ‹Ð¹ ÑÐºÑ€Ð°Ð½ Ð¿Ð¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ</string>
+    <string name="home_settings_help">Ð’Ñ‹Ð±ÐµÑ€Ð¸Ñ‚Ðµ Ð¸ÑÑ…Ð¾Ð´Ð½Ñ‹Ð¹ Ð³Ð»Ð°Ð²Ð½Ñ‹Ð¹ ÑÐºÑ€Ð°Ð½, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð¿ÐµÑ€ÐµÑÑ‚Ð°Ñ‚ÑŒ Ð¸ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÑŒ CleanYourTV Ð¿Ð¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ, Ð¸Ð»Ð¸ CleanYourTV, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð²ÐµÑ€Ð½ÑƒÑ‚ÑŒÑÑ. Ð˜ÑÑ…Ð¾Ð´Ð½Ñ‹Ð¹ ÑÐºÑ€Ð°Ð½ Ð´Ð¾Ð»Ð¶ÐµÐ½ Ð±Ñ‹Ñ‚ÑŒ Ð²ÐºÐ»ÑŽÑ‡Ñ‘Ð½, Ð° Ñ‚ÐµÐ»ÐµÐ²Ð¸Ð·Ð¾Ñ€ Ð´Ð¾Ð»Ð¶ÐµÐ½ Ð¿Ð¾Ð´Ð´ÐµÑ€Ð¶Ð¸Ð²Ð°Ñ‚ÑŒ Ð²Ñ‹Ð±Ð¾Ñ€ Ð³Ð»Ð°Ð²Ð½Ð¾Ð³Ð¾ ÑÐºÑ€Ð°Ð½Ð°. Ð•ÑÐ»Ð¸ Ð¾Ð½ Ð¾Ñ‚ÐºÐ»ÑŽÑ‡Ñ‘Ð½, ÑÐ½Ð°Ñ‡Ð°Ð»Ð° Ð·Ð°Ð¿ÑƒÑÑ‚Ð¸Ñ‚Ðµ ÑÐºÑ€Ð¸Ð¿Ñ‚ Ð²Ð¾ÑÑÑ‚Ð°Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ.</string>
+    <string name="input_key_service_description">ÐžÑ‚ÐºÑ€Ñ‹Ð²Ð°ÐµÑ‚ ÑÐ¿Ð¸ÑÐ¾Ðº Ð¸ÑÑ‚Ð¾Ñ‡Ð½Ð¸ÐºÐ¾Ð² Ð¿Ñ€Ð¸ Ð½Ð°Ð¶Ð°Ñ‚Ð¸Ð¸ ÐºÐ½Ð¾Ð¿ÐºÐ¸ Ð²Ñ‹Ð±Ð¾Ñ€Ð° Ð¸ÑÑ‚Ð¾Ñ‡Ð½Ð¸ÐºÐ° Ð½Ð° Ð¿ÑƒÐ»ÑŒÑ‚Ðµ.</string>
+    <string name="home_key_name">ÐšÐ½Ð¾Ð¿ÐºÐ° Â«Ð”Ð¾Ð¼Ð¾Ð¹Â»</string>
+    <string name="home_key_description">ÐšÐ½Ð¾Ð¿ÐºÐ° Â«Ð”Ð¾Ð¼Ð¾Ð¹Â» Ð½Ð° Ð¿ÑƒÐ»ÑŒÑ‚Ðµ Ð¾Ñ‚ÐºÑ€Ñ‹Ð²Ð°ÐµÑ‚ ÑÑ‚Ð¾Ñ‚ Ð³Ð»Ð°Ð²Ð½Ñ‹Ð¹ ÑÐºÑ€Ð°Ð½.</string>
+    <string name="card_prompt_title">ÐÐ¾Ð²Ð°Ñ ÐºÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÐ° Ð¾Ñ‚ %1$s</string>
+    <string name="card_prompt_body">%1$s Ð¼Ð¾Ð¶ÐµÑ‚ Ð¿Ð¾ÐºÐ°Ð·Ñ‹Ð²Ð°Ñ‚ÑŒ ÐºÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÑƒ Ð½Ð° Ð³Ð»Ð°Ð²Ð½Ð¾Ð¼ ÑÐºÑ€Ð°Ð½Ðµ. Ð•ÑÐ»Ð¸ Ð¾ÑÑ‚Ð°Ð²Ð¸Ñ‚ÑŒ ÐµÑ‘ ÑÐºÑ€Ñ‹Ñ‚Ð¾Ð¹, Ð¾Ð±Ñ‹Ñ‡Ð½Ð°Ñ Ð¿Ð»Ð¸Ñ‚ÐºÐ° Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ Ð½Ðµ Ð¸Ð·Ð¼ÐµÐ½Ð¸Ñ‚ÑÑ.</string>
+    <string name="card_prompt_names">ÐšÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÐ°: Â«%1$sÂ». ÐŸÑ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ: Â«%2$sÂ».</string>
+    <string name="card_prompt_resigned">ÐšÐ»ÑŽÑ‡ Ð¿Ð¾Ð´Ð¿Ð¸ÑÐ¸ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ %1$s Ð¸Ð·Ð¼ÐµÐ½Ð¸Ð»ÑÑ. ÐŸÑ€ÐµÐ¶Ð½Ð¸Ð¹ Ð²Ñ‹Ð±Ð¾Ñ€ Ð±Ð¾Ð»ÑŒÑˆÐµ Ð½Ðµ Ð´ÐµÐ¹ÑÑ‚Ð²ÑƒÐµÑ‚. Ð’Ñ‹Ð±ÐµÑ€Ð¸Ñ‚Ðµ Ð·Ð°Ð½Ð¾Ð²Ð¾, Ð¿Ð¾ÐºÐ°Ð·Ñ‹Ð²Ð°Ñ‚ÑŒ Ð»Ð¸ ÐºÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÑƒ.</string>
+    <string name="card_prompt_relabelled">ÐŸÐ¾ÑÐ»Ðµ Ð²Ð°ÑˆÐµÐ³Ð¾ Ð²Ñ‹Ð±Ð¾Ñ€Ð° Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ %1$s Ð¸Ð·Ð¼ÐµÐ½Ð¸Ð»Ð¾ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ðµ ÐºÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÐ¸. Ð’Ñ‹Ð±ÐµÑ€Ð¸Ñ‚Ðµ Ð·Ð°Ð½Ð¾Ð²Ð¾, Ð¿Ð¾ÐºÐ°Ð·Ñ‹Ð²Ð°Ñ‚ÑŒ Ð»Ð¸ ÐµÑ‘.</string>
+    <string name="card_prompt_hint">ÐŸÐ¾Ð·Ð¶Ðµ ÑÑ‚Ð¾ Ð¼Ð¾Ð¶Ð½Ð¾ Ð¸Ð·Ð¼ÐµÐ½Ð¸Ñ‚ÑŒ: ÑƒÐ´ÐµÑ€Ð¶Ð¸Ð²Ð°Ð¹Ñ‚Ðµ OK Ð½Ð° ÐºÐ½Ð¾Ð¿ÐºÐµ Â«ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸Â» Ð¸ Ð²Ñ‹Ð±ÐµÑ€Ð¸Ñ‚Ðµ Â«ÐšÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÐ¸ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ð¹Â».</string>
+    <string name="card_prompt_identity">%1$s, ÐºÐ»ÑŽÑ‡ %2$s</string>
+    <string name="card_keep_hidden">ÐÐµ Ð¿Ð¾ÐºÐ°Ð·Ñ‹Ð²Ð°Ñ‚ÑŒ</string>
+    <string name="card_show">ÐŸÐ¾ÐºÐ°Ð·Ð°Ñ‚ÑŒ ÐºÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÑƒ</string>
+    <string name="card_not_saved">ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ ÑÐ¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ Ð²Ñ‹Ð±Ð¾Ñ€</string>
+    <string name="module_cards">ÐšÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÐ¸ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ð¹</string>
+    <string name="no_module_cards">ÐÐµÑ‚ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ð¹ Ñ ÐºÐ°Ñ€Ñ‚Ð¾Ñ‡ÐºÐ°Ð¼Ð¸</string>
+    <string name="card_app_name">ÐŸÑ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ: %1$s</string>
+    <string name="card_state_shown">ÐŸÐ¾ÐºÐ°Ð·Ñ‹Ð²Ð°ÐµÑ‚ÑÑ</string>
+    <string name="card_state_over_limit">Ð’ÐºÐ»ÑŽÑ‡ÐµÐ½Ð°, Ð½Ð¾ Ð½Ðµ Ð¿Ð¾ÐºÐ°Ð·Ð°Ð½Ð°: Ð»Ð¸Ð¼Ð¸Ñ‚ 8</string>
+    <string name="card_state_hidden">Ð¡ÐºÑ€Ñ‹Ñ‚Ð°</string>
+    <string name="card_state_new">ÐÐ¾Ð²Ð°Ñ</string>
+    <string name="card_state_new_key">ÐÐ¾Ð²Ñ‹Ð¹ ÐºÐ»ÑŽÑ‡</string>
+    <string name="card_state_new_label">ÐÐ¾Ð²Ð¾Ðµ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ðµ</string>
+    <string name="launcher_settings">ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð³Ð»Ð°Ð²Ð½Ð¾Ð³Ð¾ ÑÐºÑ€Ð°Ð½Ð°</string>
+    <string name="native_settings">ÐÐ°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð¿Ñ€Ð¾Ð¸Ð·Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»Ñ</string>
+    <string name="columns_label">ÐŸÑ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ð¹ Ð² Ñ€ÑÐ´Ñƒ</string>
+    <string name="dock_opacity_label">ÐÐµÐ¿Ñ€Ð¾Ð·Ñ€Ð°Ñ‡Ð½Ð¾ÑÑ‚ÑŒ Ð¿Ð°Ð½ÐµÐ»Ð¸ Ð´Ð¾ÐºÐ°</string>
+    <string name="rows_below_dock_label">Ð ÑÐ´Ð¾Ð² Ð¿Ð¾Ð´ Ð´Ð¾ÐºÐ¾Ð¼</string>
+    <string name="wallpaper_label">ÐžÐ±Ð¾Ð¸</string>
+    <string name="wallpaper_state">ÐžÐ±Ð¾Ð¸: %1$s</string>
+    <string name="wallpaper_none">ÐÐµÑ‚</string>
+    <string name="wallpaper_applied">ÐžÐ±Ð¾Ð¸ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ñ‹</string>
+    <string name="wallpaper_theme_default">ÐšÐ°Ðº Ð² Ñ‚ÐµÐ¼Ðµ</string>
+    <string name="animations_state">ÐÐ½Ð¸Ð¼Ð°Ñ†Ð¸Ñ: %1$s</string>
+    <string name="advanced_effects">Ð Ð°ÑÑˆÐ¸Ñ€ÐµÐ½Ð½Ñ‹Ðµ ÑÑ„Ñ„ÐµÐºÑ‚Ñ‹</string>
+    <string name="advanced_effects_state">Ð Ð°ÑÑˆÐ¸Ñ€ÐµÐ½Ð½Ñ‹Ðµ ÑÑ„Ñ„ÐµÐºÑ‚Ñ‹: %1$s</string>
+    <string name="open_on_start_label">ÐžÑ‚ÐºÑ€Ñ‹Ð²Ð°Ñ‚ÑŒ Ð¿Ñ€Ð¸ Ð·Ð°Ð¿ÑƒÑÐºÐµ</string>
+    <string name="open_on_start_state">ÐžÑ‚ÐºÑ€Ñ‹Ð²Ð°Ñ‚ÑŒ Ð¿Ñ€Ð¸ Ð·Ð°Ð¿ÑƒÑÐºÐµ: %1$s</string>
+    <string name="advanced_effects_warning">ÐŸÑ€Ð¸Ð¿Ð¾Ð´Ð½Ð¸Ð¼Ð°ÐµÑ‚ Ð¿Ð»Ð¸Ñ‚ÐºÐ¸, ÑƒÐ²ÐµÐ»Ð¸Ñ‡Ð¸Ð²Ð°ÐµÑ‚ Ð·Ð½Ð°Ñ‡ÐºÐ¸ Ð¸ ÑÐ³Ð»Ð°Ð¶Ð¸Ð²Ð°ÐµÑ‚ Ð¿ÐµÑ€ÐµÑ…Ð¾Ð´Ñ‹ Ñ†Ð²ÐµÑ‚Ð°. ÐœÐ¾Ð¶ÐµÑ‚ ÑƒÐ²ÐµÐ»Ð¸Ñ‡Ð¸Ñ‚ÑŒ Ñ€Ð°ÑÑ…Ð¾Ð´ Ð¿Ð°Ð¼ÑÑ‚Ð¸; Ñ€ÐµÐ·ÑƒÐ»ÑŒÑ‚Ð°Ñ‚ Ð·Ð°Ð²Ð¸ÑÐ¸Ñ‚ Ð¾Ñ‚ Ñ‚ÐµÐ»ÐµÐ²Ð¸Ð·Ð¾Ñ€Ð°.</string>
+    <string name="follow_theme">Ð¡Ð»ÐµÐ´Ð¾Ð²Ð°Ñ‚ÑŒ Ñ‚ÐµÐ¼Ðµ (ÑÐ±Ñ€Ð¾ÑÐ¸Ñ‚ÑŒ Ð²Ñ‹Ð±Ð¾Ñ€)</string>
+    <string name="follow_theme_hint">Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·Ð¾Ð²Ð°Ñ‚ÑŒ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ Ñ€Ð°ÑÐ¿Ð¾Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ Ð¸ Ð°Ð½Ð¸Ð¼Ð°Ñ†Ð¸Ð¸ Ñ‚ÐµÐºÑƒÑ‰ÐµÐ¹ Ñ‚ÐµÐ¼Ñ‹ Ð¸Ð»Ð¸ Ð²ÑÑ‚Ñ€Ð¾ÐµÐ½Ð½Ñ‹Ðµ. Ð£ÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ° Ð¸Ð»Ð¸ ÑÐ±Ñ€Ð¾Ñ Ñ‚ÐµÐ¼Ñ‹ Ñ‚Ð°ÐºÐ¶Ðµ ÑƒÐ´Ð°Ð»ÑÐµÑ‚ Ð²Ñ‹Ð±Ð¾Ñ€ Ð½Ð° Ñ‚ÐµÐ»ÐµÐ²Ð¸Ð·Ð¾Ñ€Ðµ.</string>
+    <string name="tv_settings">Ð¡Ð¸ÑÑ‚ÐµÐ¼Ð½Ñ‹Ðµ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð¢Ð’</string>
+    <string name="quick_picture">Ð­ÐºÑ€Ð°Ð½</string>
+    <string name="quick_network">Ð¡ÐµÑ‚ÑŒ</string>
+    <string name="quick_apps">ÐŸÑ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ</string>
+    <string name="quick_apps_hint">Ð’ÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ ÑÐ½Ð¾Ð²Ð°</string>
+    <string name="on">Ð’ÐºÐ».</string>
+    <string name="off">Ð’Ñ‹ÐºÐ».</string>
+    <string name="enable">Ð’ÐºÐ»ÑŽÑ‡Ð¸Ñ‚ÑŒ</string>
+    <string name="dock_edit">Ð˜Ð·Ð¼ÐµÐ½Ð¸Ñ‚ÑŒ Ð´Ð¾Ðº</string>
+    <string name="power_menu">ÐŸÐµÑ€ÐµÐ·Ð°Ð³Ñ€ÑƒÐ·Ð¸Ñ‚ÑŒâ€¦</string>
+    <string name="dock_edit_hint">Ð’Ñ‹Ð±ÐµÑ€Ð¸Ñ‚Ðµ Ð¼ÐµÑÑ‚Ð¾ Ð² Ð´Ð¾ÐºÐµ Ð¸ Ð½Ð°Ð¶Ð¼Ð¸Ñ‚Ðµ ÐžÐš. ÐÐ°Ð·Ð°Ð´ â€” Ð³Ð¾Ñ‚Ð¾Ð²Ð¾.</string>
+    <string name="dock_edit_pick_app">Ð¢ÐµÐ¿ÐµÑ€ÑŒ Ð²Ñ‹Ð±ÐµÑ€Ð¸Ñ‚Ðµ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ Ð´Ð»Ñ ÑÑ‚Ð¾Ð³Ð¾ Ð¼ÐµÑÑ‚Ð° Ð¸ Ð½Ð°Ð¶Ð¼Ð¸Ñ‚Ðµ ÐžÐš. ÐÐ°Ð·Ð°Ð´ â€” Ð²Ñ‹Ð±Ñ€Ð°Ñ‚ÑŒ Ð´Ñ€ÑƒÐ³Ð¾Ðµ Ð¼ÐµÑÑ‚Ð¾.</string>
+    <string name="tile_add_to_dock">Ð”Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð² Ð´Ð¾Ðº</string>
+    <string name="tile_replace_in_dock">Ð—Ð°Ð¼ÐµÐ½Ð¸Ñ‚ÑŒ Ð´Ñ€ÑƒÐ³Ð¸Ð¼ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸ÐµÐ¼</string>
+    <string name="dock_edit_pick_place">Ð’Ñ‹Ð±ÐµÑ€Ð¸Ñ‚Ðµ Ð¼ÐµÑÑ‚Ð¾ Ð² Ð´Ð¾ÐºÐµ Ð´Ð»Ñ ÑÑ‚Ð¾Ð³Ð¾ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ Ð¸ Ð½Ð°Ð¶Ð¼Ð¸Ñ‚Ðµ ÐžÐš. ÐÐ°Ð·Ð°Ð´ â€” Ð¾Ñ‚Ð¼ÐµÐ½Ð°.</string>
+    <string name="reorder">Ð˜Ð·Ð¼ÐµÐ½Ð¸Ñ‚ÑŒ Ð¿Ð¾Ñ€ÑÐ´Ð¾Ðº Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ð¹</string>
+    <string name="tile_move">ÐŸÐµÑ€ÐµÐ¼ÐµÑÑ‚Ð¸Ñ‚ÑŒ</string>
+    <string name="reorder_hint">ÐžÐš â€” Ð²Ð·ÑÑ‚ÑŒ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ, ÑÑ‚Ñ€ÐµÐ»ÐºÐ¸ â€” Ð¿ÐµÑ€ÐµÐ¼ÐµÑÑ‚Ð¸Ñ‚ÑŒ, ÐÐ°Ð·Ð°Ð´ â€” Ð¿Ð¾ÑÑ‚Ð°Ð²Ð¸Ñ‚ÑŒ. Ð•Ñ‰Ñ‘ Ñ€Ð°Ð· ÐÐ°Ð·Ð°Ð´ â€” Ð³Ð¾Ñ‚Ð¾Ð²Ð¾.</string>
+    <string name="reorder_not_saved">ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ ÑÐ¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ Ð½Ð¾Ð²Ñ‹Ð¹ Ð¿Ð¾Ñ€ÑÐ´Ð¾Ðº</string>
+    <string name="app_library">Ð‘Ð¸Ð±Ð»Ð¸Ð¾Ñ‚ÐµÐºÐ° Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ð¹</string>
+    <string name="library_empty">ÐÐµÑ‚ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ð¹ Ð´Ð»Ñ Ð·Ð°Ð¿ÑƒÑÐºÐ°</string>
+    <string name="library_on_home">ÐÐ° Ð³Ð»Ð°Ð²Ð½Ð¾Ð¼ ÑÐºÑ€Ð°Ð½Ðµ</string>
+    <string name="library_add_home">Ð”Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð½Ð° Ð³Ð»Ð°Ð²Ð½Ñ‹Ð¹ ÑÐºÑ€Ð°Ð½</string>
+    <string name="library_remove_shortcut">Ð£Ð±Ñ€Ð°Ñ‚ÑŒ Ñ Ð³Ð»Ð°Ð²Ð½Ð¾Ð³Ð¾ ÑÐºÑ€Ð°Ð½Ð°</string>
+    <string name="library_open">ÐžÑ‚ÐºÑ€Ñ‹Ñ‚ÑŒ</string>
+    <string name="library_app_info">Ðž Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ð¸</string>
+    <string name="library_save_failed">ÐÐµ ÑƒÐ´Ð°Ð»Ð¾ÑÑŒ ÑÐ¾Ñ…Ñ€Ð°Ð½Ð¸Ñ‚ÑŒ ÑÑ€Ð»Ñ‹Ðº</string>
+    <string name="library_recent">ÐÐ¾Ð²Ð¾Ðµ Â· Ð”Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð½Ð° Ð³Ð»Ð°Ð²Ð½Ñ‹Ð¹ ÑÐºÑ€Ð°Ð½</string>
+    <string name="library_hint_add">ÐÐ°Ð¶Ð°Ñ‚ÑŒ: Ð´Ð¾Ð±Ð°Ð²Ð¸Ñ‚ÑŒ Ð½Ð° Ð³Ð»Ð°Ð²Ð½Ñ‹Ð¹ ÑÐºÑ€Ð°Ð½ Â· Ð£Ð´ÐµÑ€Ð¶Ð°Ñ‚ÑŒ: Ð¾Ð¿Ñ†Ð¸Ð¸</string>
+    <string name="library_hint_open">ÐÐ°Ð¶Ð°Ñ‚ÑŒ: Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚ÑŒ Â· Ð£Ð´ÐµÑ€Ð¶Ð°Ñ‚ÑŒ: Ð¾Ð¿Ñ†Ð¸Ð¸</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ðµ</item>
+        <item quantity="few">%1$d Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ</item>
+        <item quantity="many">%1$d Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ð¹</item>
+        <item quantity="other">%1$d Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+
+    <!-- Race-weekend panel (RaceWeekend). -->
+    <string name="race_kicker">Ð­Ñ‚Ð°Ð¿ %1$d Â· %2$s Â· %3$s</string>
+    <string name="race_kicker_no_place">Ð­Ñ‚Ð°Ð¿ %1$d Â· %2$s</string>
+    <string name="race_next">%1$s Ñ‡ÐµÑ€ÐµÐ· %2$s</string>
+    <string name="race_lights_out">Ð¡Ñ‚Ð°Ñ€Ñ‚ Ð³Ð¾Ð½ÐºÐ¸ Ñ‡ÐµÑ€ÐµÐ· %1$s</string>
+    <string name="race_live">%1$s Â· Ð² Ð¿Ñ€ÑÐ¼Ð¾Ð¼ ÑÑ„Ð¸Ñ€Ðµ</string>
+    <string name="race_finished">ÐšÐ»ÐµÑ‚Ñ‡Ð°Ñ‚Ñ‹Ð¹ Ñ„Ð»Ð°Ð³</string>
+    <string name="race_practice_1">ÐŸÑ€Ð°ÐºÑ‚Ð¸ÐºÐ° 1</string>
+    <string name="race_practice_2">ÐŸÑ€Ð°ÐºÑ‚Ð¸ÐºÐ° 2</string>
+    <string name="race_practice_3">ÐŸÑ€Ð°ÐºÑ‚Ð¸ÐºÐ° 3</string>
+    <string name="race_sprint_qualifying">ÐšÐ²Ð°Ð»Ð¸Ñ„Ð¸ÐºÐ°Ñ†Ð¸Ñ ÑÐ¿Ñ€Ð¸Ð½Ñ‚Ð°</string>
+    <string name="race_sprint">Ð¡Ð¿Ñ€Ð¸Ð½Ñ‚</string>
+    <string name="race_qualifying">ÐšÐ²Ð°Ð»Ð¸Ñ„Ð¸ÐºÐ°Ñ†Ð¸Ñ</string>
+    <string name="race_race">Ð“Ð¾Ð½ÐºÐ°</string>
+    <string name="race_practice_1_short">ÐŸ1</string>
+    <string name="race_practice_2_short">ÐŸ2</string>
+    <string name="race_practice_3_short">ÐŸ3</string>
+    <string name="race_sprint_qualifying_short">Ð¡Ðš</string>
+    <string name="race_sprint_short">Ð¡ÐŸÐ Ð˜ÐÐ¢</string>
+    <string name="race_qualifying_short">ÐšÐ’ÐÐ›.</string>
+    <string name="race_race_short">Ð“ÐžÐÐšÐ</string>
+    <string name="race_countdown_minutes">%1$d Ð¼Ð¸Ð½</string>
+    <string name="race_countdown_hours">%1$d Ñ‡ %2$d Ð¼Ð¸Ð½</string>
+    <string name="race_countdown_days">%1$d Ð´ %2$d Ñ‡</string>
+    <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
+         last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
+    <string name="last_opened">ÐŸÐ¾ÑÐ»ÐµÐ´Ð½Ð¸Ð¹ Ð·Ð°Ð¿ÑƒÑÐº: %1$s</string>
+    <string name="game_live">Ð¡ÐµÐ¹Ñ‡Ð°Ñ Ð² ÑÑ„Ð¸Ñ€Ðµ</string>
+    <string name="clock_format_system">Ð¡Ð¸ÑÑ‚ÐµÐ¼Ð½Ñ‹Ðµ</string>
+    <string name="clock_format_12">12-Ñ‡Ð°ÑÐ¾Ð²Ð¾Ð¹</string>
+    <string name="clock_format_24">24-Ñ‡Ð°ÑÐ¾Ð²Ð¾Ð¹</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-sv\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hem</string>
+    <string name="inputs">IngÃ¥ngar</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">InstÃ¤llningar</string>
+    <string name="choose_input">IngÃ¥ngar</string>
+    <string name="connected">Ansluten</string>
+    <string name="standby">VilolÃ¤ge</string>
+    <string name="not_connected">Ingen enhet</string>
+    <string name="live_tv">Live-TV</string>
+    <string name="no_inputs">Inga ingÃ¥ngar hittades</string>
+    <string name="more_inputs">Fler ingÃ¥ngar</string>
+    <string name="good_morning">God morgon</string>
+    <string name="good_afternoon">God eftermiddag</string>
+    <string name="good_evening">God kvÃ¤ll</string>
+    <string name="good_forenoon">God fÃ¶rmiddag</string>
+    <string name="good_night">God natt</string>
+    <string name="festival_dussehra_greeting">Glad Dussehra</string>
+    <string name="festival_diwali_greeting">Glad Diwali</string>
+    <string name="festival_halloween_greeting">Glad halloween</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">FrÃ¥nkopplad</string>
+    <string name="not_available">Inte tillgÃ¤ngligt pÃ¥ den hÃ¤r TV:n</string>
+    <string name="cant_open">Kan inte Ã¶ppna %1$s</string>
+    <string name="date_format">EEEE d MMMM</string>
+    <string name="stats_cpu">Processor %1$d%%</string>
+    <string name="stats_memory">Minne: %1$d / %2$d MB</string>
+    <string name="stats_storage">Lagring: %1$s ledigt</string>
+    <string name="dream_name">Klocka</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN av</string>
+    <string name="home_settings">VÃ¤lj standardstartskÃ¤rm</string>
+    <string name="home_settings_help">VÃ¤lj den ursprungliga startskÃ¤rmen fÃ¶r att sluta anvÃ¤nda CleanYourTV, eller CleanYourTV fÃ¶r att byta tillbaka. Den ursprungliga startskÃ¤rmen mÃ¥ste vara aktiverad och TV:n mÃ¥ste kunna vÃ¤lja startskÃ¤rm. KÃ¶r Ã¥terstÃ¤llningsskriptet fÃ¶rst om den har inaktiverats.</string>
+    <string name="launcher_settings">StartskÃ¤rmsinstÃ¤llningar</string>
+    <string name="native_settings">Tillverkarens instÃ¤llningar</string>
+    <string name="columns_label">Appar per rad</string>
+    <string name="rows_below_dock_label">Rader under favoritraden</string>
+    <string name="dock_opacity_label">Favoritradens opacitet</string>
+    <string name="wallpaper_label">Bakgrundsbild</string>
+    <string name="wallpaper_state">Bakgrundsbild: %1$s</string>
+    <string name="wallpaper_none">Ingen</string>
+    <string name="wallpaper_applied">Bakgrundsbilden har Ã¤ndrats</string>
+    <string name="wallpaper_theme_default">Temats standard</string>
+    <string name="animations_state">Animationer: %1$s</string>
+    <string name="advanced_effects">Avancerade effekter</string>
+    <string name="advanced_effects_state">Avancerade effekter: %1$s</string>
+    <string name="open_on_start_label">Ã–ppna vid start</string>
+    <string name="open_on_start_state">Ã–ppna vid start: %1$s</string>
+    <string name="advanced_effects_warning">LÃ¤gger till lyfta appbrickor, ikonzoom och mjuka fÃ¤rgÃ¶vergÃ¥ngar. Kan Ã¶ka minnesanvÃ¤ndningen; skillnaden beror pÃ¥ din TV.</string>
+    <string name="follow_theme">FÃ¶lj temat (Ã¥terstÃ¤ll val pÃ¥ TV:n)</string>
+    <string name="follow_theme_hint">AnvÃ¤nder det aktuella temats eller de inbyggda instÃ¤llningarna fÃ¶r layout och rÃ¶relse. Att skicka eller Ã¥terstÃ¤lla ett tema rensar ocksÃ¥ valen du gjort pÃ¥ TV:n.</string>
+    <string name="tv_settings">TV:ns systeminstÃ¤llningar</string>
+    <string name="quick_picture">Bild</string>
+    <string name="quick_network">NÃ¤tverk</string>
+    <string name="quick_apps">Appar</string>
+    <string name="quick_apps_hint">Aktivera igen</string>
+    <string name="on">PÃ¥</string>
+    <string name="off">Av</string>
+    <string name="enable">Aktivera</string>
+    <string name="input_key_service_description">Ã–ppnar ingÃ¥ngsvÃ¤ljaren nÃ¤r du trycker pÃ¥ fjÃ¤rrkontrollens Input-knapp.</string>
+    <string name="home_key_name">Hemknapp</string>
+    <string name="home_key_description">LÃ¥ter fjÃ¤rrkontrollens hemknapp Ã¶ppna den hÃ¤r startskÃ¤rmen.</string>
+    <string name="card_prompt_title">Nytt kort frÃ¥n %1$s</string>
+    <string name="card_prompt_body">%1$s kan visa ett kort pÃ¥ startskÃ¤rmen. Om du dÃ¶ljer det ser appens vanliga bricka ut som fÃ¶rut.</string>
+    <string name="card_prompt_names">Kortet heter â€%1$sâ€. Appen heter â€%2$sâ€.</string>
+    <string name="card_prompt_resigned">%1$s har uppdaterats med en annan signeringsnyckel, sÃ¥ ditt tidigare svar gÃ¤ller inte lÃ¤ngre. VÃ¤lj igen fÃ¶r dess kort.</string>
+    <string name="card_prompt_relabelled">%1$s har bytt namn pÃ¥ sitt kort sedan du valde. VÃ¤lj igen fÃ¶r det.</string>
+    <string name="card_prompt_hint">Du kan Ã¤ndra detta senare: hÃ¥ll in OK pÃ¥ InstÃ¤llningar och vÃ¤lj Modulkort.</string>
+    <string name="card_prompt_identity">%1$s, nyckel %2$s</string>
+    <string name="card_keep_hidden">HÃ¥ll dold</string>
+    <string name="card_show">Visa kort</string>
+    <string name="card_not_saved">Kunde inte spara valet</string>
+    <string name="module_cards">Modulkort</string>
+    <string name="no_module_cards">Inga modulkort installerade</string>
+    <string name="card_app_name">App: %1$s</string>
+    <string name="card_state_shown">Visas</string>
+    <string name="card_state_over_limit">Visas, Ã¶ver grÃ¤nsen pÃ¥ 8</string>
+    <string name="card_state_hidden">Dold</string>
+    <string name="card_state_new">Nytt</string>
+    <string name="card_state_new_key">Ny nyckel</string>
+    <string name="card_state_new_label">Nytt namn</string>
+    <string name="dock_edit">Redigera favoritraden</string>
+    <string name="power_menu">Starta omâ€¦</string>
+    <string name="dock_edit_hint">VÃ¤lj platsen i favoritraden som du vill Ã¤ndra och tryck OK. Tillbaka fÃ¶r att avsluta.</string>
+    <string name="dock_edit_pick_app">VÃ¤lj nu appen som ska ligga dÃ¤r och tryck OK. Tillbaka fÃ¶r att vÃ¤lja en annan plats.</string>
+    <string name="tile_add_to_dock">LÃ¤gg till i favoritraden</string>
+    <string name="tile_replace_in_dock">ErsÃ¤tt med en annan app</string>
+    <string name="dock_edit_pick_place">VÃ¤lj en plats i favoritraden fÃ¶r appen och tryck OK. Tillbaka fÃ¶r att avbryta.</string>
+    <string name="reorder">Ã„ndra ordning pÃ¥ appar</string>
+    <string name="tile_move">Flytta</string>
+    <string name="reorder_hint">OK plockar upp en app, pilarna flyttar den, Tillbaka placerar den. Tillbaka igen fÃ¶r att avsluta.</string>
+    <string name="reorder_not_saved">Kunde inte spara den nya ordningen</string>
+    <string name="app_library">Appbibliotek</string>
+    <string name="library_empty">Inga appar som kan Ã¶ppnas hittades</string>
+    <string name="library_on_home">PÃ¥ startskÃ¤rmen</string>
+    <string name="library_add_home">LÃ¤gg till pÃ¥ startskÃ¤rmen</string>
+    <string name="library_remove_shortcut">Ta bort frÃ¥n startskÃ¤rmen</string>
+    <string name="library_open">Ã–ppna</string>
+    <string name="library_app_info">Appinfo</string>
+    <string name="library_save_failed">Kunde inte spara genvÃ¤gen</string>
+    <string name="library_recent">Ny Â· LÃ¤gg till pÃ¥ startskÃ¤rmen</string>
+    <string name="library_hint_add">Tryck fÃ¶r att lÃ¤gga till pÃ¥ startskÃ¤rmen Â· HÃ¥ll in fÃ¶r fler val</string>
+    <string name="library_hint_open">Tryck fÃ¶r att Ã¶ppna Â· HÃ¥ll in fÃ¶r fler val</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d appar</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="race_kicker">OmgÃ¥ng %1$d Â· %2$s Â· %3$s</string>
+    <string name="race_kicker_no_place">OmgÃ¥ng %1$d Â· %2$s</string>
+    <string name="race_next">%1$s om %2$s</string>
+    <string name="race_lights_out">Start om %1$s</string>
+    <string name="race_live">%1$s Â· direkt</string>
+    <string name="race_finished">MÃ¥lflagga</string>
+    <string name="race_practice_1">TrÃ¤ning 1</string>
+    <string name="race_practice_2">TrÃ¤ning 2</string>
+    <string name="race_practice_3">TrÃ¤ning 3</string>
+    <string name="race_sprint_qualifying">Sprintkval</string>
+    <string name="race_sprint">Sprint</string>
+    <string name="race_qualifying">Kval</string>
+    <string name="race_race">Lopp</string>
+    <string name="last_opened">Senast Ã¶ppnad %1$s</string>
+    <string name="game_live">Direkt nu</string>
+    <string name="clock_format_system">System</string>
+    <string name="clock_format_12">12 timmar</string>
+    <string name="clock_format_24">24 timmar</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-th\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">à¸«à¸™à¹‰à¸²à¹à¸£à¸</string>
+    <string name="inputs">à¹à¸«à¸¥à¹ˆà¸‡à¸ªà¸±à¸à¸à¸²à¸“</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²</string>
+    <string name="choose_input">à¹à¸«à¸¥à¹ˆà¸‡à¸ªà¸±à¸à¸à¸²à¸“</string>
+    <string name="connected">à¹€à¸Šà¸·à¹ˆà¸­à¸¡à¸•à¹ˆà¸­à¹à¸¥à¹‰à¸§</string>
+    <string name="standby">à¸ªà¹à¸•à¸™à¸”à¹Œà¸šà¸²à¸¢</string>
+    <string name="not_connected">à¹„à¸¡à¹ˆà¸¡à¸µà¸­à¸¸à¸›à¸à¸£à¸“à¹Œ</string>
+    <string name="live_tv">à¸—à¸µà¸§à¸µà¸ªà¸”</string>
+    <string name="no_inputs">à¹„à¸¡à¹ˆà¸žà¸šà¹à¸«à¸¥à¹ˆà¸‡à¸ªà¸±à¸à¸à¸²à¸“</string>
+    <string name="more_inputs">à¹à¸«à¸¥à¹ˆà¸‡à¸ªà¸±à¸à¸à¸²à¸“à¹€à¸žà¸´à¹ˆà¸¡à¹€à¸•à¸´à¸¡</string>
+    <string name="good_morning">à¸ªà¸§à¸±à¸ªà¸”à¸µà¸•à¸­à¸™à¹€à¸Šà¹‰à¸²</string>
+    <string name="good_afternoon">à¸ªà¸§à¸±à¸ªà¸”à¸µà¸•à¸­à¸™à¸šà¹ˆà¸²à¸¢</string>
+    <string name="good_evening">à¸ªà¸§à¸±à¸ªà¸”à¸µà¸•à¸­à¸™à¹€à¸¢à¹‡à¸™</string>
+    <string name="good_night">à¸ªà¸§à¸±à¸ªà¸”à¸µà¸¢à¸²à¸¡à¸„à¹ˆà¸³à¸„à¸·à¸™</string>
+    <string name="ethernet">à¸­à¸µà¹€à¸—à¸­à¸£à¹Œà¹€à¸™à¹‡à¸•</string>
+    <string name="offline">à¸­à¸­à¸Ÿà¹„à¸¥à¸™à¹Œ</string>
+    <string name="not_available">à¸—à¸µà¸§à¸µà¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡à¸™à¸µà¹‰à¹„à¸¡à¹ˆà¸£à¸­à¸‡à¸£à¸±à¸š</string>
+    <string name="cant_open">à¹€à¸›à¸´à¸” %1$s à¹„à¸¡à¹ˆà¹„à¸”à¹‰</string>
+    <string name="date_format">EEEE  d MMMM</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">à¸«à¸™à¹ˆà¸§à¸¢à¸„à¸§à¸²à¸¡à¸ˆà¸³ %1$d / %2$d MB</string>
+    <string name="stats_storage">à¸žà¸·à¹‰à¸™à¸—à¸µà¹ˆà¸§à¹ˆà¸²à¸‡ %1$s</string>
+    <string name="dream_name">à¸™à¸²à¸¬à¸´à¸à¸²</string>
+
+    <string name="launcher_settings">à¸à¸²à¸£à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¸«à¸™à¹‰à¸²à¸«à¸¥à¸±à¸</string>
+    <string name="native_settings">à¸à¸²à¸£à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¸‚à¸­à¸‡à¸œà¸¹à¹‰à¸œà¸¥à¸´à¸•</string>
+    <string name="columns_label">à¹à¸­à¸›à¸•à¹ˆà¸­à¹à¸–à¸§</string>
+    <string name="dock_opacity_label">à¸„à¸§à¸²à¸¡à¸—à¸¶à¸šà¸‚à¸­à¸‡à¹à¸–à¸šà¸”à¹‡à¸­à¸</string>
+    <string name="animations_state">à¸ à¸²à¸žà¹€à¸„à¸¥à¸·à¹ˆà¸­à¸™à¹„à¸«à¸§: %1$s</string>
+    <string name="advanced_effects">à¹€à¸­à¸Ÿà¹€à¸Ÿà¸à¸•à¹Œà¸‚à¸±à¹‰à¸™à¸ªà¸¹à¸‡</string>
+    <string name="advanced_effects_state">à¹€à¸­à¸Ÿà¹€à¸Ÿà¸à¸•à¹Œà¸‚à¸±à¹‰à¸™à¸ªà¸¹à¸‡: %1$s</string>
+    <string name="open_on_start_label">à¹€à¸›à¸´à¸”à¹€à¸¡à¸·à¹ˆà¸­à¹€à¸£à¸´à¹ˆà¸¡à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡</string>
+    <string name="open_on_start_state">à¹€à¸›à¸´à¸”à¹€à¸¡à¸·à¹ˆà¸­à¹€à¸£à¸´à¹ˆà¸¡à¹€à¸„à¸£à¸·à¹ˆà¸­à¸‡: %1$s</string>
+    <string name="advanced_effects_warning">à¸¢à¸à¹„à¸—à¸¥à¹Œ à¸‚à¸¢à¸²à¸¢à¹„à¸­à¸„à¸­à¸™ à¹à¸¥à¸°à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™à¸ªà¸µà¸žà¸·à¹‰à¸™à¸«à¸¥à¸±à¸‡à¸­à¸¢à¹ˆà¸²à¸‡à¸™à¸¸à¹ˆà¸¡à¸™à¸§à¸¥ à¸­à¸²à¸ˆà¹ƒà¸Šà¹‰à¸«à¸™à¹ˆà¸§à¸¢à¸„à¸§à¸²à¸¡à¸ˆà¸³à¹€à¸žà¸´à¹ˆà¸¡à¸‚à¸¶à¹‰à¸™ à¸‚à¸¶à¹‰à¸™à¸­à¸¢à¸¹à¹ˆà¸à¸±à¸šà¸—à¸µà¸§à¸µ</string>
+    <string name="follow_theme">à¹ƒà¸Šà¹‰à¸•à¸²à¸¡à¸˜à¸µà¸¡ (à¸£à¸µà¹€à¸‹à¹‡à¸•à¸à¸²à¸£à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²)</string>
+    <string name="follow_theme_hint">à¹ƒà¸Šà¹‰à¸£à¸¹à¸›à¹à¸šà¸šà¹à¸¥à¸°à¸ à¸²à¸žà¹€à¸„à¸¥à¸·à¹ˆà¸­à¸™à¹„à¸«à¸§à¸ˆà¸²à¸à¸˜à¸µà¸¡à¸›à¸±à¸ˆà¸ˆà¸¸à¸šà¸±à¸™à¸«à¸£à¸·à¸­à¸„à¹ˆà¸²à¹ƒà¸™à¹à¸­à¸› à¸à¸²à¸£à¹ƒà¸Šà¹‰à¸«à¸£à¸·à¸­à¸£à¸µà¹€à¸‹à¹‡à¸•à¸˜à¸µà¸¡à¸ˆà¸°à¸¥à¹‰à¸²à¸‡à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸à¸šà¸™à¸—à¸µà¸§à¸µà¸”à¹‰à¸§à¸¢</string>
+    <string name="tv_settings">à¸à¸²à¸£à¸•à¸±à¹‰à¸‡à¸„à¹ˆà¸²à¸£à¸°à¸šà¸šà¸—à¸µà¸§à¸µ</string>
+    <string name="on">à¹€à¸›à¸´à¸”</string>
+    <string name="off">à¸›à¸´à¸”</string>
+    <string name="enable">à¹€à¸›à¸´à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™</string>
+    <string name="dock_edit">à¹à¸à¹‰à¹„à¸‚à¹à¸–à¸šà¹à¸­à¸›</string>
+    <string name="power_menu">à¸£à¸µà¸ªà¸•à¸²à¸£à¹Œà¸—â€¦</string>
+    <string name="dock_edit_hint">à¹€à¸¥à¸·à¸­à¸à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡à¹ƒà¸™à¹à¸–à¸šà¹à¸­à¸›à¸—à¸µà¹ˆà¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™ à¹à¸¥à¹‰à¸§à¸à¸” OK à¸à¸”à¸¢à¹‰à¸­à¸™à¸à¸¥à¸±à¸šà¹€à¸žà¸·à¹ˆà¸­à¹€à¸ªà¸£à¹‡à¸ˆà¸ªà¸´à¹‰à¸™</string>
+    <string name="dock_edit_pick_app">à¸ˆà¸²à¸à¸™à¸±à¹‰à¸™à¹€à¸¥à¸·à¸­à¸à¹à¸­à¸›à¸—à¸µà¹ˆà¸ˆà¸°à¸§à¸²à¸‡à¸•à¸£à¸‡à¸™à¸±à¹‰à¸™ à¹à¸¥à¹‰à¸§à¸à¸” OK à¸à¸”à¸¢à¹‰à¸­à¸™à¸à¸¥à¸±à¸šà¹€à¸žà¸·à¹ˆà¸­à¹€à¸¥à¸·à¸­à¸à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡à¸­à¸·à¹ˆà¸™</string>
+    <string name="tile_add_to_dock">à¹€à¸žà¸´à¹ˆà¸¡à¹ƒà¸™à¹à¸–à¸šà¹à¸­à¸›</string>
+    <string name="tile_replace_in_dock">à¹à¸—à¸™à¸—à¸µà¹ˆà¸”à¹‰à¸§à¸¢à¹à¸­à¸›à¸­à¸·à¹ˆà¸™</string>
+    <string name="dock_edit_pick_place">à¹€à¸¥à¸·à¸­à¸à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡à¹ƒà¸™à¹à¸–à¸šà¹à¸­à¸›à¸ªà¸³à¸«à¸£à¸±à¸šà¹à¸­à¸›à¸™à¸µà¹‰ à¹à¸¥à¹‰à¸§à¸à¸” OK à¸à¸”à¸¢à¹‰à¸­à¸™à¸à¸¥à¸±à¸šà¹€à¸žà¸·à¹ˆà¸­à¸¢à¸à¹€à¸¥à¸´à¸</string>
+    <string name="reorder">à¸ˆà¸±à¸”à¹€à¸£à¸µà¸¢à¸‡à¹à¸­à¸›</string>
+    <string name="tile_move">à¸¢à¹‰à¸²à¸¢</string>
+    <string name="reorder_hint">à¸à¸” OK à¹€à¸žà¸·à¹ˆà¸­à¹€à¸¥à¸·à¸­à¸à¹à¸­à¸› à¹ƒà¸Šà¹‰à¸¥à¸¹à¸à¸¨à¸£à¹€à¸žà¸·à¹ˆà¸­à¸¢à¹‰à¸²à¸¢ à¸à¸”à¸¢à¹‰à¸­à¸™à¸à¸¥à¸±à¸šà¹€à¸žà¸·à¹ˆà¸­à¸§à¸²à¸‡ à¸à¸”à¸¢à¹‰à¸­à¸™à¸à¸¥à¸±à¸šà¸­à¸µà¸à¸„à¸£à¸±à¹‰à¸‡à¹€à¸žà¸·à¹ˆà¸­à¹€à¸ªà¸£à¹‡à¸ˆà¸ªà¸´à¹‰à¸™</string>
+    <string name="reorder_not_saved">à¸šà¸±à¸™à¸—à¸¶à¸à¸¥à¸³à¸”à¸±à¸šà¹ƒà¸«à¸¡à¹ˆà¹„à¸¡à¹ˆà¹„à¸”à¹‰</string>
+    <string name="app_library">à¸„à¸¥à¸±à¸‡à¹à¸­à¸›</string>
+    <string name="library_empty">à¹„à¸¡à¹ˆà¸žà¸šà¹à¸­à¸›à¸—à¸µà¹ˆà¹€à¸›à¸´à¸”à¹„à¸”à¹‰</string>
+    <string name="library_on_home">à¸­à¸¢à¸¹à¹ˆà¹ƒà¸™à¸«à¸™à¹‰à¸²à¸«à¸¥à¸±à¸</string>
+    <string name="library_add_home">à¹€à¸žà¸´à¹ˆà¸¡à¹ƒà¸™à¸«à¸™à¹‰à¸²à¸«à¸¥à¸±à¸</string>
+    <string name="library_remove_shortcut">à¸™à¸³à¸­à¸­à¸à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸«à¸¥à¸±à¸</string>
+    <string name="library_open">à¹€à¸›à¸´à¸”</string>
+    <string name="library_app_info">à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¹à¸­à¸›</string>
+    <string name="library_save_failed">à¸šà¸±à¸™à¸—à¸¶à¸à¸—à¸²à¸‡à¸¥à¸±à¸”à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ</string>
+    <string name="library_recent">à¹ƒà¸«à¸¡à¹ˆ Â· à¹€à¸žà¸´à¹ˆà¸¡à¹ƒà¸™à¸«à¸™à¹‰à¸²à¸«à¸¥à¸±à¸</string>
+    <string name="library_hint_add">à¸à¸”à¹€à¸žà¸·à¹ˆà¸­à¹€à¸žà¸´à¹ˆà¸¡à¸—à¸µà¹ˆà¸«à¸™à¹‰à¸²à¸«à¸¥à¸±à¸ Â· à¸à¸”à¸„à¹‰à¸²à¸‡à¹€à¸žà¸·à¹ˆà¸­à¸”à¸¹à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸</string>
+    <string name="library_hint_open">à¸à¸”à¹€à¸žà¸·à¹ˆà¸­à¹€à¸›à¸´à¸” Â· à¸à¸”à¸„à¹‰à¸²à¸‡à¹€à¸žà¸·à¹ˆà¸­à¸”à¸¹à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸</string>
+    <plurals name="library_app_count">
+        <item quantity="other">%1$d à¹à¸­à¸›</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s %2$s</string>
+    <string name="game_live">à¸à¸³à¸¥à¸±à¸‡à¸–à¹ˆà¸²à¸¢à¸—à¸­à¸”à¸ªà¸”</string>
+    <string name="clock_format_system">à¸£à¸°à¸šà¸š</string>
+    <string name="clock_format_12">12 à¸Šà¸±à¹ˆà¸§à¹‚à¸¡à¸‡</string>
+    <string name="clock_format_24">24 à¸Šà¸±à¹ˆà¸§à¹‚à¸¡à¸‡</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-tr\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ana Ekran</string>
+    <string name="inputs">GiriÅŸler</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">Ayarlar</string>
+    <string name="choose_input">GiriÅŸler</string>
+    <string name="connected">BaÄŸlÄ±</string>
+    <string name="standby">Bekleme</string>
+    <string name="not_connected">Cihaz Yok</string>
+    <string name="live_tv">CanlÄ± TV</string>
+    <string name="no_inputs">GiriÅŸ BulunamadÄ±</string>
+    <string name="more_inputs">DiÄŸer giriÅŸler</string>
+    <string name="good_morning">GÃ¼naydÄ±n</string>
+    <string name="good_afternoon">Ä°yi GÃ¼nler</string>
+    <string name="good_evening">Ä°yi AkÅŸamlar</string>
+    <string name="good_night">Ä°yi Geceler</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">Ã‡evrimdÄ±ÅŸÄ±</string>
+    <string name="not_available">Bu TVâ€™de kullanÄ±lamÄ±yor</string>
+    <string name="cant_open">%1$s aÃ§Ä±lamÄ±yor</string>
+    <string name="date_format">d MMMM EEEE</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">Bellek %1$d / %2$d MB</string>
+    <string name="stats_storage">Depolama %1$s boÅŸ</string>
+    <string name="dream_name">Saat</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN KapalÄ±</string>
+    <string name="home_settings">VarsayÄ±lan ana ekran</string>
+    <string name="home_settings_help">CleanYourTV yerine Ã¶zgÃ¼n ana ekranÄ± seÃ§in; geri dÃ¶nmek iÃ§in CleanYourTV seÃ§in. Ã–zgÃ¼n baÅŸlatÄ±cÄ± etkin olmalÄ± ve TV ana ekran seÃ§icisini desteklemelidir. Devre dÄ±ÅŸÄ±ysa Ã¶nce geri yÃ¼kleme betiÄŸini kullanÄ±n.</string>
+    <string name="input_key_service_description">Uzaktan kumandanÄ±n GiriÅŸ tuÅŸuna basÄ±ldÄ±ÄŸÄ±nda giriÅŸ seÃ§iciyi aÃ§ar.</string>
+    <string name="home_key_name">Ana ekran tuÅŸu</string>
+    <string name="home_key_description">Uzaktan kumandanÄ±n ana ekran tuÅŸunun bu baÅŸlatÄ±cÄ±yÄ± aÃ§masÄ±nÄ± saÄŸlar.</string>
+    <string name="card_prompt_title">%1$s uygulamasÄ±ndan yeni kart</string>
+    <string name="card_prompt_body">%1$s ana ekranÄ±nÄ±zda bir kart gÃ¶sterebilir. Gizli tutarsanÄ±z uygulamanÄ±n normal kutucuÄŸu olduÄŸu gibi kalÄ±r.</string>
+    <string name="card_prompt_names">KartÄ±n adÄ± â€œ%1$sâ€. UygulamanÄ±n adÄ± â€œ%2$sâ€.</string>
+    <string name="card_prompt_resigned">%1$s farklÄ± bir imzalama anahtarÄ±yla gÃ¼ncellendi; Ã¶nceki yanÄ±tÄ±nÄ±z artÄ±k geÃ§erli deÄŸil. KartÄ± iÃ§in yeniden karar verin.</string>
+    <string name="card_prompt_relabelled">%1$s, kararÄ±nÄ±zdan bu yana kartÄ±nÄ±n adÄ±nÄ± deÄŸiÅŸtirdi. KartÄ± iÃ§in yeniden karar verin.</string>
+    <string name="card_prompt_hint">Bunu daha sonra deÄŸiÅŸtirebilirsiniz: Ayarlar Ã¼zerinde OK tuÅŸunu basÄ±lÄ± tutup ModÃ¼l kartlarÄ± seÃ§in.</string>
+    <string name="card_prompt_identity">%1$s, anahtar %2$s</string>
+    <string name="card_keep_hidden">Gizli tut</string>
+    <string name="card_show">KartÄ± gÃ¶ster</string>
+    <string name="card_not_saved">SeÃ§im kaydedilemedi</string>
+    <string name="module_cards">ModÃ¼l kartlarÄ±</string>
+    <string name="no_module_cards">YÃ¼klÃ¼ modÃ¼l kartÄ± yok</string>
+    <string name="card_app_name">Uygulama: %1$s</string>
+    <string name="card_state_shown">GÃ¶steriliyor</string>
+    <string name="card_state_over_limit">GÃ¶steriliyor, 8 sÄ±nÄ±rÄ±nÄ±n Ã¼zerinde</string>
+    <string name="card_state_hidden">Gizli</string>
+    <string name="card_state_new">Yeni</string>
+    <string name="card_state_new_key">Yeni anahtar</string>
+    <string name="card_state_new_label">Yeni ad</string>
+    <string name="launcher_settings">BaÅŸlatÄ±cÄ± ayarlarÄ±</string>
+    <string name="native_settings">Ãœretici ayarlarÄ±</string>
+    <string name="columns_label">SatÄ±r baÅŸÄ±na uygulama</string>
+    <string name="dock_opacity_label">Dock bandÄ± opaklÄ±ÄŸÄ±</string>
+    <string name="animations_state">Animasyonlar: %1$s</string>
+    <string name="advanced_effects">GeliÅŸmiÅŸ efektler</string>
+    <string name="advanced_effects_state">GeliÅŸmiÅŸ efektler: %1$s</string>
+    <string name="open_on_start_label">AÃ§Ä±lÄ±ÅŸta aÃ§</string>
+    <string name="open_on_start_state">AÃ§Ä±lÄ±ÅŸta aÃ§: %1$s</string>
+    <string name="advanced_effects_warning">KutucuklarÄ± yÃ¼kseltir, simgeleri bÃ¼yÃ¼tÃ¼r ve renk geÃ§iÅŸlerini yumuÅŸatÄ±r. Bellek kullanÄ±mÄ±nÄ± artÄ±rabilir; etki TVâ€™ye baÄŸlÄ±dÄ±r.</string>
+    <string name="follow_theme">TemayÄ± izle (TV seÃ§imlerini sÄ±fÄ±rla)</string>
+    <string name="follow_theme_hint">GeÃ§erli temanÄ±n veya yerleÅŸik ayarlarÄ±n dÃ¼zenini ve hareketini kullanÄ±r. Tema uygulamak ya da sÄ±fÄ±rlamak TV seÃ§imlerini de temizler.</string>
+    <string name="tv_settings">TV sistem ayarlarÄ±</string>
+    <string name="on">AÃ§Ä±k</string>
+    <string name="off">KapalÄ±</string>
+    <string name="enable">EtkinleÅŸtir</string>
+    <string name="dock_edit">Dock\'u dÃ¼zenle</string>
+    <string name="power_menu">Yeniden baÅŸlatâ€¦</string>
+    <string name="dock_edit_hint">DeÄŸiÅŸtirilecek dock yerini seÃ§ip Tamam\'a basÄ±n. Bitirmek iÃ§in Geri.</string>
+    <string name="dock_edit_pick_app">Åžimdi oraya konacak uygulamayÄ± seÃ§ip Tamam\'a basÄ±n. BaÅŸka bir yer seÃ§mek iÃ§in Geri.</string>
+    <string name="tile_add_to_dock">Dock\'a ekle</string>
+    <string name="tile_replace_in_dock">BaÅŸka bir uygulamayla deÄŸiÅŸtir</string>
+    <string name="dock_edit_pick_place">Bu uygulama iÃ§in bir dock yeri seÃ§ip Tamam\'a basÄ±n. Ä°ptal iÃ§in Geri.</string>
+    <string name="reorder">UygulamalarÄ± sÄ±rala</string>
+    <string name="tile_move">TaÅŸÄ±</string>
+    <string name="reorder_hint">Tamam bir uygulamayÄ± alÄ±r, oklar taÅŸÄ±r, Geri bÄ±rakÄ±r. Bitirmek iÃ§in tekrar Geri.</string>
+    <string name="reorder_not_saved">Yeni sÄ±ra kaydedilemedi</string>
+    <string name="app_library">Uygulama kitaplÄ±ÄŸÄ±</string>
+    <string name="library_empty">AÃ§Ä±labilecek uygulama bulunamadÄ±</string>
+    <string name="library_on_home">Ana ekranda</string>
+    <string name="library_add_home">Ana ekrana ekle</string>
+    <string name="library_remove_shortcut">Ana ekrandan kaldÄ±r</string>
+    <string name="library_open">AÃ§</string>
+    <string name="library_app_info">Uygulama bilgileri</string>
+    <string name="library_save_failed">KÄ±sayol kaydedilemedi</string>
+    <string name="library_recent">Yeni Â· Ana ekrana ekle</string>
+    <string name="library_hint_add">Ana ekrana eklemek iÃ§in bas Â· SeÃ§enekler iÃ§in basÄ±lÄ± tut</string>
+    <string name="library_hint_open">AÃ§mak iÃ§in bas Â· SeÃ§enekler iÃ§in basÄ±lÄ± tut</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d uygulama</item>
+        <item quantity="other">%1$d uygulama</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="game_live">Åžimdi canlÄ±</string>
+    <string name="clock_format_system">Sistem</string>
+    <string name="clock_format_12">12 saat</string>
+    <string name="clock_format_24">24 saat</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-uk\bools.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Home date is two lines (weekday, then the date), so the clock row keeps room for both. -->
+<resources>
+    <bool name="date_single_line">false</bool>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-uk\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ð“Ð¾Ð»Ð¾Ð²Ð½Ð¸Ð¹ ÐµÐºÑ€Ð°Ð½</string>
+    <string name="inputs">Ð”Ð¶ÐµÑ€ÐµÐ»Ð°</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">ÐÐ°Ð»Ð°ÑˆÑ‚ÑƒÐ²Ð°Ð½Ð½Ñ</string>
+    <string name="choose_input">Ð”Ð¶ÐµÑ€ÐµÐ»Ð°</string>
+    <string name="connected">ÐŸÑ–Ð´â€™Ñ”Ð´Ð½Ð°Ð½Ð¾</string>
+    <string name="standby">ÐžÑ‡Ñ–ÐºÑƒÐ²Ð°Ð½Ð½Ñ</string>
+    <string name="not_connected">ÐÐµÐ¼Ð°Ñ” Ð¿Ñ€Ð¸ÑÑ‚Ñ€Ð¾ÑŽ</string>
+    <string name="live_tv">Ð¢ÐµÐ»ÐµÐºÐ°Ð½Ð°Ð»Ð¸</string>
+    <string name="no_inputs">Ð”Ð¶ÐµÑ€ÐµÐ» Ð½Ðµ Ð·Ð½Ð°Ð¹Ð´ÐµÐ½Ð¾</string>
+    <string name="more_inputs">Ð†Ð½ÑˆÑ– Ð´Ð¶ÐµÑ€ÐµÐ»Ð°</string>
+    <string name="good_morning">Ð”Ð¾Ð±Ñ€Ð¾Ð³Ð¾ Ñ€Ð°Ð½ÐºÑƒ</string>
+    <string name="good_afternoon">Ð”Ð¾Ð±Ñ€Ð¸Ð¹ Ð´ÐµÐ½ÑŒ</string>
+    <string name="good_evening">Ð”Ð¾Ð±Ñ€Ð¸Ð¹ Ð²ÐµÑ‡Ñ–Ñ€</string>
+    <string name="good_night">Ð”Ð¾Ð±Ñ€Ð¾Ñ— Ð½Ð¾Ñ‡Ñ–</string>
+    <string name="festival_dussehra_greeting">Ð—Ñ– ÑÐ²ÑÑ‚Ð¾Ð¼ Ð”Ð°ÑˆÐ°Ñ…Ñ€Ð°!</string>
+    <string name="festival_diwali_greeting">Ð—Ñ– ÑÐ²ÑÑ‚Ð¾Ð¼ Ð”Ñ–Ð²Ð°Ð»Ñ–!</string>
+    <string name="festival_halloween_greeting">Ð©Ð°ÑÐ»Ð¸Ð²Ð¾Ð³Ð¾ Ð“ÐµÐ»Ð»Ð¾Ð²Ñ–Ð½Ñƒ!</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">ÐÐµ Ð² Ð¼ÐµÑ€ÐµÐ¶Ñ–</string>
+    <string name="not_available">ÐÐµÐ´Ð¾ÑÑ‚ÑƒÐ¿Ð½Ð¾ Ð½Ð° Ñ†ÑŒÐ¾Ð¼Ñƒ Ñ‚ÐµÐ»ÐµÐ²Ñ–Ð·Ð¾Ñ€Ñ–</string>
+    <string name="cant_open">ÐÐµ Ð²Ð´Ð°Ð»Ð¾ÑÑ Ð²Ñ–Ð´ÐºÑ€Ð¸Ñ‚Ð¸ %1$s</string>
+    <string name="date_format">EEEE, d MMMM</string>
+    <string name="date_format_home">EEEE\nd MMMM</string>
+    <string name="shamsi_month_farvardin">Ñ„Ð°Ñ€Ð²Ð°Ñ€Ð´Ð¸Ð½Ð°</string>
+    <string name="shamsi_month_ordibehesht">Ð¾Ñ€Ð´Ñ–Ð±ÐµÑ…ÐµÑˆÑ‚Ð°</string>
+    <string name="shamsi_month_khordad">Ñ…Ð¾Ñ€Ð´Ð°Ð´Ð°</string>
+    <string name="shamsi_month_tir">Ñ‚Ñ–Ñ€Ð°</string>
+    <string name="shamsi_month_mordad">Ð¼Ð¾Ñ€Ð´Ð°Ð´Ð°</string>
+    <string name="shamsi_month_shahrivar">ÑˆÐ°Ñ…Ñ€Ñ–Ð²Ð°Ñ€Ð°</string>
+    <string name="shamsi_month_mehr">Ð¼ÐµÑ…Ñ€Ð°</string>
+    <string name="shamsi_month_aban">Ð°Ð±Ð°Ð½Ð°</string>
+    <string name="shamsi_month_azar">Ð°Ð·Ð°Ñ€Ð°</string>
+    <string name="shamsi_month_dey">Ð´ÐµÑ</string>
+    <string name="shamsi_month_bahman">Ð±Ð°Ñ…Ð¼Ð°Ð½Ð°</string>
+    <string name="shamsi_month_esfand">ÐµÑÑ„Ð°Ð½Ð´Ð°</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">ÐŸÐ°Ð¼â€™ÑÑ‚ÑŒ %1$d / %2$d ÐœÐ‘</string>
+    <string name="stats_storage">Ð¡Ñ…Ð¾Ð²Ð¸Ñ‰Ðµ: %1$s Ð²Ñ–Ð»ÑŒÐ½Ð¾</string>
+    <string name="storage_gb_whole">%1$.0f Ð“Ð‘</string>
+    <string name="storage_gb_decimal">%1$.1f Ð“Ð‘</string>
+    <string name="dream_name">Ð“Ð¾Ð´Ð¸Ð½Ð½Ð¸Ðº</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN Ð²Ð¸Ð¼ÐºÐ½ÐµÐ½Ð¾</string>
+    <string name="home_settings">Ð“Ð¾Ð»Ð¾Ð²Ð½Ð¸Ð¹ ÐµÐºÑ€Ð°Ð½ Ð·Ð° Ð·Ð°Ð¼Ð¾Ð²Ñ‡ÑƒÐ²Ð°Ð½Ð½ÑÐ¼</string>
+    <string name="home_settings_help">Ð’Ð¸Ð±ÐµÑ€Ñ–Ñ‚ÑŒ Ð¾Ñ€Ð¸Ð³Ñ–Ð½Ð°Ð»ÑŒÐ½Ð¸Ð¹ Ð³Ð¾Ð»Ð¾Ð²Ð½Ð¸Ð¹ ÐµÐºÑ€Ð°Ð½, Ñ‰Ð¾Ð± Ð±Ñ–Ð»ÑŒÑˆÐµ Ð½Ðµ Ð²Ð¸ÐºÐ¾Ñ€Ð¸ÑÑ‚Ð¾Ð²ÑƒÐ²Ð°Ñ‚Ð¸ CleanYourTV ÑÐº Ð³Ð¾Ð»Ð¾Ð²Ð½Ð¸Ð¹ ÐµÐºÑ€Ð°Ð½, Ð°Ð±Ð¾ CleanYourTV, Ñ‰Ð¾Ð± Ð¿Ð¾Ð²ÐµÑ€Ð½ÑƒÑ‚Ð¸ÑÑ. ÐžÑ€Ð¸Ð³Ñ–Ð½Ð°Ð»ÑŒÐ½Ð¸Ð¹ Ð³Ð¾Ð»Ð¾Ð²Ð½Ð¸Ð¹ ÐµÐºÑ€Ð°Ð½ Ð¼Ð°Ñ” Ð±ÑƒÑ‚Ð¸ ÑƒÐ²Ñ–Ð¼ÐºÐ½ÐµÐ½Ð¸Ð¹, Ð° Ñ‚ÐµÐ»ÐµÐ²Ñ–Ð·Ð¾Ñ€ Ð¼Ð°Ñ” Ð¿Ð¾ÐºÐ°Ð·ÑƒÐ²Ð°Ñ‚Ð¸ Ð²Ð¸Ð±Ñ–Ñ€ Ð³Ð¾Ð»Ð¾Ð²Ð½Ð¾Ð³Ð¾ ÐµÐºÑ€Ð°Ð½Ð°; ÑÐºÑ‰Ð¾ Ð¹Ð¾Ð³Ð¾ Ð±ÑƒÐ»Ð¾ Ð²Ð¸Ð¼ÐºÐ½ÐµÐ½Ð¾, ÑÐ¿ÐµÑ€ÑˆÑƒ ÑÐºÐ¾Ñ€Ð¸ÑÑ‚Ð°Ð¹Ñ‚ÐµÑÑ ÑÐºÑ€Ð¸Ð¿Ñ‚Ð¾Ð¼ Ð²Ñ–Ð´Ð½Ð¾Ð²Ð»ÐµÐ½Ð½Ñ.</string>
+    <string name="launcher_settings">ÐÐ°Ð»Ð°ÑˆÑ‚ÑƒÐ²Ð°Ð½Ð½Ñ Ð»Ð°ÑƒÐ½Ñ‡ÐµÑ€Ð°</string>
+    <string name="native_settings">ÐÐ°Ð»Ð°ÑˆÑ‚ÑƒÐ²Ð°Ð½Ð½Ñ Ð²Ð¸Ñ€Ð¾Ð±Ð½Ð¸ÐºÐ°</string>
+    <string name="columns_label">Ð—Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÑ–Ð² Ñƒ Ñ€ÑÐ´ÐºÑƒ</string>
+    <string name="rows_below_dock_label">Ð ÑÐ´ÐºÑ–Ð² Ð¿Ñ–Ð´ Ð´Ð¾ÐºÐ¾Ð¼</string>
+    <string name="wallpaper_label">Ð¨Ð¿Ð°Ð»ÐµÑ€Ð¸</string>
+    <string name="wallpaper_state">Ð¨Ð¿Ð°Ð»ÐµÑ€Ð¸: %1$s</string>
+    <string name="wallpaper_none">ÐÐµÐ¼Ð°Ñ”</string>
+    <string name="wallpaper_applied">Ð¨Ð¿Ð°Ð»ÐµÑ€Ð¸ Ð·Ð¼Ñ–Ð½ÐµÐ½Ð¾</string>
+    <string name="wallpaper_theme_default">Ð¯Ðº Ñƒ Ñ‚ÐµÐ¼Ñ–</string>
+    <string name="animations_state">ÐÐ½Ñ–Ð¼Ð°Ñ†Ñ–Ñ—: %1$s</string>
+    <string name="advanced_effects">Ð Ð¾Ð·ÑˆÐ¸Ñ€ÐµÐ½Ñ– ÐµÑ„ÐµÐºÑ‚Ð¸</string>
+    <string name="advanced_effects_state">Ð Ð¾Ð·ÑˆÐ¸Ñ€ÐµÐ½Ñ– ÐµÑ„ÐµÐºÑ‚Ð¸: %1$s</string>
+    <string name="open_on_start_label">Ð’Ñ–Ð´ÐºÑ€Ð¸Ð²Ð°Ñ‚Ð¸ Ð¿Ñ–Ð´ Ñ‡Ð°Ñ Ð·Ð°Ð¿ÑƒÑÐºÑƒ</string>
+    <string name="open_on_start_state">Ð’Ñ–Ð´ÐºÑ€Ð¸Ð²Ð°Ñ‚Ð¸ Ð¿Ñ–Ð´ Ñ‡Ð°Ñ Ð·Ð°Ð¿ÑƒÑÐºÑƒ: %1$s</string>
+    <string name="advanced_effects_warning">Ð”Ð¾Ð´Ð°Ñ” ÐµÑ„ÐµÐºÑ‚ Ð¿Ñ–Ð´Ð½ÑÑ‚Ð¾Ñ— Ð¿Ð»Ð¸Ñ‚ÐºÐ¸, Ð½Ð°Ð±Ð»Ð¸Ð¶ÐµÐ½Ð½Ñ Ð·Ð½Ð°Ñ‡ÐºÑ–Ð² Ñ– Ð¿Ð»Ð°Ð²Ð½Ñ– Ð¿ÐµÑ€ÐµÑ…Ð¾Ð´Ð¸ ÐºÐ¾Ð»ÑŒÐ¾Ñ€Ñƒ. ÐœÐ¾Ð¶Ðµ Ð·Ð±Ñ–Ð»ÑŒÑˆÐ¸Ñ‚Ð¸ Ð²Ð¸ÐºÐ¾Ñ€Ð¸ÑÑ‚Ð°Ð½Ð½Ñ Ð¿Ð°Ð¼â€™ÑÑ‚Ñ–; Ñ„Ð°ÐºÑ‚Ð¸Ñ‡Ð½Ð° Ñ€Ñ–Ð·Ð½Ð¸Ñ†Ñ Ð·Ð°Ð»ÐµÐ¶Ð¸Ñ‚ÑŒ Ð²Ñ–Ð´ Ð²Ð°ÑˆÐ¾Ð³Ð¾ Ñ‚ÐµÐ»ÐµÐ²Ñ–Ð·Ð¾Ñ€Ð°.</string>
+    <string name="follow_theme">Ð¡ÐºÐ¸Ð½ÑƒÑ‚Ð¸ Ð¼Ð¾Ñ— Ð·Ð¼Ñ–Ð½Ð¸ (Ð¿Ð¾Ð²ÐµÑ€Ð½ÑƒÑ‚Ð¸ Ð½Ð°Ð»Ð°ÑˆÑ‚ÑƒÐ²Ð°Ð½Ð½Ñ Ñ‚ÐµÐ¼Ð¸)</string>
+    <string name="follow_theme_hint">ÐŸÐ¾Ð²ÐµÑ€Ñ‚Ð°Ñ” ÐºÑ–Ð»ÑŒÐºÑ–ÑÑ‚ÑŒ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÑ–Ð² Ñƒ Ñ€ÑÐ´ÐºÑƒ, Ñ€ÑÐ´ÐºÐ¸ Ð¿Ñ–Ð´ Ð´Ð¾ÐºÐ¾Ð¼, Ð°Ð½Ñ–Ð¼Ð°Ñ†Ñ–Ñ—, Ñ€Ð¾Ð·ÑˆÐ¸Ñ€ÐµÐ½Ñ– ÐµÑ„ÐµÐºÑ‚Ð¸ Ñ‚Ð° ÑˆÐ¿Ð°Ð»ÐµÑ€Ð¸ Ð´Ð¾ Ð·Ð½Ð°Ñ‡ÐµÐ½ÑŒ Ñ–Ð· Ð¿Ð¾Ñ‚Ð¾Ñ‡Ð½Ð¾Ñ— Ñ‚ÐµÐ¼Ð¸. Ð£ÑÑ‚Ð°Ð½Ð¾Ð²ÐºÐ° Ð½Ð¾Ð²Ð¾Ñ— Ñ‚ÐµÐ¼Ð¸ Ñ‚Ð°ÐºÐ¾Ð¶ ÑÐºÐ¸Ð´Ð°Ñ” Ñ†Ñ– Ð½Ð°Ð»Ð°ÑˆÑ‚ÑƒÐ²Ð°Ð½Ð½Ñ.</string>
+    <string name="tv_settings">Ð¡Ð¸ÑÑ‚ÐµÐ¼Ð½Ñ– Ð½Ð°Ð»Ð°ÑˆÑ‚ÑƒÐ²Ð°Ð½Ð½Ñ Ð¢Ð‘</string>
+    <string name="quick_picture">Ð—Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð½Ñ</string>
+    <string name="quick_network">ÐœÐµÑ€ÐµÐ¶Ð°</string>
+    <string name="quick_apps">Ð—Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÐ¸</string>
+    <string name="quick_apps_hint">Ð£Ð²Ñ–Ð¼ÐºÐ½ÑƒÑ‚Ð¸ Ð·Ð½Ð¾Ð²Ñƒ</string>
+    <string name="on">Ð£Ð²Ñ–Ð¼Ðº.</string>
+    <string name="off">Ð’Ð¸Ð¼Ðº.</string>
+    <string name="enable">Ð£Ð²Ñ–Ð¼ÐºÐ½ÑƒÑ‚Ð¸</string>
+    <string name="input_key_service_description">Ð’Ñ–Ð´ÐºÑ€Ð¸Ð²Ð°Ñ” Ð¿ÐµÑ€ÐµÐ¼Ð¸ÐºÐ°Ñ‡ Ð´Ð¶ÐµÑ€ÐµÐ» Ð¿Ñ–Ð´ Ñ‡Ð°Ñ Ð½Ð°Ñ‚Ð¸ÑÐºÐ°Ð½Ð½Ñ ÐºÐ½Ð¾Ð¿ÐºÐ¸ Input Ð½Ð° Ð¿ÑƒÐ»ÑŒÑ‚Ñ–.</string>
+    <string name="home_key_name">ÐšÐ½Ð¾Ð¿ÐºÐ° Home</string>
+    <string name="home_key_description">ÐšÐ½Ð¾Ð¿ÐºÐ° Home Ð½Ð° Ð¿ÑƒÐ»ÑŒÑ‚Ñ– Ð²Ñ–Ð´ÐºÑ€Ð¸Ð²Ð°Ñ” Ñ†ÐµÐ¹ Ð»Ð°ÑƒÐ½Ñ‡ÐµÑ€.</string>
+    <string name="card_prompt_title">ÐÐ¾Ð²Ð° ÐºÐ°Ñ€Ñ‚ÐºÐ° Ð²Ñ–Ð´ %1$s</string>
+    <string name="card_prompt_body">%1$s Ð¼Ð¾Ð¶Ðµ Ð¿Ð¾ÐºÐ°Ð·ÑƒÐ²Ð°Ñ‚Ð¸ ÐºÐ°Ñ€Ñ‚ÐºÑƒ Ð½Ð° Ð³Ð¾Ð»Ð¾Ð²Ð½Ð¾Ð¼Ñƒ ÐµÐºÑ€Ð°Ð½Ñ–. Ð¯ÐºÑ‰Ð¾ Ð·Ð°Ð»Ð¸ÑˆÐ¸Ñ‚Ð¸ Ñ—Ñ— Ð¿Ñ€Ð¸Ñ…Ð¾Ð²Ð°Ð½Ð¾ÑŽ, Ð·Ð²Ð¸Ñ‡Ð°Ð¹Ð½Ð° Ð¿Ð»Ð¸Ñ‚ÐºÐ° Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÑƒ Ð½Ðµ Ð·Ð¼Ñ–Ð½Ð¸Ñ‚ÑŒÑÑ.</string>
+    <string name="card_prompt_names">ÐšÐ°Ñ€Ñ‚ÐºÐ° Ð¼Ð°Ñ” Ð½Ð°Ð·Ð²Ñƒ Â«%1$sÂ». Ð—Ð°ÑÑ‚Ð¾ÑÑƒÐ½Ð¾Ðº â€” Â«%2$sÂ».</string>
+    <string name="card_prompt_resigned">%1$s Ð¾Ð½Ð¾Ð²Ð»ÐµÐ½Ð¾ Ð· Ñ–Ð½ÑˆÐ¸Ð¼ ÐºÐ»ÑŽÑ‡ÐµÐ¼ Ð¿Ñ–Ð´Ð¿Ð¸ÑÑƒ, Ñ‚Ð¾Ð¼Ñƒ Ð²Ð°Ñˆ Ð¿Ð¾Ð¿ÐµÑ€ÐµÐ´Ð½Ñ–Ð¹ Ð²Ð¸Ð±Ñ–Ñ€ Ð±Ñ–Ð»ÑŒÑˆÐµ Ð½Ðµ Ð´Ñ–Ñ”. Ð’Ð¸Ð±ÐµÑ€Ñ–Ñ‚ÑŒ Ñ‰Ðµ Ñ€Ð°Ð·, Ð¿Ð¾ÐºÐ°Ð·ÑƒÐ²Ð°Ñ‚Ð¸ Ñ‡Ð¸ Ð¿Ñ€Ð¸Ñ…Ð¾Ð²ÑƒÐ²Ð°Ñ‚Ð¸ ÐºÐ°Ñ€Ñ‚ÐºÑƒ.</string>
+    <string name="card_prompt_relabelled">ÐÐ°Ð·Ð²Ñƒ ÐºÐ°Ñ€Ñ‚ÐºÐ¸ Ð´Ð»Ñ %1$s Ð·Ð¼Ñ–Ð½ÐµÐ½Ð¾ Ð¿Ñ–ÑÐ»Ñ Ð²Ð°ÑˆÐ¾Ð³Ð¾ Ð²Ð¸Ð±Ð¾Ñ€Ñƒ. Ð’Ð¸Ð±ÐµÑ€Ñ–Ñ‚ÑŒ Ñ‰Ðµ Ñ€Ð°Ð·.</string>
+    <string name="card_prompt_hint">Ð¦Ðµ Ð¼Ð¾Ð¶Ð½Ð° Ð·Ð¼Ñ–Ð½Ð¸Ñ‚Ð¸ Ð¿Ñ–Ð·Ð½Ñ–ÑˆÐµ: ÑƒÑ‚Ñ€Ð¸Ð¼ÑƒÐ¹Ñ‚Ðµ OK Ð½Ð° Ð¿Ð»Ð¸Ñ‚Ñ†Ñ– Â«ÐÐ°Ð»Ð°ÑˆÑ‚ÑƒÐ²Ð°Ð½Ð½ÑÂ», Ð¿Ð¾Ñ‚Ñ–Ð¼ Ð²Ð¸Ð±ÐµÑ€Ñ–Ñ‚ÑŒ Â«ÐšÐ°Ñ€Ñ‚ÐºÐ¸ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÑ–Ð²Â».</string>
+    <string name="card_prompt_identity">%1$s, ÐºÐ»ÑŽÑ‡ %2$s</string>
+    <string name="card_keep_hidden">ÐÐµ Ð¿Ð¾ÐºÐ°Ð·ÑƒÐ²Ð°Ñ‚Ð¸</string>
+    <string name="card_show">ÐŸÐ¾ÐºÐ°Ð·Ð°Ñ‚Ð¸ ÐºÐ°Ñ€Ñ‚ÐºÑƒ</string>
+    <string name="card_not_saved">ÐÐµ Ð²Ð´Ð°Ð»Ð¾ÑÑ Ð·Ð±ÐµÑ€ÐµÐ³Ñ‚Ð¸ Ð²Ð¸Ð±Ñ–Ñ€</string>
+    <string name="module_cards">ÐšÐ°Ñ€Ñ‚ÐºÐ¸ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÑ–Ð²</string>
+    <string name="no_module_cards">ÐÐµÐ¼Ð°Ñ” Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÑ–Ð² Ð· ÐºÐ°Ñ€Ñ‚ÐºÐ°Ð¼Ð¸</string>
+    <string name="card_app_name">Ð—Ð°ÑÑ‚Ð¾ÑÑƒÐ½Ð¾Ðº: %1$s</string>
+    <string name="card_state_shown">ÐŸÐ¾ÐºÐ°Ð·Ð°Ð½Ð¾</string>
+    <string name="card_state_over_limit">Ð£Ð²Ñ–Ð¼ÐºÐ½ÐµÐ½Ð¾, Ð°Ð»Ðµ Ð½Ðµ Ð¿Ð¾ÐºÐ°Ð·Ð°Ð½Ð¾: Ð»Ñ–Ð¼Ñ–Ñ‚ 8</string>
+    <string name="card_state_hidden">ÐŸÑ€Ð¸Ñ…Ð¾Ð²Ð°Ð½Ð¾</string>
+    <string name="card_state_new">ÐÐ¾Ð²Ð°</string>
+    <string name="card_state_new_key">ÐÐ¾Ð²Ð¸Ð¹ ÐºÐ»ÑŽÑ‡</string>
+    <string name="card_state_new_label">ÐÐ¾Ð²Ð° Ð½Ð°Ð·Ð²Ð°</string>
+    <string name="dock_edit">Ð ÐµÐ´Ð°Ð³ÑƒÐ²Ð°Ñ‚Ð¸ Ð´Ð¾Ðº</string>
+    <string name="power_menu">ÐŸÐµÑ€ÐµÐ·Ð°Ð¿ÑƒÑÑ‚Ð¸Ñ‚Ð¸â€¦</string>
+    <string name="dock_edit_hint">Ð’Ð¸Ð±ÐµÑ€Ñ–Ñ‚ÑŒ Ð¼Ñ–ÑÑ†Ðµ Ð² Ð´Ð¾ÐºÑƒ, ÑÐºÐµ Ñ‚Ñ€ÐµÐ±Ð° Ð·Ð¼Ñ–Ð½Ð¸Ñ‚Ð¸, Ñ– Ð½Ð°Ñ‚Ð¸ÑÐ½Ñ–Ñ‚ÑŒ OK. Â«ÐÐ°Ð·Ð°Ð´Â» â€” Ð·Ð°Ð²ÐµÑ€ÑˆÐ¸Ñ‚Ð¸.</string>
+    <string name="dock_edit_pick_app">Ð¢ÐµÐ¿ÐµÑ€ Ð²Ð¸Ð±ÐµÑ€Ñ–Ñ‚ÑŒ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½Ð¾Ðº Ð´Ð»Ñ Ñ†ÑŒÐ¾Ð³Ð¾ Ð¼Ñ–ÑÑ†Ñ Ñ‚Ð° Ð½Ð°Ñ‚Ð¸ÑÐ½Ñ–Ñ‚ÑŒ OK. Â«ÐÐ°Ð·Ð°Ð´Â» â€” Ð²Ð¸Ð±Ñ€Ð°Ñ‚Ð¸ Ñ–Ð½ÑˆÐµ Ð¼Ñ–ÑÑ†Ðµ.</string>
+    <string name="tile_add_to_dock">Ð”Ð¾Ð´Ð°Ñ‚Ð¸ Ð² Ð´Ð¾Ðº</string>
+    <string name="tile_replace_in_dock">Ð—Ð°Ð¼Ñ–Ð½Ð¸Ñ‚Ð¸ Ñ–Ð½ÑˆÐ¸Ð¼ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÐ¾Ð¼</string>
+    <string name="dock_edit_pick_place">Ð’Ð¸Ð±ÐµÑ€Ñ–Ñ‚ÑŒ Ð¼Ñ–ÑÑ†Ðµ Ð² Ð´Ð¾ÐºÑƒ Ð´Ð»Ñ Ñ†ÑŒÐ¾Ð³Ð¾ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÑƒ Ñ‚Ð° Ð½Ð°Ñ‚Ð¸ÑÐ½Ñ–Ñ‚ÑŒ OK. Â«ÐÐ°Ð·Ð°Ð´Â» â€” ÑÐºÐ°ÑÑƒÐ²Ð°Ñ‚Ð¸.</string>
+    <string name="reorder">Ð£Ð¿Ð¾Ñ€ÑÐ´ÐºÑƒÐ²Ð°Ñ‚Ð¸ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÐ¸</string>
+    <string name="tile_move">ÐŸÐµÑ€ÐµÐ¼Ñ–ÑÑ‚Ð¸Ñ‚Ð¸</string>
+    <string name="reorder_hint">OK Ð±ÐµÑ€Ðµ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½Ð¾Ðº, ÑÑ‚Ñ€Ñ–Ð»ÐºÐ¸ Ð¿ÐµÑ€ÐµÐ¼Ñ–Ñ‰ÑƒÑŽÑ‚ÑŒ, Â«ÐÐ°Ð·Ð°Ð´Â» ÑÑ‚Ð°Ð²Ð¸Ñ‚ÑŒ Ð½Ð° Ð¼Ñ–ÑÑ†Ðµ. Ð©Ðµ Ñ€Ð°Ð· Â«ÐÐ°Ð·Ð°Ð´Â» â€” Ð·Ð°Ð²ÐµÑ€ÑˆÐ¸Ñ‚Ð¸.</string>
+    <string name="reorder_not_saved">ÐÐµ Ð²Ð´Ð°Ð»Ð¾ÑÑ Ð·Ð±ÐµÑ€ÐµÐ³Ñ‚Ð¸ Ð½Ð¾Ð²Ð¸Ð¹ Ð¿Ð¾Ñ€ÑÐ´Ð¾Ðº</string>
+    <string name="app_library">Ð‘Ñ–Ð±Ð»Ñ–Ð¾Ñ‚ÐµÐºÐ° Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÑ–Ð²</string>
+    <string name="library_empty">ÐÐµ Ð·Ð½Ð°Ð¹Ð´ÐµÐ½Ð¾ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÑ–Ð², ÑÐºÑ– Ð¼Ð¾Ð¶Ð½Ð° Ð·Ð°Ð¿ÑƒÑÑ‚Ð¸Ñ‚Ð¸</string>
+    <string name="library_on_home">ÐÐ° Ð³Ð¾Ð»Ð¾Ð²Ð½Ð¾Ð¼Ñƒ ÐµÐºÑ€Ð°Ð½Ñ–</string>
+    <string name="library_add_home">Ð”Ð¾Ð´Ð°Ñ‚Ð¸ Ð½Ð° Ð³Ð¾Ð»Ð¾Ð²Ð½Ð¸Ð¹ ÐµÐºÑ€Ð°Ð½</string>
+    <string name="library_remove_shortcut">ÐŸÑ€Ð¸Ð±Ñ€Ð°Ñ‚Ð¸ Ð· Ð³Ð¾Ð»Ð¾Ð²Ð½Ð¾Ð³Ð¾ ÐµÐºÑ€Ð°Ð½Ð°</string>
+    <string name="library_open">Ð’Ñ–Ð´ÐºÑ€Ð¸Ñ‚Ð¸</string>
+    <string name="library_app_info">ÐŸÑ€Ð¾ Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½Ð¾Ðº</string>
+    <string name="library_save_failed">ÐÐµ Ð²Ð´Ð°Ð»Ð¾ÑÑ Ð·Ð±ÐµÑ€ÐµÐ³Ñ‚Ð¸ ÑÑ€Ð»Ð¸Ðº</string>
+    <string name="library_recent">ÐÐ¾Ð²Ð¸Ð¹ Â· Ð”Ð¾Ð´Ð°Ñ‚Ð¸ Ð½Ð° Ð³Ð¾Ð»Ð¾Ð²Ð½Ð¸Ð¹ ÐµÐºÑ€Ð°Ð½</string>
+    <string name="library_hint_add">ÐÐ°Ñ‚Ð¸ÑÐ½ÑƒÑ‚Ð¸: Ð´Ð¾Ð´Ð°Ñ‚Ð¸ Ð½Ð° Ð³Ð¾Ð»Ð¾Ð²Ð½Ð¸Ð¹ ÐµÐºÑ€Ð°Ð½ Â· Ð£Ñ‚Ñ€Ð¸Ð¼Ð°Ñ‚Ð¸: Ð¾Ð¿Ñ†Ñ–Ñ—</string>
+    <string name="library_hint_open">ÐÐ°Ñ‚Ð¸ÑÐ½ÑƒÑ‚Ð¸: Ð²Ñ–Ð´ÐºÑ€Ð¸Ñ‚Ð¸ Â· Ð£Ñ‚Ñ€Ð¸Ð¼Ð°Ñ‚Ð¸: Ð¾Ð¿Ñ†Ñ–Ñ—</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½Ð¾Ðº</item>
+        <item quantity="few">%1$d Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÐ¸</item>
+        <item quantity="many">%1$d Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÑ–Ð²</item>
+        <item quantity="other">%1$d Ð·Ð°ÑÑ‚Ð¾ÑÑƒÐ½ÐºÐ°</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+
+    <!-- Race-weekend panel (RaceWeekend). -->
+    <string name="race_kicker">Ð•Ñ‚Ð°Ð¿ %1$d Â· %2$s Â· %3$s</string>
+    <string name="race_kicker_no_place">Ð•Ñ‚Ð°Ð¿ %1$d Â· %2$s</string>
+    <string name="race_next">%1$s Ñ‡ÐµÑ€ÐµÐ· %2$s</string>
+    <string name="race_lights_out">Ð¡Ñ‚Ð°Ñ€Ñ‚ Ð³Ð¾Ð½ÐºÐ¸ Ñ‡ÐµÑ€ÐµÐ· %1$s</string>
+    <string name="race_live">%1$s Â· Ñƒ Ð¿Ñ€ÑÐ¼Ð¾Ð¼Ñƒ ÐµÑ„Ñ–Ñ€Ñ–</string>
+    <string name="race_finished">ÐšÐ»Ñ–Ñ‚Ñ‡Ð°ÑÑ‚Ð¸Ð¹ Ð¿Ñ€Ð°Ð¿Ð¾Ñ€</string>
+    <string name="race_practice_1">Ð’Ñ–Ð»ÑŒÐ½Ð¸Ð¹ Ð·Ð°Ñ—Ð·Ð´ 1</string>
+    <string name="race_practice_2">Ð’Ñ–Ð»ÑŒÐ½Ð¸Ð¹ Ð·Ð°Ñ—Ð·Ð´ 2</string>
+    <string name="race_practice_3">Ð’Ñ–Ð»ÑŒÐ½Ð¸Ð¹ Ð·Ð°Ñ—Ð·Ð´ 3</string>
+    <string name="race_sprint_qualifying">ÐšÐ²Ð°Ð»Ñ–Ñ„Ñ–ÐºÐ°Ñ†Ñ–Ñ ÑÐ¿Ñ€Ð¸Ð½Ñ‚Ñƒ</string>
+    <string name="race_sprint">Ð¡Ð¿Ñ€Ð¸Ð½Ñ‚</string>
+    <string name="race_qualifying">ÐšÐ²Ð°Ð»Ñ–Ñ„Ñ–ÐºÐ°Ñ†Ñ–Ñ</string>
+    <string name="race_race">Ð“Ð¾Ð½ÐºÐ°</string>
+    <string name="race_practice_1_short">Ð’Ð—1</string>
+    <string name="race_practice_2_short">Ð’Ð—2</string>
+    <string name="race_practice_3_short">Ð’Ð—3</string>
+    <string name="race_sprint_qualifying_short">Ð¡Ðš</string>
+    <string name="race_sprint_short">Ð¡ÐŸÐ Ð˜ÐÐ¢</string>
+    <string name="race_qualifying_short">ÐšÐ’ÐÐ›.</string>
+    <string name="race_race_short">Ð“ÐžÐÐšÐ</string>
+    <string name="race_countdown_minutes">%1$d Ñ…Ð²</string>
+    <string name="race_countdown_hours">%1$d Ð³Ð¾Ð´ %2$d Ñ…Ð²</string>
+    <string name="race_countdown_days">%1$d Ð´Ð½ %2$d Ð³Ð¾Ð´</string>
+    <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
+         last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
+    <string name="last_opened">Ð’Ð¾ÑÑ‚Ð°Ð½Ð½Ñ” Ð²Ñ–Ð´ÐºÑ€Ð¸Ñ‚Ð¾ %1$s</string>
+    <string name="game_live">ÐÐ°Ð¶Ð¸Ð²Ð¾ Ð·Ð°Ñ€Ð°Ð·</string>
+    <string name="clock_format_system">Ð¡Ð¸ÑÑ‚ÐµÐ¼Ð½Ð¸Ð¹</string>
+    <string name="clock_format_12">12-Ð³Ð¾Ð´Ð¸Ð½Ð½Ð¸Ð¹</string>
+    <string name="clock_format_24">24-Ð³Ð¾Ð´Ð¸Ð½Ð½Ð¸Ð¹</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-uz\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bosh ekran</string>
+    <string name="inputs">Manbalar</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">Sozlamalar</string>
+    <string name="choose_input">Manbalar</string>
+    <string name="connected">Ulangan</string>
+    <string name="standby">Kutish rejimi</string>
+    <string name="not_connected">Qurilma yoÊ»q</string>
+    <string name="live_tv">TV kanallar</string>
+    <string name="no_inputs">Manbalar topilmadi</string>
+    <string name="more_inputs">Boshqa manbalar</string>
+    <string name="good_morning">Xayrli tong</string>
+    <string name="good_afternoon">Xayrli kun</string>
+    <string name="good_evening">Xayrli kech</string>
+    <string name="good_night">Xayrli tun</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">Internet yoÊ»q</string>
+    <string name="not_available">Bu televizorda mavjud emas</string>
+    <string name="cant_open">%1$s ochilmadi</string>
+    <string name="date_format">EEEE  d-MMMM</string>
+    <string name="stats_cpu">Protsessor %1$d%%</string>
+    <string name="stats_memory">Xotira: %1$d / %2$d MB</string>
+    <string name="stats_storage">Disk: %1$s boÊ»sh</string>
+    <string name="dream_name">Soat</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN oÊ»chiq</string>
+    <string name="home_settings">Asosiy bosh ekranni tanlash</string>
+    <string name="home_settings_help">CleanYourTV oÊ»rniga eski bosh ekranga qaytish uchun uni tanlang, CleanYourTV ga qaytish uchun esa CleanYourTV ni. Eski launcher yoqilgan boÊ»lishi va televizorda bosh ekran tanlash oynasi boÊ»lishi kerak; agar u oÊ»chirilgan boÊ»lsa, avval tiklash skriptini ishga tushiring.</string>
+    <string name="launcher_settings">Launcher sozlamalari</string>
+    <string name="native_settings">Ishlab chiqaruvchi sozlamalari</string>
+    <string name="columns_label">Qatordagi ilovalar</string>
+    <string name="dock_opacity_label">Dock paneli noshaffofligi</string>
+    <string name="rows_below_dock_label">Dock ostidagi qatorlar</string>
+    <string name="wallpaper_label">Fon rasmi</string>
+    <string name="wallpaper_state">Fon rasmi: %1$s</string>
+    <string name="wallpaper_none">YoÊ»q</string>
+    <string name="wallpaper_applied">Fon rasmi oÊ»zgartirildi</string>
+    <string name="wallpaper_theme_default">Mavzu boÊ»yicha</string>
+    <string name="animations_state">Animatsiyalar: %1$s</string>
+    <string name="advanced_effects">QoÊ»shimcha effektlar</string>
+    <string name="advanced_effects_state">QoÊ»shimcha effektlar: %1$s</string>
+    <string name="open_on_start_label">Ishga tushganda ochish</string>
+    <string name="open_on_start_state">Ishga tushganda ochish: %1$s</string>
+    <string name="advanced_effects_warning">Plitkani koÊ»tarish, belgini kattalashtirish va ranglarning silliq oÊ»tishini qoÊ»shadi. Xotira sarfi oshishi mumkin; farq televizoringizga bogÊ»liq.</string>
+    <string name="follow_theme">Mavzuga qaytish (TVdagi tanlovlarni bekor qilish)</string>
+    <string name="follow_theme_hint">Joriy mavzu yoki standart joylashuv va harakat sozlamalaridan foydalanadi. Mavzuni yuborish yoki qayta tiklash ham TVdagi tanlovlaringizni tozalaydi.</string>
+    <string name="tv_settings">TV tizim sozlamalari</string>
+    <string name="quick_picture">Ekran</string>
+    <string name="quick_network">Tarmoq</string>
+    <string name="quick_apps">Ilovalar</string>
+    <string name="quick_apps_hint">Qayta yoqish</string>
+    <string name="on">Yoqilgan</string>
+    <string name="off">OÊ»chiq</string>
+    <string name="enable">Yoqish</string>
+    <string name="input_key_service_description">Pultdagi Input tugmasi bosilganda manbalar menyusini ochadi.</string>
+    <string name="home_key_name">Home tugmasi</string>
+    <string name="home_key_description">Pultdagi Home tugmasi shu launcherni ochadigan qiladi.</string>
+    <string name="card_prompt_title">%1$s dan yangi karta</string>
+    <string name="card_prompt_body">%1$s bosh ekraningizda karta koÊ»rsatishi mumkin. Yashirin qoldirsangiz, ilovaning oddiy plitkasi oÊ»zgarmaydi.</string>
+    <string name="card_prompt_names">Karta nomi: â€˜%1$sâ€™. Ilova: â€˜%2$sâ€™.</string>
+    <string name="card_prompt_resigned">%1$s boshqa imzo kaliti bilan yangilandi, shuning uchun oldingi javobingiz endi amal qilmaydi. Uning kartasi uchun qaytadan tanlang.</string>
+    <string name="card_prompt_relabelled">%1$s siz tanlaganingizdan keyin kartasi nomini oÊ»zgartirdi. Qaytadan tanlang.</string>
+    <string name="card_prompt_hint">Buni keyin oÊ»zgartirishingiz mumkin: Sozlamalar ustida OK ni bosib turing va Modul kartalarini tanlang.</string>
+    <string name="card_prompt_identity">%1$s, kalit %2$s</string>
+    <string name="card_keep_hidden">Yashirin qoldirish</string>
+    <string name="card_show">Kartani koÊ»rsatish</string>
+    <string name="card_not_saved">Tanlov saqlanmadi</string>
+    <string name="module_cards">Modul kartalari</string>
+    <string name="no_module_cards">Modul kartalari oÊ»rnatilmagan</string>
+    <string name="card_app_name">Ilova: %1$s</string>
+    <string name="card_state_shown">KoÊ»rsatilgan</string>
+    <string name="card_state_over_limit">KoÊ»rsatilgan, 8 ta chegaradan ortiq</string>
+    <string name="card_state_hidden">Yashirin</string>
+    <string name="card_state_new">Yangi</string>
+    <string name="card_state_new_key">Yangi kalit</string>
+    <string name="card_state_new_label">Yangi nom</string>
+    <string name="dock_edit">Dockni tahrirlash</string>
+    <string name="power_menu">Qayta ishga tushirishâ€¦</string>
+    <string name="dock_edit_hint">OÊ»zgartiriladigan joyni tanlab, OK ni bosing. Tugatish uchun Back.</string>
+    <string name="dock_edit_pick_app">Endi u yerga qoÊ»yiladigan ilovani tanlab, OK ni bosing. Boshqa joy tanlash uchun Back.</string>
+    <string name="tile_add_to_dock">Dockga qoÊ»shish</string>
+    <string name="tile_replace_in_dock">Boshqa ilova bilan almashtirish</string>
+    <string name="dock_edit_pick_place">Bu ilova uchun dockdagi joyni tanlab, OK ni bosing. Bekor qilish uchun Back.</string>
+    <string name="reorder">Ilovalar tartibini oÊ»zgartirish</string>
+    <string name="tile_move">KoÊ»chirish</string>
+    <string name="reorder_hint">OK ilovani ushlaydi, strelkalar suradi, Back joyiga qoÊ»yadi. Tugatish uchun yana Back.</string>
+    <string name="reorder_not_saved">Yangi tartib saqlanmadi</string>
+    <string name="app_library">Ilovalar kutubxonasi</string>
+    <string name="library_empty">Ochiladigan ilovalar topilmadi</string>
+    <string name="library_on_home">Bosh ekranda</string>
+    <string name="library_add_home">Bosh ekranga qoÊ»shish</string>
+    <string name="library_remove_shortcut">Bosh ekrandan olib tashlash</string>
+    <string name="library_open">Ochish</string>
+    <string name="library_app_info">Ilova haqida</string>
+    <string name="library_save_failed">Yorliq saqlanmadi</string>
+    <string name="library_recent">Yangi Â· Bosh ekranga qoÊ»shish</string>
+    <string name="library_hint_add">QoÊ»shish uchun bosing Â· Variantlar uchun bosib turing</string>
+    <string name="library_hint_open">Ochish uchun bosing Â· Variantlar uchun bosib turing</string>
+    <plurals name="library_app_count">
+        <item quantity="one">%1$d ta ilova</item>
+        <item quantity="other">%1$d ta ilova</item>
+    </plurals>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="race_kicker">%1$d-bosqich Â· %2$s Â· %3$s</string>
+    <string name="race_kicker_no_place">%1$d-bosqich Â· %2$s</string>
+    <string name="race_next">%1$s, %2$s dan soÊ»ng</string>
+    <string name="race_lights_out">Start %1$s dan soÊ»ng</string>
+    <string name="race_live">%1$s Â· jonli</string>
+    <string name="race_finished">Marra</string>
+    <string name="last_opened">Oxirgi marta ochilgan: %1$s</string>
+    <string name="game_live">Hozir jonli</string>
+    <string name="clock_format_system">Tizim</string>
+    <string name="clock_format_12">12 soatlik</string>
+    <string name="clock_format_24">24 soatlik</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-vi\fonts.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Outfit lacks 96 of the 134 Vietnamese accented letters, so words mixed two fonts; use the system's (#833). -->
+<resources>
+    <string name="font_body" translatable="false">sans-serif</string>
+    <string name="font_regular" translatable="false">sans-serif</string>
+    <string name="font_light" translatable="false">sans-serif-light</string>
+    <string name="font_extralight" translatable="false">sans-serif-thin</string>
+    <string name="font_medium" translatable="false">sans-serif-medium</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-vi\lunar.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lunar_date_format">%1$d/%2$s Ã¢m lá»‹ch Â· %3$s</string>
+    <string name="lunar_month_leap">%1$d nhuáº­n</string>
+    <string name="lunar_year">%1$s %2$s</string>
+    <string-array name="lunar_stems">
+        <item>GiÃ¡p</item><item>áº¤t</item><item>BÃ­nh</item><item>Äinh</item><item>Máº­u</item>
+        <item>Ká»·</item><item>Canh</item><item>TÃ¢n</item><item>NhÃ¢m</item><item>QuÃ½</item>
+    </string-array>
+    <string-array name="lunar_branches">
+        <item>TÃ½</item><item>Sá»­u</item><item>Dáº§n</item><item>MÃ£o</item><item>ThÃ¬n</item><item>Tá»µ</item>
+        <item>Ngá»</item><item>MÃ¹i</item><item>ThÃ¢n</item><item>Dáº­u</item><item>Tuáº¥t</item><item>Há»£i</item>
+    </string-array>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-vi\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MÃ n hÃ¬nh chÃ­nh</string>
+    <string name="inputs">Nguá»“n vÃ o</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">CÃ i Ä‘áº·t</string>
+    <string name="choose_input">Nguá»“n vÃ o</string>
+    <string name="connected">ÄÃ£ káº¿t ná»‘i</string>
+    <string name="standby">Chá»</string>
+    <string name="not_connected">KhÃ´ng cÃ³ thiáº¿t bá»‹</string>
+    <string name="live_tv">Truyá»n hÃ¬nh</string>
+    <string name="no_inputs">KhÃ´ng tÃ¬m tháº¥y nguá»“n vÃ o</string>
+    <string name="more_inputs">Nguá»“n vÃ o khÃ¡c</string>
+    <!-- Vietnamese greets the same way at any hour. -->
+    <string name="good_morning">Xin chÃ o</string>
+    <string name="good_afternoon">Xin chÃ o</string>
+    <string name="good_evening">Xin chÃ o</string>
+    <string name="good_night">Xin chÃ o</string>
+    <string name="ethernet">Ethernet</string>
+    <string name="offline">Máº¥t máº¡ng</string>
+    <string name="not_available">TV nÃ y khÃ´ng há»— trá»£</string>
+    <string name="cant_open">KhÃ´ng má»Ÿ Ä‘Æ°á»£c %1$s</string>
+    <!-- "Thá»© Hai, 20 thÃ¡ng 10" -->
+    <string name="date_format">EEEE, d MMMM</string>
+    <string name="dream_name">Äá»“ng há»“</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN táº¯t</string>
+    <string name="home_settings">Chá»n mÃ n hÃ¬nh chÃ­nh máº·c Ä‘á»‹nh</string>
+    <string name="home_settings_help">Chá»n mÃ n hÃ¬nh chÃ­nh gá»‘c Ä‘á»ƒ thÃ´i dÃ¹ng CleanYourTV, hoáº·c chá»n CleanYourTV Ä‘á»ƒ dÃ¹ng láº¡i. Launcher gá»‘c pháº£i Ä‘ang báº­t vÃ  TV pháº£i cÃ³ má»¥c chá»n mÃ n hÃ¬nh chÃ­nh; náº¿u launcher gá»‘c Ä‘Ã£ bá»‹ táº¯t, hÃ£y cháº¡y script khÃ´i phá»¥c trÆ°á»›c.</string>
+    <string name="launcher_settings">CÃ i Ä‘áº·t launcher</string>
+    <string name="native_settings">CÃ i Ä‘áº·t nhÃ  sáº£n xuáº¥t</string>
+    <string name="columns_label">Sá»‘ á»©ng dá»¥ng má»—i hÃ ng</string>
+    <string name="dock_opacity_label">Äá»™ Ä‘áº­m cá»§a thanh dock</string>
+    <string name="animations_state">Hiá»‡u á»©ng: %1$s</string>
+    <string name="advanced_effects">Hiá»‡u á»©ng nÃ¢ng cao</string>
+    <string name="advanced_effects_state">Hiá»‡u á»©ng nÃ¢ng cao: %1$s</string>
+    <string name="open_on_start_label">Má»Ÿ khi khá»Ÿi Ä‘á»™ng</string>
+    <string name="open_on_start_state">Má»Ÿ khi khá»Ÿi Ä‘á»™ng: %1$s</string>
+    <string name="advanced_effects_warning">ThÃªm hiá»‡u á»©ng Ã´ ná»•i lÃªn, phÃ³ng to biá»ƒu tÆ°á»£ng vÃ  chuyá»ƒn mÃ u mÆ°á»£t. CÃ³ thá»ƒ tá»‘n thÃªm bá»™ nhá»›; má»©c chÃªnh lá»‡ch tÃ¹y tá»«ng TV.</string>
+    <string name="follow_theme">Theo theme (xÃ³a lá»±a chá»n trÃªn TV)</string>
+    <string name="follow_theme_hint">DÃ¹ng bá»‘ cá»¥c vÃ  hiá»‡u á»©ng cá»§a theme hiá»‡n táº¡i hoáº·c máº·c Ä‘á»‹nh. Äáº©y hoáº·c Ä‘áº·t láº¡i theme cÅ©ng xÃ³a cÃ¡c lá»±a chá»n báº¡n Ä‘Ã£ chá»n trÃªn TV.</string>
+    <string name="tv_settings">CÃ i Ä‘áº·t há»‡ thá»‘ng TV</string>
+    <string name="quick_picture">Hiá»ƒn thá»‹</string>
+    <string name="quick_network">Máº¡ng</string>
+    <string name="quick_apps">á»¨ng dá»¥ng</string>
+    <string name="quick_apps_hint">Báº­t láº¡i</string>
+    <string name="on">Báº­t</string>
+    <string name="off">Táº¯t</string>
+    <string name="enable">Báº­t</string>
+    <string name="input_key_service_description">Má»Ÿ báº£ng chá»n nguá»“n vÃ o khi báº¥m nÃºt Input trÃªn remote.</string>
+    <string name="home_key_name">NÃºt Home</string>
+    <string name="home_key_description">Cho nÃºt Home trÃªn remote má»Ÿ launcher nÃ y.</string>
+    <string name="card_prompt_title">Tháº» má»›i tá»« %1$s</string>
+    <string name="card_prompt_body">%1$s cÃ³ thá»ƒ hiá»‡n má»™t tháº» trÃªn mÃ n hÃ¬nh chÃ­nh. Náº¿u váº«n áº©n, Ã´ á»©ng dá»¥ng cá»§a nÃ³ giá»¯ nguyÃªn nhÆ° cÅ©.</string>
+    <string name="card_prompt_names">Tháº» tÃªn lÃ  \'%1$s\'. á»¨ng dá»¥ng lÃ  \'%2$s\'.</string>
+    <string name="card_prompt_resigned">%1$s Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t báº±ng má»™t khÃ³a kÃ½ khÃ¡c, nÃªn lá»±a chá»n trÆ°á»›c cá»§a báº¡n khÃ´ng cÃ²n Ã¡p dá»¥ng. HÃ£y chá»n láº¡i cho tháº» cá»§a nÃ³.</string>
+    <string name="card_prompt_relabelled">%1$s Ä‘Ã£ Ä‘á»•i tÃªn tháº» tá»« lÃºc báº¡n chá»n. HÃ£y chá»n láº¡i.</string>
+    <string name="card_prompt_hint">Báº¡n cÃ³ thá»ƒ Ä‘á»•i sau: giá»¯ OK trÃªn CÃ i Ä‘áº·t, rá»“i chá»n Tháº» mÃ´-Ä‘un.</string>
+    <string name="card_prompt_identity">%1$s, khÃ³a %2$s</string>
+    <string name="card_keep_hidden">Váº«n áº©n</string>
+    <string name="card_show">Hiá»‡n tháº»</string>
+    <string name="card_not_saved">KhÃ´ng lÆ°u Ä‘Æ°á»£c lá»±a chá»n</string>
+    <string name="module_cards">Tháº» mÃ´-Ä‘un</string>
+    <string name="no_module_cards">ChÆ°a cÃ i tháº» mÃ´-Ä‘un nÃ o</string>
+    <string name="card_app_name">á»¨ng dá»¥ng: %1$s</string>
+    <string name="card_state_shown">Äang hiá»‡n</string>
+    <string name="card_state_over_limit">Äang hiá»‡n, vÆ°á»£t giá»›i háº¡n 8</string>
+    <string name="card_state_hidden">Äang áº©n</string>
+    <string name="card_state_new">Má»›i</string>
+    <string name="card_state_new_key">KhÃ³a má»›i</string>
+    <string name="card_state_new_label">TÃªn má»›i</string>
+    <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="dock_edit">Chá»‰nh sá»­a dock</string>
+    <string name="power_menu">Khá»Ÿi Ä‘á»™ng láº¡iâ€¦</string>
+    <string name="dock_edit_hint">Chá»n vá»‹ trÃ­ trÃªn dock cáº§n Ä‘á»•i rá»“i nháº¥n OK. Nháº¥n Quay láº¡i Ä‘á»ƒ káº¿t thÃºc.</string>
+    <string name="dock_edit_pick_app">Giá» chá»n á»©ng dá»¥ng Ä‘á»ƒ Ä‘áº·t vÃ o Ä‘Ã³ rá»“i nháº¥n OK. Nháº¥n Quay láº¡i Ä‘á»ƒ chá»n vá»‹ trÃ­ khÃ¡c.</string>
+    <string name="tile_add_to_dock">ThÃªm vÃ o dock</string>
+    <string name="tile_replace_in_dock">Thay báº±ng á»©ng dá»¥ng khÃ¡c</string>
+    <string name="dock_edit_pick_place">Chá»n vá»‹ trÃ­ trÃªn dock cho á»©ng dá»¥ng nÃ y rá»“i nháº¥n OK. Nháº¥n Quay láº¡i Ä‘á»ƒ há»§y.</string>
+    <string name="festival_dussehra_greeting">ChÃºc má»«ng lá»… Dussehra</string>
+    <string name="festival_diwali_greeting">ChÃºc má»«ng lá»… Diwali</string>
+    <string name="festival_halloween_greeting">ChÃºc má»«ng Halloween</string>
+    <string name="stats_memory">Bá»™ nhá»› %1$d / %2$d MB</string>
+    <string name="stats_storage">CÃ²n trá»‘ng %1$s</string>
+    <string name="rows_below_dock_label">Sá»‘ hÃ ng dÆ°á»›i dock</string>
+    <string name="wallpaper_label">HÃ¬nh ná»n</string>
+    <string name="wallpaper_state">HÃ¬nh ná»n: %1$s</string>
+    <string name="wallpaper_none">KhÃ´ng cÃ³</string>
+    <string name="wallpaper_applied">ÄÃ£ Ä‘á»•i hÃ¬nh ná»n</string>
+    <string name="wallpaper_theme_default">Theo theme</string>
+    <string name="reorder">Sáº¯p xáº¿p á»©ng dá»¥ng</string>
+    <string name="reorder_hint">Báº¥m OK Ä‘á»ƒ nháº¥c á»©ng dá»¥ng, phÃ­m mÅ©i tÃªn Ä‘á»ƒ di chuyá»ƒn, Back Ä‘á»ƒ Ä‘áº·t xuá»‘ng. Báº¥m Back láº§n ná»¯a Ä‘á»ƒ xong.</string>
+    <string name="reorder_not_saved">KhÃ´ng lÆ°u Ä‘Æ°á»£c thá»© tá»± má»›i</string>
+    <string name="app_library">ThÆ° viá»‡n á»©ng dá»¥ng</string>
+    <string name="library_empty">KhÃ´ng tÃ¬m tháº¥y á»©ng dá»¥ng nÃ o má»Ÿ Ä‘Æ°á»£c</string>
+    <string name="library_on_home">TrÃªn mÃ n hÃ¬nh chÃ­nh</string>
+    <string name="library_add_home">ThÃªm vÃ o mÃ n hÃ¬nh chÃ­nh</string>
+    <string name="library_remove_shortcut">Bá» khá»i mÃ n hÃ¬nh chÃ­nh</string>
+    <string name="library_open">Má»Ÿ</string>
+    <string name="library_app_info">ThÃ´ng tin á»©ng dá»¥ng</string>
+    <string name="library_save_failed">KhÃ´ng lÆ°u Ä‘Æ°á»£c lá»‘i táº¯t</string>
+    <string name="library_recent">Má»›i Â· ThÃªm vÃ o mÃ n hÃ¬nh chÃ­nh</string>
+    <string name="library_hint_add">Báº¥m Ä‘á»ƒ thÃªm vÃ o mÃ n hÃ¬nh chÃ­nh Â· Giá»¯ Ä‘á»ƒ xem tÃ¹y chá»n</string>
+    <string name="library_hint_open">Báº¥m Ä‘á»ƒ má»Ÿ Â· Giá»¯ Ä‘á»ƒ xem tÃ¹y chá»n</string>
+    <plurals name="library_app_count">
+        <item quantity="other">%1$d á»©ng dá»¥ng</item>
+    </plurals>
+    <string name="race_kicker">Cháº·ng %1$d Â· %2$s Â· %3$s</string>
+    <string name="race_kicker_no_place">Cháº·ng %1$d Â· %2$s</string>
+    <string name="race_next">%1$s sau %2$s</string>
+    <string name="race_lights_out">Xuáº¥t phÃ¡t sau %1$s</string>
+    <string name="race_live">%1$s Â· Ä‘ang diá»…n ra</string>
+    <string name="race_finished">Cá» ca-rÃ´</string>
+    <string name="race_practice_1">Cháº¡y thá»­ 1</string>
+    <string name="race_practice_2">Cháº¡y thá»­ 2</string>
+    <string name="race_practice_3">Cháº¡y thá»­ 3</string>
+    <string name="race_sprint_qualifying">PhÃ¢n háº¡ng sprint</string>
+    <string name="race_qualifying">PhÃ¢n háº¡ng</string>
+    <string name="race_race">Äua chÃ­nh</string>
+    <string name="race_countdown_minutes">%1$d phÃºt</string>
+    <string name="race_countdown_hours">%1$d giá» %2$d phÃºt</string>
+    <string name="race_countdown_days">%1$d ngÃ y %2$d giá»</string>
+    <string name="last_opened">Má»Ÿ láº§n cuá»‘i %1$s</string>
+    <string name="tile_move">Di chuyá»ƒn</string>
+    <string name="game_live">Äang diá»…n ra</string>
+    <string name="clock_format_system">Há»‡ thá»‘ng</string>
+    <string name="clock_format_12">12 giá»</string>
+    <string name="clock_format_24">24 giá»</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-zh-rCN\lunar.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lunar_date_format">å†œåŽ†%2$sæœˆ%1$dæ—¥ Â· %3$s</string>
+    <string name="lunar_month_leap">é—°%1$d</string>
+    <string name="lunar_year">%1$s%2$så¹´</string>
+    <string-array name="lunar_stems">
+        <item>ç”²</item><item>ä¹™</item><item>ä¸™</item><item>ä¸</item><item>æˆŠ</item><item>å·±</item><item>åºš</item><item>è¾›</item><item>å£¬</item><item>ç™¸</item>
+    </string-array>
+    <string-array name="lunar_branches">
+        <item>å­</item><item>ä¸‘</item><item>å¯…</item><item>å¯</item><item>è¾°</item><item>å·³</item><item>åˆ</item><item>æœª</item><item>ç”³</item><item>é…‰</item><item>æˆŒ</item><item>äº¥</item>
+    </string-array>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-zh-rCN\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ä¸»å±å¹•</string>
+    <string name="inputs">è¾“å…¥æº</string>
+    <string name="wifi">æ— çº¿ç½‘ç»œ</string>
+    <string name="settings">è®¾ç½®</string>
+    <string name="home_settings">é€‰æ‹©é»˜è®¤æ¡Œé¢</string>
+    <string name="home_settings_help">é€‰æ‹©åŽŸå§‹æ¡Œé¢å³å¯å…³é—­ç®€æ´æ¡Œé¢çš„é»˜è®¤æ¡Œé¢çŠ¶æ€ï¼›éœ€è¦åˆ‡å›žæ—¶é€‰æ‹©ç®€æ´æ¡Œé¢ã€‚åŽŸå§‹æ¡Œé¢å¿…é¡»ä»å¤„äºŽå¯ç”¨çŠ¶æ€ï¼›è‹¥å®‰è£…è„šæœ¬å·²åœç”¨å®ƒï¼Œè¯·å…ˆç”¨æ¢å¤è„šæœ¬å¯ç”¨ã€‚ç”µè§†è¿˜é¡»æä¾›ç³»ç»Ÿæ¡Œé¢é€‰æ‹©é¡µã€‚</string>
+    <string name="launcher_settings">ç®€æ´æ¡Œé¢è®¾ç½®</string>
+    <string name="native_settings">åŽŸç”Ÿè®¾ç½®</string>
+    <string name="columns_label">æ¯è¡Œåº”ç”¨æ•°é‡</string>
+    <string name="rows_below_dock_label">ç¨‹åºåžä¸‹æ–¹è¡Œæ•°</string>
+    <string name="wallpaper_label">å£çº¸</string>
+    <string name="wallpaper_state">å£çº¸ï¼š%1$s</string>
+    <string name="wallpaper_none">æ— </string>
+    <string name="wallpaper_applied">å£çº¸å·²æ›´æ”¹</string>
+    <string name="wallpaper_theme_default">ä¸»é¢˜é»˜è®¤</string>
+    <string name="animations_state">åŠ¨æ€æ•ˆæžœï¼š%1$s</string>
+    <string name="advanced_effects">é«˜çº§åŠ¨æ€æ•ˆæžœ</string>
+    <string name="advanced_effects_state">é«˜çº§åŠ¨æ€æ•ˆæžœï¼š%1$s</string>
+    <string name="open_on_start_label">å¼€æœºæ—¶æ‰“å¼€</string>
+    <string name="open_on_start_state">å¼€æœºæ—¶æ‰“å¼€ï¼š%1$s</string>
+    <string name="advanced_effects_warning">å¢žåŠ å¡ç‰‡ä¸Šæµ®ã€å›¾æ ‡ç¼©æ”¾å’ŒèƒŒæ™¯é¢œè‰²å¹³æ»‘è¿‡æ¸¡ï¼›å¯èƒ½å¢žåŠ å†…å­˜å ç”¨ï¼Œå®žé™…å˜åŒ–å–å†³äºŽç”µè§†ã€‚</string>
+    <string name="follow_theme">è·Ÿéšä¸»é¢˜ï¼ˆé‡ç½®ç”µè§†ç«¯è®¾ç½®ï¼‰</string>
+    <string name="follow_theme_hint">æ¢å¤å½“å‰ä¸»é¢˜æˆ–å†…ç½®çš„å¸ƒå±€ä¸ŽåŠ¨æ•ˆè®¾ç½®ã€‚æŽ¨é€æˆ–é‡ç½®ä¸»é¢˜ä¹Ÿä¼šæ¸…é™¤ç”µè§†ç«¯çš„è¿™äº›è®¾ç½®ã€‚</string>
+    <string name="tv_settings">ç”µè§†ç³»ç»Ÿè®¾ç½®</string>
+    <string name="quick_picture">æ˜¾ç¤º</string>
+    <string name="quick_network">ç½‘ç»œ</string>
+    <string name="quick_apps">åº”ç”¨</string>
+    <string name="quick_apps_hint">é‡æ–°å¯ç”¨</string>
+    <string name="on">å¼€</string>
+    <string name="off">å…³</string>
+    <string name="enable">å¼€å¯</string>
+    <string name="choose_input">è¾“å…¥æº</string>
+    <string name="connected">å·²è¿žæŽ¥</string>
+    <string name="standby">å¾…æœº</string>
+    <string name="not_connected">æœªè¿žæŽ¥</string>
+    <string name="live_tv">ç”µè§†ç›´æ’­</string>
+    <string name="no_inputs">æœªæ‰¾åˆ°è¾“å…¥æº</string>
+    <string name="more_inputs">æ›´å¤šè¾“å…¥æº</string>
+    <string name="good_morning">æ—©ä¸Šå¥½</string>
+    <string name="good_afternoon">ä¸‹åˆå¥½</string>
+    <string name="good_evening">æ™šä¸Šå¥½</string>
+    <string name="good_night">æ™šå®‰</string>
+    <string name="festival_dussehra_greeting">åèƒœèŠ‚å¿«ä¹</string>
+    <string name="festival_diwali_greeting">æŽ’ç¯èŠ‚å¿«ä¹</string>
+    <string name="festival_halloween_greeting">ä¸‡åœ£èŠ‚å¿«ä¹</string>
+    <string name="ethernet">æœ‰çº¿ç½‘ç»œ</string>
+    <string name="offline">æœªè¿žæŽ¥ç½‘ç»œ</string>
+    <string name="not_available">æ­¤ç”µè§†ä¸æ”¯æŒè¯¥åŠŸèƒ½</string>
+    <string name="cant_open">æ— æ³•æ‰“å¼€ %1$s</string>
+    <string name="date_format">Mæœˆdæ—¥ EEEE</string>
+    <string name="date_format_home">Mæœˆdæ—¥ EEEE</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">å†…å­˜ %1$d / %2$d MB</string>
+    <string name="stats_storage">å­˜å‚¨å‰©ä½™ %1$s</string>
+    <string name="storage_gb_whole">%1$.0f GB</string>
+    <string name="storage_gb_decimal">%1$.1f GB</string>
+    <string name="dream_name">æ—¶é’Ÿ</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN å·²å…³é—­</string>
+    <string name="input_key_service_description">æŒ‰ä¸‹é¥æŽ§å™¨çš„â€œè¾“å…¥â€é”®æ—¶æ‰“å¼€è¾“å…¥æºåˆ‡æ¢å™¨ã€‚</string>
+    <string name="home_key_name">ä¸»é¡µé”®</string>
+    <string name="home_key_description">è®©é¥æŽ§å™¨çš„ä¸»é¡µé”®æ‰“å¼€æ­¤æ¡Œé¢ã€‚</string>
+    <string name="card_prompt_title">æ¥è‡ª %1$s çš„æ–°å¡ç‰‡</string>
+    <string name="card_prompt_body">%1$s å¯ä»¥åœ¨ä¸»å±å¹•æ˜¾ç¤ºå¡ç‰‡ã€‚ä¿æŒéšè—æ—¶ï¼Œåº”ç”¨çš„æ™®é€šå›¾æ ‡ä¿æŒä¸å˜ã€‚</string>
+    <string name="card_prompt_names">å¡ç‰‡åä¸ºâ€œ%1$sâ€ï¼Œåº”ç”¨ä¸ºâ€œ%2$sâ€ã€‚</string>
+    <string name="card_prompt_resigned">%1$s ä½¿ç”¨ä¸åŒçš„ç­¾åå¯†é’¥æ›´æ–°ï¼Œä¹‹å‰çš„å†³å®šå·²å¤±æ•ˆã€‚è¯·é‡æ–°é€‰æ‹©å…¶å¡ç‰‡ã€‚</string>
+    <string name="card_prompt_relabelled">%1$s æ›´æ”¹äº†å¡ç‰‡åç§°ã€‚è¯·é‡æ–°é€‰æ‹©ã€‚</string>
+    <string name="card_prompt_hint">ä¹‹åŽå¯ä»¥æ›´æ”¹ï¼šé•¿æŒ‰â€œè®¾ç½®â€ï¼Œç„¶åŽé€‰æ‹©â€œæ¨¡å—å¡ç‰‡â€ã€‚</string>
+    <string name="card_prompt_identity">%1$sï¼Œå¯†é’¥ %2$s</string>
+    <string name="card_keep_hidden">ä¿æŒéšè—</string>
+    <string name="card_show">æ˜¾ç¤ºå¡ç‰‡</string>
+    <string name="card_not_saved">æ— æ³•ä¿å­˜é€‰æ‹©</string>
+    <string name="module_cards">æ¨¡å—å¡ç‰‡</string>
+    <string name="no_module_cards">æœªå®‰è£…æ¨¡å—å¡ç‰‡</string>
+    <string name="card_app_name">åº”ç”¨ï¼š%1$s</string>
+    <string name="card_state_shown">å·²æ˜¾ç¤º</string>
+    <string name="card_state_over_limit">å·²æ˜¾ç¤ºï¼Œè¶…è¿‡ 8 å¼ ä¸Šé™</string>
+    <string name="card_state_hidden">å·²éšè—</string>
+    <string name="card_state_new">æ–°</string>
+    <string name="card_state_new_key">æ–°å¯†é’¥</string>
+    <string name="card_state_new_label">æ–°åç§°</string>
+    <string name="dock_edit">ç¼–è¾‘ç¨‹åºåž</string>
+    <string name="power_menu">é‡æ–°å¯åŠ¨â€¦</string>
+    <string name="dock_edit_hint">é€‰æ‹©è¦æ›´æ”¹çš„ç¨‹åºåžä½ç½®ï¼Œç„¶åŽæŒ‰ç¡®å®šã€‚æŒ‰è¿”å›žå®Œæˆã€‚</string>
+    <string name="dock_edit_pick_app">çŽ°åœ¨é€‰æ‹©è¦æ”¾åœ¨é‚£é‡Œçš„åº”ç”¨ï¼Œç„¶åŽæŒ‰ç¡®å®šã€‚æŒ‰è¿”å›žé‡æ–°é€‰æ‹©ä½ç½®ã€‚</string>
+    <string name="reorder">è°ƒæ•´åº”ç”¨é¡ºåº</string>
+    <string name="reorder_hint">æŒ‰ç¡®å®šé€‰ä¸­åº”ç”¨ï¼Œæ–¹å‘é”®ç§»åŠ¨ï¼ŒæŒ‰è¿”å›žæ”¾ä¸‹ã€‚å†æŒ‰ä¸€æ¬¡è¿”å›žå®Œæˆã€‚</string>
+    <string name="reorder_not_saved">æ— æ³•ä¿å­˜æ–°é¡ºåº</string>
+    <string name="app_library">åº”ç”¨åº“</string>
+    <string name="last_opened">ä¸Šæ¬¡æ‰“å¼€ï¼š%1$s</string>
+    <string name="library_empty">æœªæ‰¾åˆ°å¯å¯åŠ¨çš„åº”ç”¨</string>
+    <string name="library_on_home">å·²åœ¨ä¸»å±å¹•</string>
+    <string name="library_add_home">æ·»åŠ åˆ°ä¸»å±å¹•</string>
+    <string name="library_remove_shortcut">ä»Žä¸»å±å¹•éšè—</string>
+    <string name="library_open">æ‰“å¼€</string>
+    <string name="library_app_info">åº”ç”¨ä¿¡æ¯</string>
+    <string name="library_save_failed">æ— æ³•ä¿å­˜å¿«æ·æ–¹å¼</string>
+    <string name="library_recent">æ–°å®‰è£… Â· æ·»åŠ åˆ°ä¸»å±å¹•</string>
+    <string name="library_hint_add">æŒ‰ä¸‹æ·»åŠ åˆ°ä¸»å±å¹• Â· é•¿æŒ‰æŸ¥çœ‹é€‰é¡¹</string>
+    <string name="library_hint_open">æŒ‰ä¸‹æ‰“å¼€ Â· é•¿æŒ‰æŸ¥çœ‹é€‰é¡¹</string>
+    <plurals name="library_app_count">
+        <item quantity="other">%1$d ä¸ªåº”ç”¨</item>
+    </plurals>
+    <string name="greeting_with_name">%1$sï¼Œ%2$s</string>
+
+    <string name="race_kicker">ç¬¬ %1$d ç«™ Â· %2$s Â· %3$s</string>
+    <string name="race_kicker_no_place">ç¬¬ %1$d ç«™ Â· %2$s</string>
+    <string name="race_next">%1$s Â· %2$såŽ</string>
+    <string name="race_lights_out">è·èµ·è·‘ %1$s</string>
+    <string name="race_live">%1$s Â· ç›´æ’­ä¸­</string>
+    <string name="race_finished">å·²å†²çº¿</string>
+    <string name="race_practice_1">ç¬¬ä¸€èŠ‚ç»ƒä¹ èµ›</string>
+    <string name="race_practice_2">ç¬¬äºŒèŠ‚ç»ƒä¹ èµ›</string>
+    <string name="race_practice_3">ç¬¬ä¸‰èŠ‚ç»ƒä¹ èµ›</string>
+    <string name="race_sprint_qualifying">å†²åˆºæŽ’ä½èµ›</string>
+    <string name="race_sprint">å†²åˆºèµ›</string>
+    <string name="race_qualifying">æŽ’ä½èµ›</string>
+    <string name="race_race">æ­£èµ›</string>
+    <string name="race_practice_1_short">ä¸€ç»ƒ</string>
+    <string name="race_practice_2_short">äºŒç»ƒ</string>
+    <string name="race_practice_3_short">ä¸‰ç»ƒ</string>
+    <string name="race_sprint_qualifying_short">å†²åˆºæŽ’ä½</string>
+    <string name="race_sprint_short">å†²åˆºèµ›</string>
+    <string name="race_qualifying_short">æŽ’ä½èµ›</string>
+    <string name="race_race_short">æ­£èµ›</string>
+    <string name="race_countdown_minutes">%1$d åˆ†é’Ÿ</string>
+    <string name="race_countdown_hours">%1$då°æ—¶%2$dåˆ†</string>
+    <string name="race_countdown_days">%1$då¤©%2$då°æ—¶</string>
+
+    <string name="shamsi_month_farvardin">æ³•å°”ç“¦ä¸</string>
+    <string name="shamsi_month_ordibehesht">å¥¥å°”è¿ªè´èµ«ä»€ç‰¹</string>
+    <string name="shamsi_month_khordad">éœè¾¾å¾·</string>
+    <string name="shamsi_month_tir">è’‚å°”</string>
+    <string name="shamsi_month_mordad">èŽ«å°”è¾¾å¾·</string>
+    <string name="shamsi_month_shahrivar">æ²™èµ«é‡Œç“¦å°”</string>
+    <string name="shamsi_month_mehr">æ¢…èµ«å°”</string>
+    <string name="shamsi_month_aban">é˜¿ç­</string>
+    <string name="shamsi_month_azar">é˜¿æ‰Žå°”</string>
+    <string name="shamsi_month_dey">å¾·ä¼Š</string>
+    <string name="shamsi_month_bahman">å·´èµ«æ›¼</string>
+    <string name="shamsi_month_esfand">åŸƒæ–¯å‡¡å¾·</string>
+
+    <string name="dock_edit_pick_place">é€‰æ‹©è¿™ä¸ªåº”ç”¨è¦æ”¾çš„ç¨‹åºåžä½ç½®ï¼Œç„¶åŽæŒ‰ç¡®å®šã€‚æŒ‰è¿”å›žå–æ¶ˆã€‚</string>
+    <string name="dock_opacity_label">ç¨‹åºåžé€æ˜Žåº¦</string>
+    <string name="tile_add_to_dock">æ·»åŠ åˆ°ç¨‹åºåž</string>
+    <string name="tile_move">ç§»åŠ¨</string>
+    <string name="tile_replace_in_dock">æ›¿æ¢ä¸ºå…¶ä»–åº”ç”¨</string>
+    <string name="game_live">ç›´æ’­ä¸­</string>
+    <string name="clock_format_system">ç³»ç»Ÿ</string>
+    <string name="clock_format_12">12 å°æ—¶åˆ¶</string>
+    <string name="clock_format_24">24 å°æ—¶åˆ¶</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-zh-rTW\lunar.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="lunar_date_format">è¾²æ›†%2$sæœˆ%1$dæ—¥ Â· %3$s</string>
+    <string name="lunar_month_leap">é–%1$d</string>
+    <string name="lunar_year">%1$s%2$så¹´</string>
+    <string-array name="lunar_stems">
+        <item>ç”²</item><item>ä¹™</item><item>ä¸™</item><item>ä¸</item><item>æˆŠ</item><item>å·±</item><item>åºš</item><item>è¾›</item><item>å£¬</item><item>ç™¸</item>
+    </string-array>
+    <string-array name="lunar_branches">
+        <item>å­</item><item>ä¸‘</item><item>å¯…</item><item>å¯</item><item>è¾°</item><item>å·³</item><item>åˆ</item><item>æœª</item><item>ç”³</item><item>é…‰</item><item>æˆŒ</item><item>äº¥</item>
+    </string-array>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values-zh-rTW\strings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ä¸»ç•«é¢</string>
+    <string name="inputs">è¼¸å…¥ä¾†æº</string>
+    <string name="wifi">Wi-Fi</string>
+    <string name="settings">è¨­å®š</string>
+    <string name="choose_input">è¼¸å…¥ä¾†æº</string>
+    <string name="connected">å·²é€£ç·š</string>
+    <string name="standby">å¾…æ©Ÿ</string>
+    <string name="not_connected">æœªé€£æŽ¥è£ç½®</string>
+    <string name="live_tv">é›»è¦–ç›´æ’­</string>
+    <string name="no_inputs">æ‰¾ä¸åˆ°è¼¸å…¥ä¾†æº</string>
+    <string name="more_inputs">æ›´å¤šè¼¸å…¥ä¾†æº</string>
+    <string name="good_morning">æ—©å®‰</string>
+    <string name="good_afternoon">åˆå®‰</string>
+    <string name="good_evening">æ™šå®‰</string>
+    <string name="good_night">å¤œæ·±äº†</string>
+    <string name="ethernet">æœ‰ç·šç¶²è·¯</string>
+    <string name="offline">æœªé€£ä¸Šç¶²è·¯</string>
+    <string name="not_available">é€™å°é›»è¦–ä¸æ”¯æ´æ­¤åŠŸèƒ½</string>
+    <string name="cant_open">ç„¡æ³•é–‹å•Ÿ %1$s</string>
+    <string name="date_format">Mæœˆdæ—¥ EEEE</string>
+    <string name="stats_cpu">CPU %1$d%%</string>
+    <string name="stats_memory">è¨˜æ†¶é«” %1$d / %2$d MB</string>
+    <string name="stats_storage">å„²å­˜ç©ºé–“å‰©é¤˜ %1$s</string>
+    <string name="dream_name">æ™‚é˜</string>
+    <string name="vpn">VPN</string>
+    <string name="vpn_off">VPN æœªé–‹å•Ÿ</string>
+    <string name="home_settings">é¸æ“‡é è¨­ä¸»ç•«é¢</string>
+    <string name="home_settings_help">é¸æ“‡åŽŸæœ¬çš„ä¸»ç•«é¢å³å¯åœæ­¢ä½¿ç”¨ CleanYourTV ç•¶ä¸»ç•«é¢ï¼Œè¦åˆ‡å›žä¾†æ™‚é¸ CleanYourTVã€‚åŽŸæœ¬çš„æ¡Œé¢å¿…é ˆä»æ˜¯å•Ÿç”¨ç‹€æ…‹ï¼Œå¦‚æžœè¢«å®‰è£è…³æœ¬åœç”¨äº†ï¼Œè«‹å…ˆç”¨é‚„åŽŸè…³æœ¬å•Ÿç”¨ï¼›é›»è¦–ä¹Ÿå¿…é ˆæœ‰ç³»çµ±çš„ä¸»ç•«é¢é¸æ“‡é ã€‚</string>
+    <string name="launcher_settings">æ¡Œé¢è¨­å®š</string>
+    <string name="native_settings">åŽŸç”Ÿè¨­å®š</string>
+    <string name="columns_label">æ¯åˆ— app æ•¸é‡</string>
+    <string name="dock_opacity_label">Dock åˆ—ä¸é€æ˜Žåº¦</string>
+    <string name="animations_state">å‹•ç•«æ•ˆæžœï¼š%1$s</string>
+    <string name="advanced_effects">é€²éšŽæ•ˆæžœ</string>
+    <string name="advanced_effects_state">é€²éšŽæ•ˆæžœï¼š%1$s</string>
+    <string name="open_on_start_label">é–‹æ©Ÿæ™‚é–‹å•Ÿ</string>
+    <string name="open_on_start_state">é–‹æ©Ÿæ™‚é–‹å•Ÿï¼š%1$s</string>
+    <string name="advanced_effects_warning">åŠ ä¸Šåœ–å¡Šæµ®èµ·ã€åœ–ç¤ºæ”¾å¤§èˆ‡èƒŒæ™¯é¡è‰²æ¼¸è®Šã€‚å¯èƒ½æœƒå¤šç”¨ä¸€äº›è¨˜æ†¶é«”ï¼Œå¯¦éš›å·®ç•°è¦–é›»è¦–è€Œå®šã€‚</string>
+    <string name="follow_theme">è·Ÿéš¨ä¸»é¡Œï¼ˆé‡è¨­é›»è¦–ä¸Šçš„é¸æ“‡ï¼‰</string>
+    <string name="follow_theme_hint">æ”¹ç”¨ç›®å‰ä¸»é¡Œæˆ–å…§å»ºçš„ç‰ˆé¢èˆ‡å‹•ç•«è¨­å®šã€‚æŽ¨é€æˆ–é‡è¨­ä¸»é¡Œæ™‚ï¼Œä¹Ÿæœƒæ¸…é™¤ä½ åœ¨é›»è¦–ä¸Šåšçš„é€™äº›é¸æ“‡ã€‚</string>
+    <string name="tv_settings">é›»è¦–ç³»çµ±è¨­å®š</string>
+    <string name="on">é–‹</string>
+    <string name="off">é—œ</string>
+    <string name="enable">å•Ÿç”¨</string>
+    <string name="input_key_service_description">æŒ‰ä¸‹é™æŽ§å™¨çš„è¼¸å…¥éµæ™‚é–‹å•Ÿè¼¸å…¥ä¾†æºé¸å–®ã€‚</string>
+    <string name="home_key_name">ä¸»ç•«é¢éµ</string>
+    <string name="home_key_description">è®“é™æŽ§å™¨çš„ä¸»ç•«é¢éµé–‹å•Ÿé€™å€‹æ¡Œé¢ã€‚</string>
+    <string name="card_prompt_title">ä¾†è‡ª %1$s çš„æ–°å¡ç‰‡</string>
+    <string name="card_prompt_body">%1$s å¯ä»¥åœ¨ä¸»ç•«é¢é¡¯ç¤ºä¸€å¼µå¡ç‰‡ã€‚é¸æ“‡éš±è—çš„è©±ï¼Œé€™å€‹ app åŽŸæœ¬çš„åœ–å¡Šç¶­æŒä¸è®Šã€‚</string>
+    <string name="card_prompt_names">å¡ç‰‡åç¨±æ˜¯ã€Œ%1$sã€ï¼Œapp æ˜¯ã€Œ%2$sã€ã€‚</string>
+    <string name="card_prompt_resigned">%1$s æ›´æ–°å¾Œæ›äº†ç°½ç½²é‡‘é‘°ï¼Œä½ å…ˆå‰çš„é¸æ“‡ä¸å†é©ç”¨ï¼Œè«‹é‡æ–°æ±ºå®šæ˜¯å¦é¡¯ç¤ºå®ƒçš„å¡ç‰‡ã€‚</string>
+    <string name="card_prompt_relabelled">%1$s åœ¨ä½ æ±ºå®šä¹‹å¾Œæ”¹äº†å¡ç‰‡åç¨±ï¼Œè«‹é‡æ–°æ±ºå®šã€‚</string>
+    <string name="card_prompt_hint">ä¹‹å¾Œå¯ä»¥å†æ”¹ï¼šåœ¨ã€Œè¨­å®šã€ä¸Šé•·æŒ‰ç¢ºèªéµï¼Œå†é¸ã€Œæ¨¡çµ„å¡ç‰‡ã€ã€‚</string>
+    <string name="card_prompt_identity">%1$sï¼Œé‡‘é‘° %2$s</string>
+    <string name="card_keep_hidden">ç¶­æŒéš±è—</string>
+    <string name="card_show">é¡¯ç¤ºå¡ç‰‡</string>
+    <string name="card_not_saved">ç„¡æ³•å„²å­˜é€™å€‹é¸æ“‡</string>
+    <string name="module_cards">æ¨¡çµ„å¡ç‰‡</string>
+    <string name="no_module_cards">æ²’æœ‰å®‰è£ä»»ä½•æ¨¡çµ„å¡ç‰‡</string>
+    <string name="card_app_name">Appï¼š%1$s</string>
+    <string name="card_state_shown">é¡¯ç¤º</string>
+    <string name="card_state_over_limit">é¡¯ç¤ºï¼Œä½†è¶…éŽ 8 å¼µçš„ä¸Šé™</string>
+    <string name="card_state_hidden">éš±è—</string>
+    <string name="card_state_new">æ–°çš„</string>
+    <string name="card_state_new_key">æ–°é‡‘é‘°</string>
+    <string name="card_state_new_label">æ–°åç¨±</string>
+    <string name="dock_edit">ç·¨è¼¯ Dock</string>
+    <string name="power_menu">é‡æ–°å•Ÿå‹•â€¦</string>
+    <string name="dock_edit_hint">é¸æ“‡è¦è®Šæ›´çš„ Dock ä½ç½®ï¼Œç„¶å¾ŒæŒ‰ç¢ºå®šã€‚æŒ‰è¿”å›žå®Œæˆã€‚</string>
+    <string name="dock_edit_pick_app">ç¾åœ¨é¸æ“‡è¦æ”¾åœ¨é‚£è£¡çš„æ‡‰ç”¨ç¨‹å¼ï¼Œç„¶å¾ŒæŒ‰ç¢ºå®šã€‚æŒ‰è¿”å›žé‡æ–°é¸æ“‡ä½ç½®ã€‚</string>
+    <string name="tile_add_to_dock">æ–°å¢žè‡³ Dock</string>
+    <string name="tile_replace_in_dock">ä»¥å…¶ä»–æ‡‰ç”¨ç¨‹å¼å–ä»£</string>
+    <string name="dock_edit_pick_place">ç‚ºæ­¤æ‡‰ç”¨ç¨‹å¼é¸æ“‡ Dock ä½ç½®ï¼Œç„¶å¾ŒæŒ‰ç¢ºå®šã€‚æŒ‰è¿”å›žå–æ¶ˆã€‚</string>
+    <string name="reorder">èª¿æ•´æ‡‰ç”¨ç¨‹å¼é †åº</string>
+    <string name="tile_move">ç§»å‹•</string>
+    <string name="reorder_hint">æŒ‰ç¢ºå®šé¸å–æ‡‰ç”¨ç¨‹å¼ï¼Œæ–¹å‘éµç§»å‹•ï¼ŒæŒ‰è¿”å›žæ”¾ä¸‹ã€‚å†æŒ‰ä¸€æ¬¡è¿”å›žå®Œæˆã€‚</string>
+    <string name="reorder_not_saved">ç„¡æ³•å„²å­˜æ–°é †åº</string>
+    <string name="app_library">æ‡‰ç”¨ç¨‹å¼åº«</string>
+    <string name="last_opened">ä¸Šæ¬¡é–‹å•Ÿï¼š%1$s</string>
+    <string name="library_empty">æ‰¾ä¸åˆ°å¯å•Ÿå‹•çš„æ‡‰ç”¨ç¨‹å¼</string>
+    <string name="library_on_home">å·²åœ¨ä¸»ç•«é¢</string>
+    <string name="library_add_home">æ–°å¢žè‡³ä¸»ç•«é¢</string>
+    <string name="library_remove_shortcut">å¾žä¸»ç•«é¢ç§»é™¤</string>
+    <string name="library_open">é–‹å•Ÿ</string>
+    <string name="library_app_info">æ‡‰ç”¨ç¨‹å¼è³‡è¨Š</string>
+    <string name="library_save_failed">ç„¡æ³•å„²å­˜æ·å¾‘</string>
+    <string name="library_recent">æ–°å®‰è£ Â· æ–°å¢žè‡³ä¸»ç•«é¢</string>
+    <string name="library_hint_add">æŒ‰ä¸‹ä»¥æ–°å¢žè‡³ä¸»ç•«é¢ Â· é•·æŒ‰ä»¥é¡¯ç¤ºé¸é …</string>
+    <string name="library_hint_open">æŒ‰ä¸‹ä»¥é–‹å•Ÿ Â· é•·æŒ‰ä»¥é¡¯ç¤ºé¸é …</string>
+    <plurals name="library_app_count">
+        <item quantity="other">%1$d å€‹æ‡‰ç”¨ç¨‹å¼</item>
+    </plurals>
+    <string name="greeting_with_name">%1$sï¼Œ%2$s</string>
+    <string name="game_live">ç›´æ’­ä¸­</string>
+    <string name="clock_format_system">ç³»çµ±</string>
+    <string name="clock_format_12">12 å°æ™‚åˆ¶</string>
+    <string name="clock_format_24">24 å°æ™‚åˆ¶</string>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\xml\home_key_service.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Keys only: no accessibilityEventTypes (0), so the system never calls into the launcher for
+     accessibility events, which both services ignore. Key filtering depends only on
+     flagRequestFilterKeyEvents and canRequestFilterKeyEvents, not on the event types.
+     stock_home_redirect is the exception: with it set, HomeKeyService adds typeWindowStateChanged at runtime. -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagRequestFilterKeyEvents"
+    android:canRequestFilterKeyEvents="true"
+    android:description="@string/home_key_description" />
+`n`n========== FILE: launcher\app\src\main\res\xml\input_key_service.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Keys only: no accessibilityEventTypes (0), so the system never calls into the launcher for
+     accessibility events, which both services ignore. Key filtering depends only on
+     flagRequestFilterKeyEvents and canRequestFilterKeyEvents, not on the event types. -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagRequestFilterKeyEvents"
+    android:canRequestFilterKeyEvents="true"
+    android:description="@string/input_key_service_description" />
+`n`n========== FILE: launcher\app\src\main\res\xml\locales_config.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Languages the launcher is translated into. Lets Android 13+ give the launcher its own language
+     (set it with "cmd locale set-app-locales", see the README), since TVs rarely offer
+     every language system-wide. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="nb" />
+    <locale android:name="de" />
+    <locale android:name="ca" />
+    <locale android:name="es" />
+    <!-- Latin American Spanish (values-b+es+419). -->
+    <locale android:name="es-419" />
+    <locale android:name="fr" />
+    <locale android:name="ru" />
+    <locale android:name="zh-CN" />
+    <locale android:name="zh-TW" />
+    <locale android:name="th" />
+    <locale android:name="sr-Latn" />
+    <locale android:name="pl" />
+    <locale android:name="ar" />
+    <!-- Android uses the legacy iw qualifier for Hebrew resources. -->
+    <locale android:name="iw" />
+    <locale android:name="tr" />
+    <locale android:name="pt" />
+    <!-- values-pt is Brazilian Portuguese; values-pt-rPT holds the European wording where it differs. -->
+    <locale android:name="pt-PT" />
+    <locale android:name="fi" />
+    <locale android:name="vi" />
+    <locale android:name="bn" />
+    <locale android:name="cs" />
+    <locale android:name="it" />
+    <locale android:name="in" />
+    <locale android:name="nl" />
+    <locale android:name="uz" />
+    <locale android:name="uk" />
+    <locale android:name="ko" />
+    <locale android:name="da" />
+    <locale android:name="sv" />
+    <locale android:name="ast" />
+</locale-config>
+`n`n========== FILE: launcher\build.gradle ==========
+plugins {
+    id 'com.android.application' version '8.5.2' apply false
+}
+`n`n========== FILE: launcher\gradle.properties ==========
+org.gradle.jvmargs=-Xmx2g -Dfile.encoding=UTF-8
+android.useAndroidX=true
+android.nonTransitiveRClass=true

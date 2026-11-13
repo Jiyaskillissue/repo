@@ -1,0 +1,1500 @@
+﻿                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom"
+                        android:layout_marginBottom="9dp"
+                        android:orientation="vertical">
+
+                        <!-- Shamsi date ("27 Mehr 1405"), shown when shamsi_date is on. -->
+                        <TextView
+                            android:id="@+id/shamsiDate"
+                            android:gravity="left"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:singleLine="true"
+                            android:ellipsize="end"
+                            android:textColor="#E6FFFFFF"
+                            android:textSize="17sp"
+                            android:fontFamily="@string/font_regular"
+                            android:letterSpacing="0.02"
+                            android:includeFontPadding="false"
+                            android:visibility="gone" />
+
+                        <TextClock
+                            android:id="@+id/date"
+                            android:gravity="left"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:singleLine="@bool/date_single_line"
+                            android:maxLines="2"
+                            android:lineSpacingExtra="6dp"
+                            android:ellipsize="end"
+                            android:format12Hour="@string/date_format_home"
+                            android:format24Hour="@string/date_format_home"
+                            android:textColor="#A6FFFFFF"
+                            android:textSize="14sp"
+                            android:fontFamily="@string/font_regular"
+                            android:letterSpacing="0.14"
+                            android:textAllCaps="true" />
+
+                        <!-- Lunar date ("Lunar 13/9 Â· Year of the Horse"), shown when lunar_date is on. -->
+                        <TextView
+                            android:id="@+id/lunarDate"
+                            android:gravity="left"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:singleLine="true"
+                            android:ellipsize="end"
+                            android:textColor="#80FFFFFF"
+                            android:textSize="14sp"
+                            android:fontFamily="@string/font_regular"
+                            android:letterSpacing="0.14"
+                            android:textAllCaps="true"
+                            android:visibility="gone" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Shown only when show_stats is on. Outside leftBlock, so the top buttons stay level with the clock
+                 row; gone, it takes no space. -->
+            <TextView
+                android:id="@+id/stats"
+                android:layout_width="wrap_content"
+                android:layout_below="@id/leftBlock"
+                android:layout_alignStart="@id/leftBlock"
+                android:gravity="left"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="#D9FFFFFF"
+                android:textSize="14sp"
+                android:fontFamily="@string/font_medium"
+                android:letterSpacing="0.04"
+                android:focusable="false"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/topButtons"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignBottom="@id/leftBlock"
+                android:layout_marginBottom="6dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btnInputs"
+                    style="@style/TopButton"
+                    android:text="@string/inputs"
+                    android:drawableStart="@drawable/ic_input"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
+                    android:id="@+id/btnWifi"
+                    style="@style/TopButton"
+                    android:maxWidth="180dp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:text="@string/wifi"
+                    android:drawableStart="@drawable/ic_wifi"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
+                    android:id="@+id/btnVpn"
+                    style="@style/TopButton"
+                    android:visibility="gone"
+                    android:singleLine="true"
+                    android:text="@string/vpn"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
+                    android:id="@+id/btnReorder"
+                    style="@style/TopButtonIcon"
+                    android:contentDescription="@string/reorder"
+                    android:drawableStart="@drawable/ic_swap_vert"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
+                    android:id="@+id/btnLibraryTop"
+                    style="@style/TopButtonIcon"
+                    android:visibility="gone"
+                    android:contentDescription="@string/app_library"
+                    android:drawableStart="@drawable/ic_apps_pill"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
+                    android:id="@+id/btnSettings"
+                    style="@style/TopButton"
+                    android:text="@string/settings"
+                    android:drawableStart="@drawable/ic_settings"
+                    android:nextFocusDown="@+id/grid" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <!-- The wrapper clips at the grid's edge; the grid itself must not clip so scaled tiles can overflow their cells. -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="10dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="10dp"
+                android:paddingBottom="40dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:overScrollMode="never"
+                android:scrollbars="none"
+                android:descendantFocusability="afterDescendants" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- The single floating glass highlight that springs between tiles. -->
+    <com.gathin.tvhome.GlassView
+        android:id="@+id/glass"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:alpha="0"
+        android:importantForAccessibility="no" />
+</FrameLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout\activity_quick_settings.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quick settings opened by the remote's Settings button: the Inputs dropdown's glass panel, placed
+     under the Settings pill so it lines up on Home and sits top right over any app. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrim"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/panel"
+        android:layout_width="wrap_content"
+        android:minWidth="220dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="105dp"
+        android:layout_marginEnd="56dp"
+        android:orientation="vertical"
+        android:background="@drawable/glass_panel"
+        android:padding="6dp"
+        android:elevation="12dp">
+
+        <LinearLayout
+            android:id="@+id/rows"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </LinearLayout>
+</FrameLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout\dialog_card_prompt.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The module card prompt: who is asking (app label, package, signing key) and two buttons.
+     Keep hidden is focused first; Back means Keep hidden too. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/glass_panel"
+    android:paddingStart="26dp"
+    android:paddingEnd="26dp"
+    android:paddingTop="22dp"
+    android:paddingBottom="20dp"
+    android:elevation="12dp">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textColor="#FFFFFFFF"
+        android:textSize="22sp"
+        android:fontFamily="@string/font_medium"
+        android:letterSpacing="-0.01" />
+
+    <TextView
+        android:id="@+id/body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="#D9FFFFFF"
+        android:textSize="15sp"
+        android:lineSpacingExtra="3sp"
+        android:fontFamily="@string/font_body" />
+
+    <TextView
+        android:id="@+id/names"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textColor="#D9FFFFFF"
+        android:textSize="15sp"
+        android:lineSpacingExtra="3sp"
+        android:fontFamily="@string/font_body" />
+
+    <TextView
+        android:id="@+id/hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/card_prompt_hint"
+        android:textColor="#99FFFFFF"
+        android:textSize="13sp"
+        android:fontFamily="@string/font_body" />
+
+    <TextView
+        android:id="@+id/identity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:maxLines="2"
+        android:textColor="#80FFFFFF"
+        android:textSize="12sp"
+        android:letterSpacing="0.03"
+        android:fontFamily="@string/font_body" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <TextView
+            android:id="@+id/btnKeep"
+            style="@style/TopButton"
+            android:text="@string/card_keep_hidden"
+            android:nextFocusUp="@+id/btnKeep"
+            android:nextFocusDown="@+id/btnKeep"
+            android:nextFocusLeft="@+id/btnKeep"
+            android:nextFocusRight="@+id/btnShow" />
+
+        <TextView
+            android:id="@+id/btnShow"
+            style="@style/TopButton"
+            android:text="@string/card_show"
+            android:nextFocusUp="@+id/btnShow"
+            android:nextFocusDown="@+id/btnShow"
+            android:nextFocusLeft="@+id/btnKeep"
+            android:nextFocusRight="@+id/btnShow" />
+    </LinearLayout>
+</LinearLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout\dream_clock.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Screensaver (ClockDream): clock and date that drift around a black screen over an ambient glow. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF000000">
+
+    <!-- The glow is its background; clock_wallpaper puts the picture in it, cropped like Home's. -->
+    <ImageView
+        android:id="@+id/dreamAmbient"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:id="@+id/dreamContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="true">
+
+            <TextClock
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:format12Hour="h:mm"
+                android:format24Hour="HH:mm"
+                android:textColor="#E6FFFFFF"
+                android:textSize="120sp"
+                android:fontFamily="@string/font_extralight"
+                android:letterSpacing="-0.04"
+                android:includeFontPadding="false" />
+
+            <TextClock
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:format12Hour="a"
+                android:format24Hour=""
+                android:textColor="#99FFFFFF"
+                android:textSize="22sp"
+                android:fontFamily="@string/font_medium"
+                android:letterSpacing="0.08"
+                android:textAllCaps="true" />
+        </LinearLayout>
+
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginTop="4dp"
+            android:format12Hour="@string/date_format"
+            android:format24Hour="@string/date_format"
+            android:textColor="#8CFFFFFF"
+            android:textSize="18sp"
+            android:fontFamily="@string/font_regular"
+            android:letterSpacing="0.14"
+            android:textAllCaps="true" />
+    </LinearLayout>
+</FrameLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout\item_app.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <FrameLayout
+        android:id="@+id/card"
+        android:layout_width="180dp"
+        android:layout_height="101dp"
+        android:layout_gravity="center_horizontal|top"
+        android:background="@drawable/tile_bg"
+        android:focusable="true"
+        android:clickable="true">
+
+        <ImageView
+            android:id="@+id/banner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:contentDescription="@null" />
+
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="14dp"
+            android:visibility="gone"
+            android:contentDescription="@null" />
+
+        <TextView
+            android:id="@+id/label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="8dp"
+            android:gravity="center"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textColor="#FFFFFFFF"
+            android:textSize="13sp"
+            android:fontFamily="@string/font_body"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="180dp"
+        android:layout_height="22dp"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginTop="108dp"
+        android:includeFontPadding="false"
+        android:gravity="center"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:alpha="0"
+        android:translationY="-6dp"
+        android:textColor="#F2FFFFFF"
+        android:textSize="14sp"
+        android:fontFamily="@string/font_medium"
+        android:letterSpacing="0.02" />
+</FrameLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout\item_card_row.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One row of the Module cards list: label and state, then the app's name, package and full signing key. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="7dp"
+    android:paddingBottom="8dp"
+    android:background="@drawable/input_row_bg"
+    android:focusable="true"
+    android:clickable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:duplicateParentState="true">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="12dp"
+            android:textColor="@drawable/pill_text"
+            android:duplicateParentState="true"
+            android:textSize="15sp"
+            android:fontFamily="@string/font_medium"
+            android:singleLine="true"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@drawable/pill_text"
+            android:duplicateParentState="true"
+            android:textSize="11sp"
+            android:fontFamily="@string/font_body"
+            android:letterSpacing="0.04" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/app"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@drawable/pill_text_mid"
+        android:duplicateParentState="true"
+        android:textSize="11sp"
+        android:fontFamily="@string/font_body"
+        android:singleLine="true"
+        android:ellipsize="end" />
+
+    <TextView
+        android:id="@+id/pkg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@drawable/pill_text_mid"
+        android:duplicateParentState="true"
+        android:textSize="11sp"
+        android:fontFamily="@string/font_body"
+        android:singleLine="true"
+        android:ellipsize="middle" />
+
+    <TextView
+        android:id="@+id/digest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textColor="@drawable/pill_text_mid"
+        android:duplicateParentState="true"
+        android:textSize="10sp"
+        android:letterSpacing="0.03"
+        android:fontFamily="@string/font_body"
+        android:maxLines="2" />
+</LinearLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout\item_input.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="42dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:background="@drawable/input_row_bg"
+    android:focusable="true"
+    android:clickable="true">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:tint="@drawable/pill_text"
+        android:duplicateParentState="true"
+        android:contentDescription="@null" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="12dp"
+        android:textColor="@drawable/pill_text"
+        android:duplicateParentState="true"
+        android:textSize="15sp"
+        android:fontFamily="@string/font_medium"
+        android:singleLine="true" />
+
+    <View
+        android:id="@+id/dot"
+        android:layout_width="7dp"
+        android:layout_height="7dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/status_dot" />
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@drawable/pill_text_mid"
+        android:duplicateParentState="true"
+        android:textSize="11sp"
+        android:fontFamily="@string/font_regular"
+        android:letterSpacing="0.04" />
+</LinearLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout\popup_cards.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Module cards list under the Settings pill; scrolls when the rows don't fit on a 720p screen. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/panel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/glass_panel"
+    android:padding="6dp"
+    android:elevation="12dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="6dp"
+        android:text="@string/module_cards"
+        android:textColor="#8CFFFFFF"
+        android:textSize="11sp"
+        android:fontFamily="@string/font_medium"
+        android:letterSpacing="0.18"
+        android:textAllCaps="true" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:id="@+id/rows"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+</LinearLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout\popup_inputs.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/panel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/glass_panel"
+    android:padding="6dp"
+    android:elevation="12dp">
+
+    <LinearLayout
+        android:id="@+id/rows"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+</LinearLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout\row_app_library.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="84dp">
+    <TextView android:id="@+id/btnLibrary" style="@style/TopButton"
+        android:layout_gravity="center" android:text="@string/app_library"
+        android:drawableStart="@drawable/ic_apps_pill" />
+</FrameLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout\top_app_button.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One top_bar_apps button: the round icon pill, its logo set from the app in MainActivity. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/TopButtonIcon"
+    android:nextFocusDown="@+id/grid" />
+`n`n========== FILE: launcher\app\src\main\res\layout-iw\activity_main.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hebrew-only header positioning. Other languages use layout/activity_main.xml. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF000000">
+
+    <!-- Time-of-day backdrop, drawn once a minute (config.xml sky_intensity; 0 keeps it hidden).
+         Keep in step with layout/activity_main.xml: every view there must exist here too. -->
+    <com.gathin.tvhome.SkyView
+        android:id="@+id/sky"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no" />
+
+    <!-- Cinematic top shelf (cinematic_home): the focused dock app's artwork, a few pixels across and
+         stretched over the screen, which softens it like a blur without the cost of one. Hidden otherwise. -->
+    <ImageView
+        android:id="@+id/heroArt"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:alpha="0"
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
+
+    <!-- Ambient glow in the colour of the focused dock app. -->
+    <View
+        android:id="@+id/ambient"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0" />
+
+    <!-- Race-weekend panel (a theme's race_calendar, see RaceWeekend), mirrored: under the clock on the right. -->
+    <LinearLayout
+        android:id="@+id/racePanel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:layout_marginEnd="60dp"
+        android:layout_marginTop="158dp"
+        android:gravity="right"
+        android:orientation="vertical"
+        android:focusable="false"
+        android:importantForAccessibility="no"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/raceKicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:textColor="#B3FFFFFF"
+                android:textSize="12sp"
+                android:fontFamily="@string/font_medium"
+                android:letterSpacing="0.22"
+                android:textAllCaps="true" />
+
+            <View
+                android:layout_width="3dp"
+                android:layout_height="13dp"
+                android:layout_marginStart="10dp"
+                android:id="@+id/raceBar"
+                android:background="@drawable/race_bar" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/raceHeadline"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:singleLine="true"
+            android:textColor="#FFFFFFFF"
+            android:textSize="34sp"
+            android:fontFamily="@string/font_light"
+            android:letterSpacing="-0.01"
+            android:includeFontPadding="false" />
+
+        <TextView
+            android:id="@+id/raceSessions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:singleLine="true"
+            android:textColor="#99FFFFFF"
+            android:textSize="12sp"
+            android:fontFamily="@string/font_medium"
+            android:letterSpacing="0.12" />
+
+        <!-- game_day: one dot per turn when the panel rotates between games (and the F1 weekend). -->
+        <LinearLayout
+            android:id="@+id/racePager"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- Cinematic top shelf: darkens the edge behind the shelf and the lower half, so the text and the
+         dock stay readable over the artwork. -->
+    <View
+        android:id="@+id/heroScrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
+
+    <!-- Top shelf: the focused dock app's name, positioned above the dock in code. -->
+    <LinearLayout
+        android:id="@+id/hero"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="68dp"
+        android:layout_gravity="right"
+        android:gravity="right"
+        android:orientation="vertical"
+        android:alpha="0">
+
+        <TextView
+            android:id="@+id/heroName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:gravity="right"
+            android:textColor="#FFFFFFFF"
+            android:textSize="48sp"
+            android:fontFamily="@string/font_light"
+            android:letterSpacing="-0.02"
+            android:includeFontPadding="false"
+            android:singleLine="true" />
+
+        <!-- Cinematic shelf only: when the app was last opened, and the dock position dots. -->
+        <TextView
+            android:id="@+id/heroMeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginEnd="4dp"
+            android:layout_marginTop="12dp"
+            android:singleLine="true"
+            android:textColor="#B3FFFFFF"
+            android:textSize="15sp"
+            android:fontFamily="@string/font_light"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/heroDots"
+            android:layout_width="wrap_content"
+            android:layout_height="6dp"
+            android:layout_gravity="right"
+            android:layout_marginEnd="4dp"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="56dp"
+        android:paddingEnd="56dp"
+        android:paddingTop="26dp"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <!-- No clipping down to the pills: with advanced effects a focused pill scales up past its row. -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false">
+
+            <LinearLayout
+                android:id="@+id/leftBlock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_toEndOf="@+id/topButtons"
+                android:layout_marginStart="16dp"
+                android:orientation="horizontal"
+                android:gravity="right|bottom">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_marginBottom="9dp"
+                    android:orientation="vertical">
+
+                    <!-- Shamsi date ("27 Mehr 1405"), shown when shamsi_date is on. -->
+                    <TextView
+                        android:id="@+id/shamsiDate"
+                        android:gravity="right"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:textColor="#E6FFFFFF"
+                        android:textSize="17sp"
+                        android:fontFamily="@string/font_regular"
+                        android:letterSpacing="0.02"
+                        android:includeFontPadding="false"
+                        android:visibility="gone" />
+
+                    <TextClock
+                        android:id="@+id/date"
+                        android:gravity="right"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:singleLine="true"
+                        android:ellipsize="end"
+                        android:format12Hour="@string/date_format"
+                        android:format24Hour="@string/date_format"
+                        android:textColor="#A6FFFFFF"
+                        android:textSize="14sp"
+                        android:fontFamily="@string/font_regular"
+                        android:letterSpacing="0.14"
+                        android:textAllCaps="true" />
+
+                        <!-- Lunar date ("Lunar 13/9 Â· Year of the Horse"), shown when lunar_date is on. -->
+                        <TextView
+                            android:id="@+id/lunarDate"
+                            android:gravity="right"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:singleLine="true"
+                            android:ellipsize="end"
+                            android:textColor="#80FFFFFF"
+                            android:textSize="14sp"
+                            android:fontFamily="@string/font_regular"
+                            android:letterSpacing="0.14"
+                            android:textAllCaps="true"
+                            android:visibility="gone" />
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/clockDivider"
+                    android:layout_width="1dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="#33FFFFFF" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/greeting"
+                        android:gravity="center_horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:autoSizeTextType="uniform"
+                        android:autoSizeMinTextSize="9sp"
+                        android:autoSizeMaxTextSize="12sp"
+                        android:autoSizeStepGranularity="1sp"
+                        android:ellipsize="end"
+                        android:textColor="#8CFFFFFF"
+                        android:textSize="12sp"
+                        android:fontFamily="@string/font_medium"
+                        android:letterSpacing="0"
+                        android:textAllCaps="true" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:baselineAligned="true">
+                        <TextClock
+                            android:id="@+id/ampm"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="6dp"
+                            android:singleLine="true"
+                            android:textDirection="rtl"
+                            android:layout_gravity="bottom"
+                            android:layout_marginBottom="8dp"
+                            android:format12Hour="a"
+                            android:format24Hour=""
+                            android:textColor="#B3FFFFFF"
+                            android:textSize="15sp"
+                            android:fontFamily="@string/font_medium"
+                            android:letterSpacing="0"
+                            android:ellipsize="none"
+                            android:textAllCaps="true" />
+
+                        <TextClock
+                            android:id="@+id/clock"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="6dp"
+                            android:format12Hour="h:mm"
+                            android:format24Hour="HH:mm"
+                            android:textColor="#FFFFFFFF"
+                            android:textSize="52sp"
+                            android:fontFamily="@string/font_light"
+                            android:letterSpacing="-0.04"
+                            android:fontFeatureSettings="tnum"
+                            android:includeFontPadding="false" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Shown only when show_stats is on. Outside leftBlock, so the top buttons stay level with the clock
+                 row; gone, it takes no space. -->
+            <TextView
+                android:id="@+id/stats"
+                android:layout_width="wrap_content"
+                android:layout_below="@id/leftBlock"
+                android:layout_alignStart="@id/leftBlock"
+                android:layout_alignEnd="@id/leftBlock"
+                android:gravity="right"
+                android:textDirection="rtl"
+                android:layout_marginEnd="6dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="#D9FFFFFF"
+                android:textSize="14sp"
+                android:fontFamily="@string/font_medium"
+                android:letterSpacing="0.04"
+                android:focusable="false"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/topButtons"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignBottom="@id/leftBlock"
+                android:layout_marginBottom="6dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btnSettings"
+                    style="@style/TopButton"
+                    android:text="@string/settings"
+                    android:drawableStart="@drawable/ic_settings"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
+                    android:id="@+id/btnLibraryTop"
+                    style="@style/TopButtonIcon"
+                    android:visibility="gone"
+                    android:contentDescription="@string/app_library"
+                    android:drawableStart="@drawable/ic_apps"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
+                    android:id="@+id/btnReorder"
+                    style="@style/TopButtonIcon"
+                    android:contentDescription="@string/reorder"
+                    android:drawableStart="@drawable/ic_swap_vert"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
+                    android:id="@+id/btnVpn"
+                    style="@style/TopButton"
+                    android:visibility="gone"
+                    android:singleLine="true"
+                    android:text="@string/vpn"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
+                    android:id="@+id/btnWifi"
+                    style="@style/TopButton"
+                    android:maxWidth="180dp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:text="@string/wifi"
+                    android:drawableStart="@drawable/ic_wifi"
+                    android:nextFocusDown="@+id/grid" />
+
+                <TextView
+                    android:id="@+id/btnInputs"
+                    style="@style/TopButton"
+                    android:text="@string/inputs"
+                    android:drawableStart="@drawable/ic_input"
+                    android:nextFocusDown="@+id/grid" />
+            </LinearLayout>
+        </RelativeLayout>
+
+        <!-- The wrapper clips at the grid's edge; the grid itself must not clip so scaled tiles can overflow their cells. -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="10dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingTop="10dp"
+                android:paddingBottom="40dp"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:overScrollMode="never"
+                android:scrollbars="none"
+                android:descendantFocusability="afterDescendants" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- The single floating glass highlight that springs between tiles. -->
+    <com.gathin.tvhome.GlassView
+        android:id="@+id/glass"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
+        android:alpha="0"
+        android:importantForAccessibility="no" />
+</FrameLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout-iw\dream_clock.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hebrew screensaver: right-aligned clock/date, RTL date text, LTR time numerals. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF000000">
+
+    <!-- The glow is its background; clock_wallpaper puts the picture in it, cropped like Home's. -->
+    <ImageView
+        android:id="@+id/dreamAmbient"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:importantForAccessibility="no" />
+
+    <LinearLayout
+        android:id="@+id/dreamContent"
+        android:layoutDirection="rtl"
+        android:gravity="right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layoutDirection="ltr"
+            android:baselineAligned="true">
+
+            <TextClock
+                android:id="@+id/dreamAmPm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:format12Hour="a"
+                android:format24Hour=""
+                android:textColor="#99FFFFFF"
+                android:textSize="22sp"
+                android:fontFamily="@string/font_medium"
+                android:letterSpacing="0.08"
+                android:textAllCaps="true" />
+
+            <TextClock
+                android:id="@+id/dreamClock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:format12Hour="h:mm"
+                android:format24Hour="HH:mm"
+                android:textColor="#E6FFFFFF"
+                android:textSize="120sp"
+                android:fontFamily="@string/font_extralight"
+                android:letterSpacing="-0.04"
+                android:includeFontPadding="false" />
+        </LinearLayout>
+
+        <TextClock
+            android:id="@+id/dreamDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textDirection="rtl"
+            android:gravity="right"
+            android:format12Hour="@string/date_format"
+            android:format24Hour="@string/date_format"
+            android:textColor="#8CFFFFFF"
+            android:textSize="18sp"
+            android:fontFamily="@string/font_regular"
+            android:letterSpacing="0.14"
+            android:textAllCaps="true" />
+    </LinearLayout>
+</FrameLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout-iw\item_input.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hebrew input rows: status on the left, right-aligned name and icon on the right. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="42dp"
+    android:orientation="horizontal"
+    android:layoutDirection="ltr"
+    android:gravity="center_vertical"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:background="@drawable/input_row_bg"
+    android:focusable="true"
+    android:clickable="true">
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@drawable/pill_text_mid"
+        android:duplicateParentState="true"
+        android:textSize="11sp"
+        android:textDirection="locale"
+        android:fontFamily="@string/font_regular"
+        android:letterSpacing="0.04" />
+
+    <View
+        android:id="@+id/dot"
+        android:layout_width="7dp"
+        android:layout_height="7dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/status_dot" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="10dp"
+        android:textColor="@drawable/pill_text"
+        android:duplicateParentState="true"
+        android:textSize="15sp"
+        android:fontFamily="@string/font_medium"
+        android:gravity="right"
+        android:textDirection="locale"
+        android:singleLine="true" />
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:tint="@drawable/pill_text"
+        android:duplicateParentState="true"
+        android:contentDescription="@null" />
+</LinearLayout>
+`n`n========== FILE: launcher\app\src\main\res\layout-zh\row_app_library.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chinese text sits low in the line: without font padding and with the text dropped 2dp it lines up with
+     the icon (drawable-zh/ic_apps_pill nudges that down too). -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="84dp">
+    <TextView android:id="@+id/btnLibrary" style="@style/TopButton"
+        android:layout_gravity="center" android:text="@string/app_library"
+        android:drawableStart="@drawable/ic_apps_pill"
+        android:includeFontPadding="false"
+        android:paddingBottom="2dp" />
+</FrameLayout>
+`n`n========== FILE: launcher\app\src\main\res\raw\keep.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!-- app_banners names drawables at run time, which resource shrinking cannot see: keep every banner_*.
+     Strict: that is the launcher's only getIdentifier, and safe mode also keeps every resource whose name
+     matches a string literal anywhere in the code (AndroidX translations among them). -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/banner_*"
+    tools:shrinkMode="strict" />
+`n`n========== FILE: launcher\app\src\main\res\values\bools.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="rtl_app_grid">false</bool>
+    <bool name="rtl_menu_bar">false</bool>
+    <!-- Other locales keep the date on one line, ellipsized as before. -->
+    <bool name="date_single_line">true</bool>
+</resources>
+`n`n========== FILE: launcher\app\src\main\res\values\config.xml ==========
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launcher configuration. Edit this file, then run launcher/build-and-install.sh.
+  Or leave it and push a theme instead: tools/theme.sh themes/<name> puts a config.json (same keys, see
+  themes/README.md) and an optional wallpaper on the TV, and the launcher overlays it at start.
+  Package names: on the TV run `pm list packages` (tools/tv.py 'pm list packages').
+-->
+<resources>
+
+    <!-- Tried in order when no standard settings handler is usable; each package must also be visible
+         through <queries> in the manifest. -->
+    <string-array name="settings_fallback_components" translatable="false">
+        <item>com.xiaomi.mitv.settings/com.xiaomi.mitv.settings.entry.MainActivity</item>
+        <item>com.tcl.settings/com.tcl.settings.ui.MainActivity</item>
+        <item>com.amazon.tv.launcher/com.amazon.tv.launcher.ui.MainSettingsActivity</item>
+    </string-array>
+
+    <!-- Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped. -->
+    <string-array name="dock_apps">
+        <item>com.netflix.ninja</item>
+        <item>com.amazon.amazonvideo.livingroom</item>
+        <item>com.google.android.youtube.tv</item>
+        <item>in.startv.hotstar</item>
+    </string-array>
+    <!-- With fewer dock_apps than columns (or a dock app that is not installed), the free dock slots take
+         the first grid apps, so the dock never shows a gap. false leaves them empty (#162); a theme can
+         set "fill_dock": false. -->
+    <bool name="fill_dock">true</bool>
+
+    <!-- Apps never shown as tiles (e.g. the Live TV app, which the Inputs menu already covers). -->
+    <string-array name="hidden_apps">
+        <item>com.mediatek.wwtv.tvcenter</item>
+        <item>com.mitv.gallery</item>
+    </string-array>
+
+    <!-- The TV's Live TV / tuner app, offered at the end of the Inputs menu. Leave empty to omit. -->
+    <string name="live_tv_package" translatable="false">com.mediatek.wwtv.tvcenter</string>
+
+    <!-- Open the Live TV app above the first time Home comes up after the TV is switched on, for sets that are
+         mostly used for broadcast TV. Once per boot: Home after that stays Home. Can also be set with
+         "boot_to_live_tv": true in a theme's config.json. When launch_actions below gives live_tv_package an
+         "input:<id>" target, that input opens instead, as the tile does: for a Live TV app that starts on the
+         empty tuner at every boot ("please scan channels") while the set is used on an HDMI input. -->
+    <bool name="boot_to_live_tv">false</bool>
+
+    <!-- An "Open on start" row in Launcher settings: pick any app on the TV, and the first time Home comes up
+         after the TV starts it opens that app instead. Once per boot, like boot_to_live_tv (which wins when
+         both are set); Home after that stays Home, and an app that is gone or disabled leaves Home on screen.
+         Off by default; a theme can set "open_on_start_choice": true. -->
+    <bool name="open_on_start_choice">false</bool>
+    <!-- With open_on_start_choice: the picked app also opens each time the screen comes back on, for sets whose
+         remote powers them into a light sleep with no boot. It opens over whatever was in front, an HDMI input
+         included. Off by default; a theme can set "open_on_start_on_wake": true. -->
+    <bool name="open_on_start_on_wake">false</bool>
+
+    <!-- Seconds the first Home after the TV starts waits for a working internet connection before it opens the
+         boot_to_live_tv or Open on start app. A streaming app opened before the network is back shows an error,
+         and after a power cut Wi-Fi can take minutes, as the router starts again too. Home stays on screen
+         meanwhile, and leaving Home cancels the opening. 0, the default: open at once. Up to 600; a theme can
+         set "open_on_start_network_wait": 180. -->
+    <integer name="open_on_start_network_wait">0</integer>
+
+    <!-- Some TVs give their Live TV app no leanback entry point at all, so `live_tv_package` above
+         resolves to nothing (TCL Android TV 9 on China-market sets is one). This action is then sent
+         to that package instead, and the app starts normally. Leave empty to omit. -->
+    <string name="live_tv_action" translatable="false"></string>
+
+    <!-- Optional Live TV source for the Inputs menu. An exact system tuner ID, e.g. DVB-S on
+         a TV with separate antenna, cable and satellite tuners. It opens that input's channel
+         collection, restricted to live_tv_package. Empty keeps automatic selection and its existing
+         OEM passthrough route. On Xiaomi MiTV-MSSP1 (#1941), set this to the exact value
+         content://android.media.tv/channel to use the stock launcher's root channel URI instead.
+         If the ID is absent or the app cannot handle the collection, open
+         the Live TV app normally instead of selecting a different input. A wrong but registered ID
+         can open the app's tuner setup screen instead; that is not detected as a fallback condition.
+         Use a verified input ID, or leave this empty. See docs/devices/haam-r4.md. -->
+    <string name="live_tv_input_id" translatable="false"></string>
+
+    <!-- Tiles that open a screen of the app instead of its start screen: "package=action", sent to that package.
+         A tile whose action no longer resolves opens the app normally. MagentaTV's program guide:
+         com.telekom.onetv.tv.pl=com.telekom.onetv.tv.pl.action.PROGRAM_GUIDE. "package=input:<input id>" makes
+         the tile (and a top_bar_apps button) switch to that TV input instead (ids from dumpsys tv_input), e.g. a Live TV tile straight to
+         HDMI 1: com.mediatek.wwtv.tvcenter=input:com.mediatek.tvinput/.hdmi.HDMIInputService/HW5. "package=view:uri"
+         opens that URI in the package instead (ACTION_VIEW): Bbox TV's live channels are
+         fr.bouyguestelecom.tv.bbui=view:bbox://live. -->
+    <string-array name="launch_actions">
+    </string-array>
+
+    <!-- A tile's name instead of the app's own: "package=Name". It also shows above the dock. -->
+    <string-array name="app_labels">
+    </string-array>
+    <!-- A tile's artwork instead of the app's banner: "package=drawable", a banner_* drawable bundled with the
+         launcher (res/drawable). banner_tv is a magenta field with the Live TV glyph. -->
+    <string-array name="app_banners">
+    </string-array>
+
+    <!-- TVs with no TvInputManager have no HDMI list to read, but their own source-selection panel
+         still switches inputs (TCL Android TV 9 again). When nothing could be listed, the Inputs menu
+         offers one row that starts this service: component first, then action. The component can also be an
+         activity, for sets whose panel is a dialog (BYINTEK U4). With no Live TV app either, the Inputs pill
+         opens the panel directly instead of a menu. Leave empty to omit. -->
+    <string name="source_panel_service" translatable="false"></string>
+    <string name="source_panel_action" translatable="false"></string>
+    <!-- One int extra sent with the source panel intent, "name=value". Coocaa OS (Skyworth, China) needs
+         control_center_command=100 for its control center to open on the source row, as the remote's
+         Source button does. Leave empty to omit. -->
+    <string name="source_panel_extra" translatable="false"></string>
+
+    <!-- Coocaa OS (Skyworth, China) registers no inputs with TvInputManager; com.skyworth.tv lists its
+         sources (HDMI 1, HDMI 2, AV, the tuner) through its own provider instead. true: show those in the
+         Inputs menu and switch with com.skyworth.tv, ahead of the source panel above, which stays as the
+         fallback. See CoocaaSources and examples/skyworth-7s60-a5. -->
+    <bool name="coocaa_sources">false</bool>
+
+    <!-- Inputs menu: HDMI and AV rows normally open with ACTION_VIEW on the input's channel URI, which the
+         Live TV app handles. Where nothing answers that, this action is sent with the same URI instead
+         (XGIMI projectors: com.xgimi.action.hdmiPlayer). Written as "package/.Activity" it names the vendor's
+         own source picker instead, started by itself for every row, ahead of the standard way: for firmware that
+         answers the channel URI with "unsupported" (Redmi X65, MiTV-NSOP0:
+         com.xiaomi.mitv.tvplayer/.ExternalSourceActivity opens its HDMI 1 / HDMI 2 / AV overlay). Leave empty to omit. -->
+    <string name="input_action" translatable="false"></string>
+    <!-- Inputs menu: a scheme to send the input's passthrough URI with instead of content:// (and no channel MIME
+         type). YaOS: live-tv. Its source player answers live-tv://android.media.tv/passthrough/<input>, while the
+         content:// URI goes to its channel player, which resumes the last film it played. Leave empty to omit. -->
+    <string name="input_uri_scheme" translatable="false"></string>
+
+    <!-- Whether HomeKeyService and InputKeyService actually request key filtering (config.xml or a theme's
+         "key_filter"). Some firmware (TCL Google TV on Android 12) drops key auto-repeat once ANY service
+         filters keys, so long-pressing volume only steps once: set false and the service keeps running but
+         stops filtering, which brings repeat back at the price of the remote buttons below doing nothing. -->
+    <bool name="key_filter">true</bool>
+
+    <!-- With key_filter on, true makes HomeKeyService and InputKeyService stop filtering keys while a game
+         controller is connected, so games see its buttons (Steam Link with an Xbox controller on a TCL G07
+         did not; Moonlight with two controllers put both on player 1, docs/TROUBLESHOOTING.md). The price: the
+         remote buttons below do nothing until the controller disconnects. A voice
+         remote that reports a joystick does not count. A theme can set it ("gamepad_passthrough"). -->
+    <bool name="gamepad_passthrough">false</bool>
+
+    <!-- With key_filter on, the key helpers swallow Volume Up/Down and repeat a held one themselves. For firmware
+         that applies a volume key before the filter and again when the helper hands it back, so one tap moves two
+         steps (TCL G03 / BeyondTV4 on Android 11, #1100); a swallowed key gets no auto-repeat from Android, hence
+         the helper's own. Leave it off where a tap is one step. A theme can set it ("consume_volume_keys"). -->
+    <bool name="consume_volume_keys">false</bool>
+
+    <!-- With key_filter on, a volume change stops HomeKeyService and InputKeyService filtering keys for 4 s. For
+         firmware that changes volume once per press while any service filters keys, so a held volume key never
+         repeats, and the helpers never see the volume keys (Xiaomi MOEU0, Google TV 14): the first press steps
+         once, a press or hold within those 4 s repeats as usual, and the remote buttons below work again once the
+         pause ends. With gamepad_passthrough on too, filtering stays off while a gamepad is connected. A theme can
+         set it ("volume_pauses_filter"). -->
+    <bool name="volume_pauses_filter">false</bool>
+
+    <!-- true: Channel Up/Down do nothing while Home is in front. Unhandled, they open the TV's Live TV app (Sony
+         BRAVIA, Android 9: com.sony.dtv.tvx), which is a stray press on a set nobody watches broadcast on. Inside any
+         other app the keys go on as before, and no key helper is needed. A theme can set it
+         ("home_ignore_channel_keys"). -->
+    <bool name="home_ignore_channel_keys">false</bool>
+
+    <!-- Vendor source numbers for the Inputs menu, "HW<n>=<number>" by the framework input id's last part
+         (`tools/tv.py 'dumpsys tv_input'` lists them). A mapped input opens by sending input_action with the
+         number as the int extra "input"; "HW<n>=-" leaves a port the board reports but the set does not have
+         out of the menu. A theme can set the same list. Xiaomi/Redmi China firmware (MiTV-MFTP0) needs input_action
+         com.xiaomi.mitv.tvplayer.EXTSRC_PLAY and MStar numbers: HW5=23, HW6=24, HW7=25, HW8=-, HW2=2,
+         HW3=-, HW4=- (see examples/redmi-mitv-mftp0). Leave empty to omit. -->
+    <string-array name="input_sources" translatable="false">
+    </string-array>
+
+    <!-- Remote buttons that open Settings, by Linux scancode (HOME_KEY_SERVICE=1 build-and-install.sh). Remotes
+         that send KEYCODE_SETTINGS need no entry. Some send a code Android does not map: the Xiaomi/Fengmi
+         projector remote's gear button is scancode 384 (KEY_TAPE). Find yours with
+         `tools/tv.py 'getevent -lt'` while pressing the button - but a HID consumer-control usage prints an
+         evdev MSC_SCAN there, which is not always the scanCode the framework reports, so a number that takes
+         nothing is no proof the press never arrived. Leave empty to omit. -->
+    <integer-array name="settings_key_scancodes">
+    </integer-array>
+    <!-- The same by Android keycode, for buttons whose scancode is shared. TCL Google TV remotes send their
+         Settings button as keycode 83 (KEYCODE_NOTIFICATION, which the stock Google TV home turned into its quick
+         settings panel) on scancode 240 (KEY_UNKNOWN), the scancode several TCL buttons share. Find the keycode
+         with `tools/tv.py 'logcat -v time -s InputReader:D'` while pressing the button - some firmwares print no
+         key line there at any verbosity, and a `getevent` MSC_SCAN is a different number, so the reliable route is
+         a temporary `Log.d` in the helper's `onKeyEvent`: `getKeyCode()`, `getScanCode()`, `getDeviceId()`, read
+         after a HOME_KEY_SERVICE=1 rebuild. Leave empty to omit. -->
+    <integer-array name="settings_key_keycodes">
+    </integer-array>
+    <!-- What those Settings buttons open: false, the TV's Settings; true, a small glass panel at the top right
+         with TV settings, Display, Network, Apps (re-enable an app) and Launcher settings, over whatever is on screen.
+         Both keys can also be set from a theme's config.json ("settings_key_keycodes": [83]). -->
+    <bool name="settings_key_panel">false</bool>
+    <!-- true: those Settings buttons clear the TV Settings task before opening Settings (with settings_key_panel off).
+         On some MediaTek boards KEYCODE_SETTINGS is also a global key: com.mediatek.tv.service opens Display & Sound in
+         the same task before the helper sees the press, so Settings stacked on it and Back landed there (Skyworth
+         2K NSTV, Google TV 14). Also "settings_key_clear_task" in a theme's config.json. -->
+    <bool name="settings_key_clear_task">false</bool>
+
+    <!-- A force stop of the launcher (Settings, a cleaner app, am force-stop) takes HomeKeyService and InputKeyService
+         off the enabled list. true: Home puts the helpers that were running back when it starts; one turned off in
+         Settings stays off. Needs WRITE_SECURE_SETTINGS, which build-and-install grants with RESTORE_KEY_SERVICES=1
+         (-RestoreKeyServices on Windows) and takes back on an install without it. Can also be set with "restore_key_services": true in a theme's config.json. -->
+    <bool name="restore_key_services">false</bool>
+
+    <!-- More remote buttons that open the input switcher, by Android keycode (INPUT_KEY_SERVICE=1
+         build-and-install.sh; KEYCODE_TV always does). For buttons only a disabled app answered: the Xiaomi
+         MiTV-AXFR2 remote's PatchWall button is 192 (KEYCODE_BUTTON_5). `dumpsys window policy` lists which
+         app each such "global key" was routed to. Check with the real remote: keys injected over ADB never
+         reach InputKeyService. Leave empty to omit. -->
+    <integer-array name="input_key_keycodes">
+    </integer-array>
+    <!-- Answer the system input switcher (com.android.tv.action.VIEW_INPUTS) with the Inputs menu. For TVs whose
+         stock launcher was the only handler of that action, so the remote's Input button does nothing once the
+         stock launcher is disabled even with InputKeyService on (Hisense huangshan, Android TV 10: no
+         global_keys.xml, no vendor input picker). Off by default: a TV with its own input picker would otherwise
+         get a chooser on every press. Also "handle_view_inputs": true in a theme's config.json. -->
+    <bool name="handle_view_inputs">false</bool>
+    <!-- Remote buttons that open an app, as "keycode:package" or "KEYCODE_NAME:package" (INPUT_KEY_SERVICE=1 or
+         HOME_KEY_SERVICE=1; both read this one list, and a theme's config.json can set it too). On Google TV the
+         YouTube button sends 190 (KEYCODE_BUTTON_3) to the stock launcher, so it does nothing once launcherx
+         is disabled (Chromecast with Google TV, Xiaomi MiTV-AXFR2): 190:com.google.android.youtube.tv brings
+         it back. The KTC LUMIO VISION remote (Realtek Google TV) sends Netflix 191, YouTube 190, Prime Video 195
+         and TL;DR 200. Some remotes send several app buttons as one keycode and tell them apart only by scancode
+         (Sony BRAVIA: YouTube, Prime Video and Disney+ are all keycode 196, scancodes 485, 490 and 491); list those
+         as "scan:scancode:package", e.g. scan:490:com.wbd.hbomax, found with `tools/tv.py 'getevent -t'` (the
+         EV_KEY code: the hex number after 0001 on the button's line, written in decimal, so 01ea is 490). A
+         scancode entry wins over a keycode. In place of a package, "input:<input id>"
+         switches to that TV input, e.g. scan:227:input:com.tcl.tvinput/.passthroughinput.TvPassThroughService/HW1413744640
+         for HDMI 3 on a TCL Smart TV Pro; the ids are in `tools/tv.py 'dumpsys tv_input'` (hdmi_port=N under
+         TvInputHardwareInfo). An action word in place of a package runs that action instead: back, home, recents,
+         mute (toggles the sound, with the TV's volume bar), sleep (standby, Android 9 and later), screensaver (the
+         one chosen in the TV's settings, or the launcher's clock), settings, wifi, library (Home with the App
+         library open; with app_library off it only brings Home forward, so a remote's Apps button, which sends
+         284 KEYCODE_ALL_APPS, can open it: 284:library) or ignore (swallows the button: it
+         does nothing, for a shortcut pressed by accident; find its scancode with `tools/tv.py 'getevent -t'`);
+         e.g. KEYCODE_PROG_YELLOW:mute, scan:586:ignore and hold:KEYCODE_PROG_YELLOW:sleep. "package/.Activity" opens that activity instead of the app's launcher
+         entry, e.g. hold:191:io.github.maxhayim.brightness/.QuickActivity for an add-on's quick bar. Prefix an
+         entry with "hold:" for the same button's long press:
+         "hold:KEYCODE_BUTTON_8:org.xbmc.kodi" opens Kodi when held for half a second, while the unprefixed entry
+         still opens on a tap; "hold:scan:490:..." works for scancodes. A key with only a hold entry does nothing
+         on a tap. A listed app that is not installed leaves the button doing nothing. Prefix an entry with "front:"
+         for what a tap does while the button's own app is already in front (HOME_KEY_SERVICE=1), and use
+         "guide:<package>" as a target to open that Live TV app's program guide: "172:com.vt.tv.tvcenter" with
+         "front:172:guide:com.vt.tv.tvcenter" makes the Hisense hengshan Live TV button open Live TV, then its guide,
+         where the firmware hands KEYCODE_GUIDE (172) to the stock launcher and no app ever receives it. Leave empty
+         to omit. -->
+    <string-array name="app_keys" translatable="false">
+    </string-array>
+
+    <!-- Package of the stock launcher, for TVs whose firmware turns it back on after it was disabled. XGIMI's
+         com.xgimi.xrmservice does, on every one of its remote keys, power included (docs/TROUBLESHOOTING.md).
+         Whenever that launcher's home screen comes up anyway, HomeKeyService (HOME_KEY_SERVICE=1) sends the TV
+         straight back here. A theme's config.json can set it too. Leave empty to omit. -->
+    <string name="stock_home_redirect" translatable="false"></string>
+
+    <!-- For TVs whose firmware opens the Live TV app (live_tv_package) by itself at every power-on, with no setting
+         to change it (Changhong / Homwee boards start com.mediatek.wwtv.tvcenter from its own boot receiver, which
+         adb cannot disable on Android 14). While nobody has pressed a key yet after boot or after the screen turns
+         on, HomeKeyService (HOME_KEY_SERVICE=1) sends a Live TV window back to Home; the first key hands control
+         to the user, so opening Live TV on purpose is never undone. The opposite of boot_to_live_tv, and ignored
+         when that is on. A theme's config.json can set it too. Off by default. -->
+    <bool name="power_on_home">false</bool>
+    <!-- Home at every power-on, whatever the firmware put in front (the last HDMI input, Live TV or an app),
+         for TVs that come back to the last source, like Philips. Needs HOME_KEY_SERVICE=1; a key pressed first
+         wins. Ignored with boot_to_live_tv or an Open on start app. Can also be set with "power_on_home_always". -->
+    <bool name="power_on_home_always">false</bool>
+
+    <!-- Every press of the remote's Home button opens this launcher, a held one too. Android turns a Home press held
+         past the long-press timeout (400 ms) into its long-press action; on Android TV that is ALL_APPS, sent to the
+         system-image launcher, and with the stock launcher disabled nothing answers it, so a firm press on a slow
+         remote does nothing (Philips TPM191E, Android 12). The long_press_timeout setting does not move that limit
+         there. HomeKeyService (HOME_KEY_SERVICE=1) then takes the Home key itself and opens Home on release. Needs
+         key_filter, so held keys such as Volume Up/Down stop repeating (confirmed on that Philips; single presses
+         still step). A theme's config.json can set it too. Off by default. -->
+    <bool name="home_long_press_home">false</bool>
+
+    <!-- Show the Solar Hijri (Shamsi) date used in Iran and Afghanistan, e.g. "27 Mehr 1405", above the
+         Gregorian date. -->
+    <bool name="shamsi_date">false</bool>
+    <!-- Lunisolar (Vietnamese / Chinese / Korean) date under the date; config.json lunar_date, lunar_utc_offset (7, 8 or 9, default by locale). -->
+    <bool name="lunar_date">false</bool>
+    <!-- The date (with the Shamsi and lunar lines) on its own line under the clock instead of beside it, for a top bar
+         whose pills leave the date too little room. Can also be set with "date_below_clock" in a theme. -->
+    <bool name="date_below_clock">false</bool>
+    <!-- The language the launcher shows itself in, as a language tag ("vi", "pt-BR", "ar-EG-u-nu-latn"
+         for Arabic with Western digits), instead of the TV's. For firmware
+         that has no menu entry for the owner's language although the launcher is translated into it (a China-market
+         Xiaomi offers Chinese and English only). Empty, the default, follows the TV. A theme can set it ("locale"). -->

@@ -1,0 +1,1500 @@
+﻿        ((ImageView) row.findViewById(R.id.icon)).setImageResource(iconRes);
+        ((TextView) row.findViewById(R.id.title)).setText(title);
+        TextView status = row.findViewById(R.id.status);
+        View dot = row.findViewById(R.id.dot);
+        // This TV reports "standby" for every port whether or not something is plugged in, so only
+        // definite states are shown.
+        if (state == TvInputManager.INPUT_STATE_CONNECTED) {
+            status.setText(R.string.connected);
+            dot.setVisibility(View.VISIBLE);
+        } else if (state == TvInputManager.INPUT_STATE_DISCONNECTED) {
+            status.setText(R.string.not_connected);
+            dot.setVisibility(View.GONE);
+        } else {
+            status.setVisibility(View.GONE);
+            dot.setVisibility(View.GONE);
+        }
+        row.setOnClickListener(v -> {
+            popup.dismiss();
+            action.run();
+        });
+        rows.addView(row);
+        return row;
+    }
+
+    // ---- launcher settings and module cards -------------------------------------------------------
+
+    /** top_menu: the gear's dropdown, standing in for the Inputs, Wi-Fi and Settings pills. */
+    private void showTopMenu() {
+        View anchor = findViewById(R.id.btnSettings);
+        View panel = getLayoutInflater().inflate(R.layout.popup_inputs, root, false);
+        LinearLayout rows = panel.findViewById(R.id.rows);
+        PopupWindow popup = glassPopup(panel, (int) (220 * density));
+        // Inputs opens its own list once this one has closed.
+        if (showInputsMenuRow) addInputRow(rows, popup, R.drawable.ic_input, getString(R.string.inputs), -1, () -> root.post(this::showInputs));
+        addInputRow(rows, popup, R.drawable.ic_wifi, getString(R.string.quick_network), -1, this::openNetworkPill);
+        CharSequence network = wifiIconOnly ? btnWifi.getContentDescription() : btnWifi.getText();
+        if (!TextUtils.isEmpty(network)) {
+            TextView status = rows.getChildAt(rows.getChildCount() - 1).findViewById(R.id.status);
+            status.setText(network);
+            status.setVisibility(View.VISIBLE);
+        }
+        addInputRow(rows, popup, R.drawable.ic_swap_vert, getString(R.string.reorder), -1, this::toggleReorder);
+        if (launcherSettingsButton) {
+            addInputRow(rows, popup, R.drawable.ic_home_settings_pill, getString(R.string.launcher_settings), -1,
+                    () -> startActivityForResult(new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
+        } else {
+            addInputRow(rows, popup, R.drawable.ic_settings, getString(R.string.settings), -1,
+                    () -> open(systemIntent(Settings.ACTION_SETTINGS)));
+        }
+        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        popup.setWidth(Math.max((int) (220 * density), Math.min(panel.getMeasuredWidth(), (int) (360 * density))));
+        dropIn(popup, panel, anchor, getResources().getBoolean(R.bool.rtl_menu_bar) ? Gravity.START : Gravity.END);
+        rows.getChildAt(0).requestFocus();
+    }
+
+    /** The header opens launcher settings directly; hold OK keeps the extra home actions available. */
+    private void showSettingsMenu() {
+        View anchor = findViewById(R.id.btnSettings);
+        View panel = getLayoutInflater().inflate(R.layout.popup_inputs, root, false);
+        LinearLayout rows = panel.findViewById(R.id.rows);
+        PopupWindow popup = glassPopup(panel, (int) (200 * density));
+        if (!launcherSettingsButton) addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
+                new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
+        // Firmware that ships its own settings app next to the AOSP one (Xiaomi China is one): the
+        // vendor app holds pages the AOSP settings has no row for, such as Account & Security with
+        // the ADB switch. Offered here only while one of them is installed.
+        if (SystemSettings.vendorIntent(this) != null) {
+            addSettingsMenuRow(rows, popup, R.string.native_settings, () -> {
+                Intent vendor = SystemSettings.vendorIntent(this);
+                if (vendor != null) open(vendor);
+            });
+        }
+        if (moduleCards) addSettingsMenuRow(rows, popup, R.string.module_cards, this::showModuleCards);
+        if (dockRow) addSettingsMenuRow(rows, popup, R.string.dock_edit, this::startDockEdit);
+        addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
+        // A launcher may not restart the TV itself; the Home key helper can open the system power menu instead.
+        if (HomeKeyService.canOpenPowerMenu()) addSettingsMenuRow(rows, popup, R.string.power_menu, HomeKeyService::openPowerMenu);
+        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        popup.setWidth(Math.max((int) (200 * density), panel.getMeasuredWidth()));
+        // Hebrew puts Settings at the left of the header: grow the menu inward from it.
+        dropIn(popup, panel, anchor, getResources().getBoolean(R.bool.rtl_menu_bar)
+                ? Gravity.START : Gravity.END);
+        rows.getChildAt(0).requestFocus();
+    }
+
+    /** A tile configured with launch_actions "input:<id>" (config.xml): switch to that TV input directly,
+     *  the same path the Inputs menu's own rows use, instead of opening the input's owning app normally. */
+    @Override
+    public void onOpenInput(String inputId) {
+        openInput(inputId);
+    }
+
+    /**
+     * Hold OK on a tile: a glass menu next to it. Move starts reorder mode with this tile already picked up;
+     * Remove from Home takes the shortcut off (only with the app library on, where one press adds it back);
+     * App info opens the TV's page for the app, which is what holding OK used to do.
+     */
+    // ---- hold OK ---------------------------------------------------------------------------------
+    // View's own long click misses on some remotes: an IR remote that sends its repeat frames as separate
+    // presses, or a Bluetooth one whose repeats land after a tile rebind, never holds one DOWN long enough.
+    // So the launcher times the hold itself: OK down on a tile, still down (or still repeating) after
+    // HOLD_OK_MS opens the tile menu, and the UP that follows is eaten so it doesn't also open the app.
+
+    private static final long HOLD_OK_MS = 550;
+    private long holdOkDown = -1;
+    private int holdOkPosition = -1;
+    private String holdOkKey;    // the app under OK when it went down; a tile rebuild can move another app to that slot
+    private boolean holdOkFired;
+    private final Runnable holdOkTimer = this::fireHoldOk;
+
+    private static boolean isOkKey(int code) {
+        return code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER
+                || code == KeyEvent.KEYCODE_NUMPAD_ENTER || code == KeyEvent.KEYCODE_BUTTON_A;
+    }
+
+    /** True when the event belongs to a hold that opened the tile menu and must not reach the tile. */
+    private boolean holdOk(KeyEvent event) {
+        if (!tileMenuEnabled || !isOkKey(event.getKeyCode())) return false;
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (event.getRepeatCount() == 0) {
+                holdOkFired = false;
+                handler.removeCallbacks(holdOkTimer);
+                holdOkPosition = reordering || openPopup != null || cardPrompt != null ? -1 : focusedTilePosition();
+                holdOkKey = holdOkPosition < 0 || holdOkPosition >= adapter.appCount() ? null : adapter.keyAt(holdOkPosition);
+                if (holdOkKey == null) {
+                    holdOkDown = -1;
+                    return false;
+                }
+                holdOkDown = event.getDownTime();
+                handler.postDelayed(holdOkTimer, HOLD_OK_MS);
+                return false;
+            }
+            if (holdOkFired) return true;
+            if (holdOkDown >= 0 && event.getEventTime() - holdOkDown >= HOLD_OK_MS) {
+                fireHoldOk();
+                return true;
+            }
+            return false;
+        }
+        // ACTION_UP
+        handler.removeCallbacks(holdOkTimer);
+        holdOkDown = -1;
+        holdOkKey = null;
+        if (holdOkFired) {
+            holdOkFired = false;
+            View f = getCurrentFocus();
+            if (f != null) f.setPressed(false);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Stops timing a held OK when the launcher is paused, loses its window or goes away, so the menu can't open
+     * behind another screen. An interrupted press still counts as handled: its UP, if it comes back here, is eaten
+     * rather than opening the tile.
+     */
+    private void cancelHoldOk() {
+        handler.removeCallbacks(holdOkTimer);
+        if (holdOkDown >= 0) holdOkFired = true;
+        holdOkDown = -1;
+        holdOkPosition = -1;
+        holdOkKey = null;
+    }
+
+    private void fireHoldOk() {
+        handler.removeCallbacks(holdOkTimer);
+        if (holdOkDown < 0 || holdOkFired) return;
+        holdOkFired = true;
+        if (openPopup != null || reordering) return;   // View's own long click got there first
+        int position = holdOkPosition;
+        if (position < 0 || position >= adapter.appCount() || position != focusedTilePosition()) return;
+        // Same slot is not enough: tiles may have been rebuilt during the hold, so the app must match too.
+        if (!holdOkKey.equals(adapter.keyAt(position))) return;
+        View card = getCurrentFocus();
+        if (card != null) card.setPressed(false);
+        onTileLongPress(position, card);
+    }
+
+    @Override
+    public void onTileLongPress(int position, View card) {
+        if (reordering || openPopup != null) return;
+        String key = adapter.keyAt(position);
+        String pkg = adapter.packageAt(position);
+        // Empty dock slots and the Default-home tile carry the launcher's own package: no menu for them.
+        if (key == null || pkg == null || pkg.equals(getPackageName())) return;
+        View panel = getLayoutInflater().inflate(R.layout.popup_inputs, root, false);
+        LinearLayout rows = panel.findViewById(R.id.rows);
+        PopupWindow popup = glassPopup(panel, (int) (200 * density));
+        if (dockRow && position < adapter.movableCount()) {
+            boolean inDock = position < COLUMNS;
+            addSettingsMenuRow(rows, popup, inDock ? R.string.tile_replace_in_dock : R.string.tile_add_to_dock,
+                    () -> startDockEditFor(key, inDock));
+        }
+        if (position < adapter.movableCount()) addSettingsMenuRow(rows, popup, R.string.tile_move, () -> {
+            if (!beginReorder()) return;
+            int at = adapter.positionOf(key);   // beginReorder can rebuild the tiles
+            if (at < 0) return;
+            focusTile(at);
+            pickUp(at);
+            Toast.makeText(this, R.string.reorder_hint, Toast.LENGTH_LONG).show();
+        });
+        if (appLibraryEnabled) addSettingsMenuRow(rows, popup, R.string.library_remove_shortcut, () -> {
+            if (LibraryApps.save(this, pkg, false)) reloadApps(false);
+            else Toast.makeText(this, R.string.library_save_failed, Toast.LENGTH_LONG).show();
+        });
+        // Some firmware has no App info page at all; a row that only toasts "can't open" helps nobody.
+        Intent info = SystemSettings.appInfo(this, pkg);
+        if (info != null) addSettingsMenuRow(rows, popup, R.string.library_app_info, () -> open(info));
+        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        popup.setWidth(Math.max((int) (200 * density), panel.getMeasuredWidth()));
+        // Dock tiles sit near the bottom of the screen: open the menu above the tile when it would not fit below.
+        int[] at = new int[2];
+        card.getLocationInWindow(at);
+        int gap = (int) (10 * density), height = panel.getMeasuredHeight();
+        if (at[1] + card.getHeight() + gap + height <= root.getHeight()) {
+            dropIn(popup, panel, card, Gravity.START);
+        } else {
+            panel.setAlpha(0f);
+            panel.setPivotY(height);
+            panel.setScaleY(0.92f);
+            panel.setTranslationY(8 * density);
+            popup.showAtLocation(root, Gravity.NO_GRAVITY, at[0], Math.max(0, at[1] - gap - height));
+            panel.animate().alpha(1f).scaleY(1f).translationY(0f).setDuration(220)
+                    .setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f)).start();
+        }
+        rows.getChildAt(0).requestFocus();
+    }
+
+    private void addSettingsMenuRow(LinearLayout rows, PopupWindow popup, int title, Runnable action) {
+        View row = getLayoutInflater().inflate(R.layout.item_input, rows, false);
+        row.findViewById(R.id.icon).setVisibility(View.GONE);
+        row.findViewById(R.id.dot).setVisibility(View.GONE);
+        row.findViewById(R.id.status).setVisibility(View.GONE);
+        ((TextView) row.findViewById(R.id.title)).setText(title);
+        row.setOnClickListener(v -> {
+            popup.dismiss();
+            action.run();
+        });
+        // The OK-up after opening the menu must not activate its first row.
+        final boolean[] pressed = {false};
+        row.setOnKeyListener((v, code, event) -> {
+            if (code != KeyEvent.KEYCODE_DPAD_CENTER && code != KeyEvent.KEYCODE_ENTER) return false;
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (event.getRepeatCount() == 0) pressed[0] = true;
+                return true;
+            }
+            boolean activate = pressed[0];
+            pressed[0] = false;
+            if (activate) {
+                popup.dismiss();
+                action.run();
+            }
+            return true;
+        });
+        rows.addView(row);
+    }
+
+    /**
+     * Asks about the next card that has no decision for its current signing key. One prompt at a
+     * time, only over a laid out grid with window focus (not under a popup or another app), and
+     * the next one follows as soon as this one is answered. Nothing is shown until the owner says Show.
+     */
+    private void showCardPrompt() {
+        if (!moduleCards || !tilesReady || promptsPaused || cardPrompt != null || !hasWindowFocus() || isFinishing()
+                || reordering) return;
+        if (cards.isEmpty() || !CardFeature.working()) return;
+        CardFeature.run(() -> {
+            showCardPromptNow();
+            return null;
+        }, null);
+    }
+
+    private void showCardPromptNow() {
+        final Cards.Card card = Cards.firstPending(cards);
+        if (card == null) return;
+
+        View panel = getLayoutInflater().inflate(R.layout.dialog_card_prompt, root, false);
+        boolean rtl = getResources().getBoolean(R.bool.rtl_menu_bar);
+        if (rtl) panel.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        ((TextView) panel.findViewById(R.id.title)).setText(getString(R.string.card_prompt_title, card.appLabel));
+        ((TextView) panel.findViewById(R.id.body)).setText(card.state == Cards.State.RESIGNED
+                ? getString(R.string.card_prompt_resigned, card.appLabel)
+                : card.state == Cards.State.RELABELLED
+                ? getString(R.string.card_prompt_relabelled, card.appLabel)
+                : getString(R.string.card_prompt_body, card.appLabel));
+        TextView names = panel.findViewById(R.id.names);
+        if (Cards.fold(card.label).equals(Cards.fold(card.appLabel))) names.setVisibility(View.GONE);
+        else names.setText(getString(R.string.card_prompt_names, card.label, card.appLabel));
+        ((TextView) panel.findViewById(R.id.identity)).setText(
+                getString(R.string.card_prompt_identity, card.pkg, Cards.shortDigest(card.digest)));
+        TextView keep = panel.findViewById(R.id.btnKeep);
+        TextView show = panel.findViewById(R.id.btnShow);
+        if (rtl) {
+            LinearLayout buttons = (LinearLayout) keep.getParent();
+            buttons.removeAllViews();
+            buttons.addView(show);
+            buttons.addView(keep);
+            keep.setNextFocusLeftId(R.id.btnShow);
+            keep.setNextFocusRightId(R.id.btnKeep);
+            show.setNextFocusLeftId(R.id.btnShow);
+            show.setNextFocusRightId(R.id.btnKeep);
+        }
+
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(panel);
+        dialog.setCanceledOnTouchOutside(false);
+        Window w = dialog.getWindow();
+        if (w != null) {
+            w.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            w.setLayout((int) (440 * density), ViewGroup.LayoutParams.WRAP_CONTENT);
+            w.setDimAmount(0.6f);
+        }
+        // One decision per prompt: the buttons and Back (cancel) all end here.
+        final boolean[] decided = {false};
+        View.OnClickListener choose = v -> {
+            if (decided[0]) return;
+            decided[0] = true;
+            cardPrompt = null;
+            dialog.dismiss();
+            decideCard(card, v.getId() == R.id.btnShow);   // guards its own card calls; the tile reload stays outside
+            restoreFocus();   // the tiles changed under the prompt; this also chains the next prompt
+        };
+        keep.setOnClickListener(choose);
+        show.setOnClickListener(choose);
+        dialog.setOnCancelListener(d -> choose.onClick(keep));
+        dialog.setOnDismissListener(d -> {
+            if (cardPrompt == dialog) cardPrompt = null;
+        });
+        // Left and Right move between the two buttons; Up and Down stay put; the ends don't wrap.
+        View.OnKeyListener keys = (v, keyCode, event) -> {
+            if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN) return true;
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT)
+                return v.getId() == (rtl ? R.id.btnShow : R.id.btnKeep);
+            return keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
+                    && v.getId() == (rtl ? R.id.btnKeep : R.id.btnShow);
+        };
+        keep.setOnKeyListener(keys);
+        show.setOnKeyListener(keys);
+        cardPrompt = dialog;
+        dialog.show();
+        keep.requestFocus();
+    }
+
+    /** Writes the owner's decision and rebuilds the tiles; focus is left where it is. */
+    private void decideCard(Cards.Card card, boolean show) {
+        boolean saved = CardFeature.run(() -> Cards.decide(Cards.storeFile(this), card, show), false);
+        if (!saved) {
+            Toast.makeText(this, R.string.card_not_saved, Toast.LENGTH_SHORT).show();
+            promptsPaused = true;
+        }
+        reloadTiles();
+    }
+
+    /** Dropdown under the Settings pill (hold OK): every discovered card, its package and key; OK toggles Shown and Hidden. */
+    private void showModuleCards() {
+        if (cards.isEmpty() || !CardFeature.working()) {
+            Toast.makeText(this, R.string.no_module_cards, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        CardFeature.run(() -> {
+            showModuleCardsNow();
+            return null;
+        }, null);
+    }
+
+    private void showModuleCardsNow() {
+        View anchor = findViewById(R.id.btnSettings);
+        View panel = getLayoutInflater().inflate(R.layout.popup_cards, root, false);
+        if (getResources().getBoolean(R.bool.rtl_menu_bar))
+            panel.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        LinearLayout rows = panel.findViewById(R.id.rows);
+        final PopupWindow popup = glassPopup(panel, (int) (400 * density));
+        List<Cards.Card> listed = new ArrayList<>(cards);
+        Collections.sort(listed, Cards::byLabel);
+        for (Cards.Card card : listed) {
+            View row = getLayoutInflater().inflate(R.layout.item_card_row, rows, false);
+            row.setTag(card.pkg);
+            ((TextView) row.findViewById(R.id.title)).setText(card.label);
+            if (getResources().getBoolean(R.bool.rtl_menu_bar)) {
+                LinearLayout heading = (LinearLayout) row.findViewById(R.id.title).getParent();
+                View status = row.findViewById(R.id.state);
+                heading.removeView(status);
+                heading.addView(status, 0);
+            }
+            TextView app = row.findViewById(R.id.app);
+            if (Cards.fold(card.label).equals(Cards.fold(card.appLabel))) app.setVisibility(View.GONE);
+            else app.setText(getString(R.string.card_app_name, card.appLabel));
+            ((TextView) row.findViewById(R.id.pkg)).setText(card.pkg);
+            ((TextView) row.findViewById(R.id.digest)).setText(Cards.longDigest(card.digest));
+            final String pkg = card.pkg;
+            row.setOnClickListener(v -> CardFeature.run(() -> {
+                // The list stays open; the decision is for the card as it is now, not as it was listed.
+                Cards.Card now = cardFor(pkg);
+                if (now == null) return null;
+                decideCard(now, now.state != Cards.State.SHOWN);
+                // Every row, not only this one: a toggle can move another card across the limit of 8.
+                updateCardStates(rows);
+                return null;
+            }, null));
+            rows.addView(row);
+        }
+        updateCardStates(rows);
+        // Scroll inside the panel instead of running off the bottom of a 720p screen.
+        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        int[] at = new int[2];
+        anchor.getLocationInWindow(at);
+        int room = root.getHeight() - (at[1] + anchor.getHeight()) - (int) (34 * density);
+        popup.setHeight(Math.min(panel.getMeasuredHeight(), Math.max(room, (int) (120 * density))));
+        // Hebrew places Settings on the left: align the outer panel inward, like its parent menu.
+        dropIn(popup, panel, anchor, getResources().getBoolean(R.bool.rtl_menu_bar)
+                ? Gravity.START : Gravity.END);
+        rows.getChildAt(0).requestFocus();
+    }
+
+    private Cards.Card cardFor(String pkg) {
+        for (Cards.Card c : cards) if (c.pkg.equals(pkg)) return c;
+        return null;
+    }
+
+    /** Writes the state of every row in the Module cards list from the current card list. */
+    private void updateCardStates(LinearLayout rows) {
+        List<Cards.Card> drawn = Cards.shown(cards);
+        for (int i = 0; i < rows.getChildCount(); i++) {
+            View row = rows.getChildAt(i);
+            Cards.Card card = row.getTag() instanceof String ? cardFor((String) row.getTag()) : null;
+            ((TextView) row.findViewById(R.id.state)).setText(card != null ? stateText(card, drawn.contains(card)) : "");
+        }
+    }
+
+    /** The row's state: a card the owner set to Shown but which is beyond the eight drawn says so. */
+    private String stateText(Cards.Card card, boolean drawn) {
+        switch (card.state) {
+            case SHOWN:
+                return getString(drawn ? R.string.card_state_shown : R.string.card_state_over_limit);
+            case HIDDEN:
+                return getString(R.string.card_state_hidden);
+            case RESIGNED:
+                return getString(R.string.card_state_new_key);
+            case RELABELLED:
+                return getString(R.string.card_state_new_label);
+            default:
+                return getString(R.string.card_state_new);
+        }
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\MarigoldDrawable.java ==========
+package com.gathin.tvhome;
+
+import android.animation.ValueAnimator;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PixelFormat;
+import android.graphics.RadialGradient;
+import android.graphics.Rect;
+import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
+import android.view.animation.DecelerateInterpolator;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.Random;
+
+/**
+ * A marigold (genda phool) seen from the front: four rings of ruffled petals, deep saffron outside to golden
+ * inside, around a dark centre. Petal shapes and colours come from a fixed seed and are built once. Light comes
+ * from the top left and stays there while the flower turns, and each ring shades the base of the one behind it.
+ * {@link #turn()} rotates the flower a further 60 degrees; the inner rings turn slightly more than the outer
+ * ones. Drawn in a 24 x 24 unit box scaled into the bounds.
+ */
+public final class MarigoldDrawable extends Drawable {
+
+    private static final float BOX = 24f, C = 12f;
+    private static final int[] COUNT = {13, 11, 9, 7};
+    private static final float[] RADIUS = {11.6f, 9.4f, 7.2f, 5.0f};
+    /** How much faster each ring turns than the outer one, so a turn ruffles the flower a little. */
+    private static final float[] SPIN = {1f, 1.04f, 1.09f, 1.15f};
+    private static final float CORE_SPIN = 1.2f;
+    private static final int[][] SHADES = {
+            {0xFFE5600A, 0xFFF0800E}, {0xFFF0800E, 0xFFF79A16}, {0xFFF9A31B, 0xFFFFB524}, {0xFFFFB524, 0xFFFFC63E}};
+    private static final float CORE_R = 2.9f;
+    /** Direction the light comes from (top left), in degrees with y pointing down. */
+    private static final float LIGHT_DEG = 225f;
+    private static final int LIT = 0xFFFFE9A6, SHADOWED = 0xFFA43E00, EDGE = 0xFF6E2400;
+    /** Shadows fall a little down and right of each ring, away from the light. */
+    private static final float SHADOW_DX = 0.35f, SHADOW_DY = 0.45f;
+    private static final long TURN_MS = 900;
+
+    private final float density;
+    private final Path[][] petals = new Path[COUNT.length][];
+    private final float[][] angles = new float[COUNT.length][];
+    private final int[][] colors = new int[COUNT.length][];
+    private final int[][] edges = new int[COUNT.length][];
+    private final float[] shadowR = new float[COUNT.length];
+    private final Paint[] shadowPaints = new Paint[COUNT.length];
+    private final Path core = new Path();
+    private final float[] seeds = new float[18];
+
+    private final Paint fill, edge, coreFill, coreEdge, seedPaint;
+    private final Paint[] paints;
+    private final ValueAnimator animator;
+
+    private double rotation, from, target;
+    private boolean reduced;
+    private int alpha = 255;
+
+    public MarigoldDrawable(float density) {
+        this.density = density;
+        Random rnd = new Random(0x6E7DAL);
+        for (int i = 0; i < COUNT.length; i++) buildRing(i, rnd);
+        buildCore(rnd);
+
+        fill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        edge = new Paint(Paint.ANTI_ALIAS_FLAG);
+        edge.setStyle(Paint.Style.STROKE);
+        edge.setStrokeWidth(0.3f);
+        edge.setStrokeJoin(Paint.Join.ROUND);
+        for (int i = 0; i < COUNT.length; i++) {
+            float inner = i + 1 < COUNT.length ? RADIUS[i + 1] : CORE_R;
+            float sr = inner + 0.6f * (RADIUS[i] - inner);
+            float q = inner / sr;
+            shadowR[i] = sr;
+            Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+            p.setShader(new RadialGradient(C + SHADOW_DX, C + SHADOW_DY, sr,
+                    new int[]{0x805A1E00, 0x805A1E00, 0x665A1E00, 0x005A1E00},
+                    new float[]{0f, q * 0.9f, q, 1f}, Shader.TileMode.CLAMP));
+            shadowPaints[i] = p;
+        }
+        coreFill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        coreFill.setShader(new RadialGradient(C - 0.7f, C - 0.7f, 3.6f,
+                new int[]{0xFFE0821A, 0xFFB04E08, 0xFF7A3004}, new float[]{0f, 0.5f, 1f}, Shader.TileMode.CLAMP));
+        coreEdge = new Paint(Paint.ANTI_ALIAS_FLAG);
+        coreEdge.setStyle(Paint.Style.STROKE);
+        coreEdge.setStrokeWidth(0.3f);
+        coreEdge.setStrokeJoin(Paint.Join.ROUND);
+        coreEdge.setColor(0xFF5C2403);
+        seedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        seedPaint.setColor(0xFFFFB84A);
+
+        paints = new Paint[COUNT.length + 5];
+        System.arraycopy(shadowPaints, 0, paints, 0, COUNT.length);
+        paints[COUNT.length] = fill;
+        paints[COUNT.length + 1] = edge;
+        paints[COUNT.length + 2] = coreFill;
+        paints[COUNT.length + 3] = coreEdge;
+        paints[COUNT.length + 4] = seedPaint;
+
+        animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(TURN_MS);
+        animator.setInterpolator(new DecelerateInterpolator(1.6f));
+        animator.addUpdateListener(a -> {
+            rotation = from + (target - from) * (float) a.getAnimatedValue();
+            invalidateSelf();
+        });
+    }
+
+    /** Turns the flower a further 60 degrees, easing to a stop. Repeated calls add up smoothly. */
+    public void turn() {
+        if (reduced) return;
+        from = rotation;
+        target += 60.0;
+        animator.cancel();
+        animator.start();
+    }
+
+    /** With reduced motion {@link #turn()} does nothing; a turn in progress jumps to its end. */
+    public void setReducedMotion(boolean reducedMotion) {
+        reduced = reducedMotion;
+        if (reduced && animator.isRunning()) animator.end();
+    }
+
+    // ---- geometry, built once ----
+
+    private void buildRing(int ring, Random rnd) {
+        int n = COUNT[ring];
+        petals[ring] = new Path[n];
+        angles[ring] = new float[n];
+        colors[ring] = new int[n];
+        edges[ring] = new int[n];
+        float offset = ring * (180f / n) + (rnd.nextFloat() - 0.5f) * 8f;
+        float edgeDepth = ring == 0 ? 0.55f : 0.45f;
+        for (int j = 0; j < n; j++) {
+            float deg = offset + j * 360f / n + (rnd.nextFloat() - 0.5f) * 10f;
+            float r = RADIUS[ring] * (0.96f + 0.04f * rnd.nextFloat());
+            float hw = (float) (Math.PI / n) * (1.18f + 0.15f * rnd.nextFloat());
+            int scallops = 3 + rnd.nextInt(2);
+            petals[ring][j] = petal((float) Math.toRadians(deg), hw, r * 0.25f, r, scallops, rnd);
+            angles[ring][j] = deg;
+            int base = lerp(SHADES[ring][0], SHADES[ring][1], rnd.nextFloat());
+            colors[ring][j] = base;
+            edges[ring][j] = lerp(base, EDGE, edgeDepth);
+        }
+    }
+
+    /** One petal: narrow at the base, fanning out to a frilled, notched edge. */
+    private static Path petal(float a, float hw, float r0, float r, int scallops, Random rnd) {
+        Path p = new Path();
+        float a0 = a - hw, a1 = a + hw;
+        p.moveTo(px(r0, a - hw * 0.35f), py(r0, a - hw * 0.35f));
+        float sideA = a0 - hw * 0.08f;
+        p.quadTo(px(r * 0.62f, sideA), py(r * 0.62f, sideA), px(r * 0.86f, a0), py(r * 0.86f, a0));
+        int steps = scallops * 2;
+        for (int k = 1; k < steps; k += 2) {
+            float ta = a0 + (a1 - a0) * k / steps + (rnd.nextFloat() - 0.5f) * hw * 0.12f;
+            float na = a0 + (a1 - a0) * (k + 1) / steps;
+            float tr = r * (1.0f + 0.06f * rnd.nextFloat());
+            float nr = k + 1 >= steps ? r * 0.86f : r * (0.83f + 0.06f * rnd.nextFloat());
+            p.quadTo(px(tr, ta), py(tr, ta), px(nr, na), py(nr, na));
+        }
+        float sideB = a1 + hw * 0.08f;
+        float endA = a + hw * 0.35f;
+        p.quadTo(px(r * 0.62f, sideB), py(r * 0.62f, sideB), px(r0, endA), py(r0, endA));
+        p.close();
+        return p;
+    }
+
+    private void buildCore(Random rnd) {
+        int bumps = 18;
+        for (int k = 0; k <= bumps * 2; k++) {
+            float a = (float) (Math.PI * k / bumps);
+            float r = (k % 2 == 1) ? CORE_R * (1.0f + 0.06f * rnd.nextFloat()) : CORE_R * 0.84f;
+            if (k == 0) core.moveTo(px(r, a), py(r, a));
+            else if (k % 2 == 1) {
+                float na = (float) (Math.PI * (k + 1) / bumps);
+                float nr = CORE_R * 0.84f;
+                core.quadTo(px(r, a), py(r, a), px(nr, na), py(nr, na));
+            }
+        }
+        core.close();
+        // tiny florets in a sunflower spiral
+        double golden = Math.PI * (3 - Math.sqrt(5));
+        for (int k = 0; k < seeds.length / 2; k++) {
+            float r = 0.62f * (float) Math.sqrt(k + 0.5);
+            float a = (float) (k * golden);
+            seeds[k * 2] = px(r, a);
+            seeds[k * 2 + 1] = py(r, a);
+        }
+    }
+
+    // ---- drawing ----
+
+    @Override
+    public void draw(@NonNull Canvas c) {
+        Rect b = getBounds();
+        if (b.isEmpty()) return;
+        float s = Math.min(b.width(), b.height()) / BOX;
+        int save = alpha < 255 ? c.saveLayerAlpha(b.left, b.top, b.right, b.bottom, alpha) : c.save();
+        c.clipRect(b);
+        c.translate(b.exactCenterX() - C * s, b.exactCenterY() - C * s);
+        c.scale(s, s);
+
+        for (int i = 0; i < COUNT.length; i++) {
+            float rot = (float) ((rotation * SPIN[i]) % 360.0);
+            c.save();
+            c.rotate(rot, C, C);
+            Path[] ring = petals[i];
+            for (int j = 0; j < ring.length; j++) {
+                float l = (float) Math.cos(Math.toRadians(angles[i][j] + rot - LIGHT_DEG));
+                int base = colors[i][j];
+                fill.setColor(l >= 0f ? lerp(base, LIT, 0.3f * l) : lerp(base, SHADOWED, -0.24f * l));
+                c.drawPath(ring[j], fill);
+                edge.setColor(edges[i][j]);
+                c.drawPath(ring[j], edge);
+            }
+            c.restore();
+            c.drawCircle(C + SHADOW_DX, C + SHADOW_DY, shadowR[i], shadowPaints[i]);
+        }
+
+        c.save();
+        c.rotate((float) ((rotation * CORE_SPIN) % 360.0), C, C);
+        c.drawPath(core, coreFill);
+        c.drawPath(core, coreEdge);
+        for (int k = 0; k < seeds.length; k += 2) c.drawCircle(seeds[k], seeds[k + 1], 0.26f, seedPaint);
+        c.restore();
+
+        c.restoreToCount(save);
+    }
+
+    // ---- helpers ----
+
+    private static float px(float r, float a) {
+        return C + r * (float) Math.cos(a);
+    }
+
+    private static float py(float r, float a) {
+        return C + r * (float) Math.sin(a);
+    }
+
+    private static int lerp(int a, int b, float t) {
+        int ar = (a >> 16) & 0xFF, ag = (a >> 8) & 0xFF, ab = a & 0xFF;
+        int br = (b >> 16) & 0xFF, bg = (b >> 8) & 0xFF, bb = b & 0xFF;
+        return 0xFF000000
+                | ((int) (ar + (br - ar) * t) << 16)
+                | ((int) (ag + (bg - ag) * t) << 8)
+                | (int) (ab + (bb - ab) * t);
+    }
+
+    @Override
+    public int getIntrinsicWidth() {
+        return Math.round(BOX * density);
+    }
+
+    @Override
+    public int getIntrinsicHeight() {
+        return Math.round(BOX * density);
+    }
+
+    @Override
+    public void setAlpha(int alpha) {
+        if (this.alpha == alpha) return;
+        this.alpha = alpha;
+        invalidateSelf();
+    }
+
+    @Override
+    public int getAlpha() {
+        return alpha;
+    }
+
+    @Override
+    public void setColorFilter(@Nullable ColorFilter filter) {
+        for (Paint p : paints) p.setColorFilter(filter);
+        invalidateSelf();
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public int getOpacity() {
+        return PixelFormat.TRANSLUCENT;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\MemInfo.java ==========
+package com.gathin.tvhome;
+
+/** show_stats' memory figure from the lines of /proc/meminfo. */
+final class MemInfo {
+    private MemInfo() {}
+
+    /**
+     * RAM usage as {used, total} in MB, used = MemTotal - MemAvailable, e.g. "945 / 1536 MB". Used over free so
+     * the line reads as a load against a known whole. MemAvailable only exists since Linux 3.14; on older kernels
+     * (TPM171E Philips, Android TV 8, kernel 3.10) available is MemFree + Buffers + Cached, the estimate free(1)
+     * used before it. Null when MemTotal or every available figure is missing.
+     */
+    static long[] usedOfTotalMb(Iterable<String> lines) {
+        long total = -1, available = -1, free = -1, buffers = -1, cached = -1;
+        for (String line : lines) {
+            if (line.startsWith("MemTotal:")) total = kb(line);
+            else if (line.startsWith("MemAvailable:")) available = kb(line);
+            else if (line.startsWith("MemFree:")) free = kb(line);
+            else if (line.startsWith("Buffers:")) buffers = kb(line);
+            else if (line.startsWith("Cached:")) cached = kb(line);
+        }
+        if (available < 0 && free >= 0) available = free + Math.max(0, buffers) + Math.max(0, cached);
+        if (available < 0 || total <= 0) return null;
+        long totalMb = total / 1024;
+        long availableMb = Math.min(total, available) / 1024;
+        return new long[]{Math.max(0, totalMb - availableMb), totalMb};
+    }
+
+    /** The kB figure of a "Name:   1234 kB" line, or -1. */
+    private static long kb(String line) {
+        String[] t = line.trim().split("\\s+");
+        if (t.length < 2) return -1;
+        try {
+            return Long.parseLong(t[1]);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\MemoryTrimPolicy.java ==========
+package com.gathin.tvhome;
+
+import android.content.ComponentCallbacks2;
+
+/** Memory that affects the picture is released only when Home is not on screen. */
+final class MemoryTrimPolicy {
+    private MemoryTrimPolicy() {
+    }
+
+    static boolean shouldRelease(int level, boolean homeStarted) {
+        if (homeStarted) return false;
+        return level >= ComponentCallbacks2.TRIM_MEMORY_BACKGROUND
+                || level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW
+                || level == ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\Motion.java ==========
+package com.gathin.tvhome;
+
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
+
+/** Reduced motion (config.xml reduced_motion): the one spring and the one time limit every animation uses then. */
+final class Motion {
+
+    /** The longest any reduced-motion animation runs, in milliseconds. */
+    static final int REDUCED_MS = 90;
+    /** Critically damped (no bounce) and stiff enough that any move, even across the screen, settles in 5 frames. */
+    static final float REDUCED_STIFFNESS = 15000f;
+    /** The spring stops once it is within this many pixels of its target. */
+    static final float REDUCED_MIN_CHANGE = 2f;
+
+    private Motion() {
+    }
+
+    static void reduce(SpringAnimation spring) {
+        spring.setSpring(new SpringForce().setStiffness(REDUCED_STIFFNESS).setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY));
+        spring.setMinimumVisibleChange(REDUCED_MIN_CHANGE);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\OpenOnStart.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.provider.Settings;
+
+/** open_on_start_choice: the app Home opens once after each boot, picked in Launcher settings. */
+final class OpenOnStart {
+    /** The picked package in Config.SETTINGS_NAME; absent or empty means Off. */
+    static final String KEY = "open_on_start";
+    /** The boot whose first Home has been handled, shared with boot_to_live_tv. */
+    static final String BOOT_PREFS = "boot";
+    static final String BOOT_KEY = "live_tv_boot";
+
+    private OpenOnStart() {
+    }
+
+    /** Whether the first Home of this boot opens {@code pkg}: a known boot not handled yet, and an app that is not
+     *  the launcher itself (which would only reopen Home). */
+    static boolean due(int boot, int handledBoot, String pkg, String self) {
+        return boot >= 0 && boot != handledBoot && pkg != null && !pkg.isEmpty() && !pkg.equals(self);
+    }
+
+    /** open_on_start_on_wake needs the Open on start row, which is where the app is picked. */
+    static boolean onWake(boolean choice, boolean onWake) {
+        return choice && onWake;
+    }
+
+    static int boot(Context ctx) {
+        return Settings.Global.getInt(ctx.getContentResolver(), Settings.Global.BOOT_COUNT, -1);
+    }
+
+    /** A pick takes effect from the next boot: the Home that follows the pick stays Home. */
+    static void skipThisBoot(Context ctx) {
+        ctx.getSharedPreferences(BOOT_PREFS, Context.MODE_PRIVATE).edit().putInt(BOOT_KEY, boot(ctx)).commit();
+    }
+
+    /** open_on_start_network_wait: the app opens once the network is validated, or when the wait is over. */
+    static boolean opensNow(boolean online, long now, long deadline) {
+        return online || now >= deadline;
+    }
+
+    /** Android has reached the internet through the active network (ACCESS_NETWORK_STATE). */
+    static boolean online(Context ctx) {
+        // The application's: one made from an activity would keep that activity (see MainActivity.onCreate).
+        ConnectivityManager cm = ctx.getApplicationContext().getSystemService(ConnectivityManager.class);
+        Network n = cm != null ? cm.getActiveNetwork() : null;
+        NetworkCapabilities caps = n != null ? cm.getNetworkCapabilities(n) : null;
+        return caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+    }
+
+    /** The app's TV entry point, or its phone one; null when it is uninstalled or disabled, so Home stays. */
+    static Intent intent(PackageManager pm, String pkg) {
+        Intent i = pm.getLeanbackLaunchIntentForPackage(pkg);
+        return i != null ? i : pm.getLaunchIntentForPackage(pkg);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\Order.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.util.AtomicFile;
+import android.util.Log;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * The owner's own tile order, set with the reorder button and kept in the launcher's private files (order.txt).
+ *
+ * Saved tiles come first in this order; apps not in it (new installs) follow by the usual rule (dock_apps, cards,
+ * alphabetical) and uninstalled ones simply drop out. The file also records the dock_apps it was made under: when
+ * dock_apps changes (a rebuild or a pushed theme), the saved order is ignored, so the new dock takes effect until
+ * the owner reorders again.
+ *
+ * Format, UTF-8 text: {@code tvhome-order 1}, then {@code dock <comma-separated dock_apps>}, then optionally
+ * {@code docked <n>}, then one tile key (component, flattened short) per line. {@code docked} says how many of the
+ * first keys are in the dock, for fill_dock false, where an app the owner moved into the dock is not in dock_apps
+ * (#499). Files without it (older launchers) leave the dock to dock_apps; an older launcher reads the line as a key
+ * that matches no tile.
+ */
+final class Order {
+
+    private static final String TAG = "TvHome.Order";
+    static final String FILE_NAME = "order.txt";
+    private static final String MAGIC = "tvhome-order 1";
+    private static final String DOCK = "dock ";
+    private static final String DOCKED = "docked ";
+
+    /** dock_apps the order was saved under, comma-joined (package names cannot contain commas). */
+    final String dock;
+    final List<String> keys;
+    /** How many of the first keys are in the dock, or -1 when not recorded (dock_apps decides). */
+    final int docked;
+
+    Order(String dock, List<String> keys) {
+        this(dock, keys, -1);
+    }
+
+    Order(String dock, List<String> keys, int docked) {
+        this.dock = dock;
+        this.keys = Collections.unmodifiableList(new ArrayList<>(keys));
+        this.docked = docked;
+    }
+
+    static String dockKey(List<String> dockApps) {
+        return String.join(",", dockApps);
+    }
+
+    static String encode(Order order) {
+        StringBuilder sb = new StringBuilder(MAGIC).append('\n').append(DOCK).append(order.dock).append('\n');
+        if (order.docked >= 0) sb.append(DOCKED).append(order.docked).append('\n');
+        for (String k : order.keys) sb.append(k).append('\n');
+        return sb.toString();
+    }
+
+    /** The order in this text, or null when it is not one (wrong header, a blank or duplicate key). */
+    static Order decode(String text) {
+        if (text == null) return null;
+        String[] lines = text.split("\n", -1);
+        if (lines.length < 2 || !lines[0].equals(MAGIC) || !lines[1].startsWith(DOCK)) return null;
+        int docked = -1, first = 2;
+        if (lines.length > 2 && lines[2].startsWith(DOCKED)) {
+            try {
+                docked = Integer.parseInt(lines[2].substring(DOCKED.length()));
+            } catch (NumberFormatException e) {
+                return null;
+            }
+            if (docked < 0) return null;
+            first = 3;
+        }
+        List<String> keys = new ArrayList<>();
+        for (int i = first; i < lines.length; i++) {
+            String k = lines[i];
+            if (k.isEmpty()) {
+                if (i == lines.length - 1) break;   // the trailing newline
+                return null;
+            }
+            if (keys.contains(k)) return null;
+            keys.add(k);
+        }
+        if (docked > keys.size()) return null;
+        return new Order(lines[1].substring(DOCK.length()), keys, docked);
+    }
+
+    /**
+     * Rank of each saved key (0 = first) when the order still applies to these dock_apps, else an empty map.
+     * Tiles without a rank sort after every ranked one.
+     */
+    static Map<String, Integer> ranks(Order order, List<String> dockApps) {
+        Map<String, Integer> r = new HashMap<>();
+        if (order == null || !order.dock.equals(dockKey(dockApps))) return r;
+        for (int i = 0; i < order.keys.size(); i++) r.put(order.keys.get(i), i);
+        return r;
+    }
+
+    /** The saved dock size when the order still applies to these dock_apps and recorded one, else -1. */
+    static int docked(Order order, List<String> dockApps) {
+        return order == null || !order.dock.equals(dockKey(dockApps)) ? -1 : order.docked;
+    }
+
+    /** Sort step for two tiles: saved ones first in saved order, then 0 to fall through to the usual rule. */
+    static int compare(Map<String, Integer> ranks, String keyA, String keyB) {
+        Integer a = ranks.get(keyA), b = ranks.get(keyB);
+        if (a == null && b == null) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        return Integer.compare(a, b);
+    }
+
+    // ---- file ------------------------------------------------------------------------------------
+
+    static File file(Context ctx) {
+        return new File(ctx.getFilesDir(), FILE_NAME);
+    }
+
+    /** The saved order, or null when there is none or it does not decode (then it is ignored, not deleted). */
+    static Order load(File file) {
+        if (!file.exists()) return null;
+        try {
+            Order o = decode(new String(new AtomicFile(file).readFully(), StandardCharsets.UTF_8));
+            if (o == null) Log.w(TAG, file.getName() + " is not valid; ignored");
+            return o;
+        } catch (IOException e) {
+            Log.w(TAG, "cannot read " + file.getName() + ": " + e);
+            return null;
+        }
+    }
+
+    /** Writes the order atomically. False (and a log line) when the write failed. */
+    static boolean save(File file, Order order) {
+        AtomicFile af = new AtomicFile(file);
+        FileOutputStream out = null;
+        try {
+            out = af.startWrite();
+            out.write(encode(order).getBytes(StandardCharsets.UTF_8));
+            af.finishWrite(out);
+            return true;
+        } catch (IOException e) {
+            Log.w(TAG, "cannot write " + file.getName() + ": " + e);
+            if (out != null) af.failWrite(out);
+            return false;
+        }
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\PetalShowerView.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.os.SystemClock;
+import android.util.AttributeSet;
+import android.view.View;
+
+import java.util.Random;
+
+/**
+ * A transparent full-screen overlay that plays a one-off shower of marigold petals. Each petal drops in from
+ * just above the top edge, gathers speed as it falls, sways from side to side, spins, flips over (showing its
+ * darker back) and fades out over the last quarter of its fall. Everything finishes within the given duration,
+ * then the callback runs on the main thread. The view takes no focus, clicks or accessibility, uses a hardware
+ * layer only while playing, and allocates nothing per frame.
+ */
+public final class PetalShowerView extends View {
+
+    private static final int[] COLORS = {0xFFFF8C1A, 0xFFFFB627, 0xFFF26A0D, 0xFFFFC93C, 0xFFE85D04};
+    private static final int EDGE = 0xFF7A2800;
+    private static final double TAU = 2 * Math.PI;
+
+    private final float density;
+    private final Random rnd = new Random();
+    private final Path[] shapes = new Path[3];
+    private final Path[] veins = new Path[3];
+    private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint edge = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint vein = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+    // per-petal state, grown only when a bigger shower is asked for
+    private int count;
+    private float[] xFrac = new float[0], delay = new float[0], life = new float[0], drop = new float[0],
+            size = new float[0], swayAmp = new float[0], swayFreq = new float[0], swayPhase = new float[0],
+            rot0 = new float[0], spin = new float[0], flipFreq = new float[0], flipPhase = new float[0];
+    private int[] color = new int[0], shape = new int[0];
+
+    private boolean playing;
+    private long start, duration;
+    private Runnable onDone;
+    private final Runnable finish = this::finish;
+
+    public PetalShowerView(Context context) {
+        this(context, null);
+    }
+
+    public PetalShowerView(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public PetalShowerView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        density = context.getResources().getDisplayMetrics().density;
+        setFocusable(false);
+        setClickable(false);
+        setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+        setWillNotDraw(false);
+
+        Random seeded = new Random(0x9E7A1L);
+        for (int i = 0; i < shapes.length; i++) {
+            shapes[i] = petalShape(seeded);
+            veins[i] = veinPath(seeded);
+        }
+        edge.setStyle(Paint.Style.STROKE);
+        edge.setStrokeWidth(0.045f);
+        edge.setStrokeJoin(Paint.Join.ROUND);
+        vein.setStyle(Paint.Style.STROKE);
+        vein.setStrokeWidth(0.035f);
+        vein.setStrokeCap(Paint.Cap.ROUND);
+        vein.setColor(EDGE);
+    }
+
+    /**
+     * Plays a shower of {@code petals} petals lasting {@code durationMs}, then runs {@code done} on the main
+     * thread. Playing again before the last shower ends finishes that one first (its callback runs).
+     */
+    public void play(int petals, long durationMs, Runnable done) {
+        if (playing) {
+            removeCallbacks(finish);
+            finish();
+        }
+        int n = Math.max(0, petals);
+        ensureCapacity(n);
+        count = n;
+        duration = Math.max(1, durationMs);
+        onDone = done;
+        for (int i = 0; i < n; i++) {
+            xFrac[i] = (i + rnd.nextFloat()) / n;          // spread evenly across the width
+            delay[i] = rnd.nextFloat() * 0.32f;             // fractions of the duration
+            life[i] = 0.6f + rnd.nextFloat() * (1f - delay[i] - 0.6f);
+            drop[i] = 0.8f + rnd.nextFloat() * 0.35f;       // fraction of the height fallen over its life
+            size[i] = 9f + rnd.nextFloat() * 7f;            // dp
+            swayAmp[i] = 10f + rnd.nextFloat() * 24f;       // dp
+            swayFreq[i] = 0.5f + rnd.nextFloat() * 0.6f;    // Hz
+            swayPhase[i] = rnd.nextFloat() * (float) TAU;
+            rot0[i] = rnd.nextFloat() * 360f;
+            spin[i] = (40f + rnd.nextFloat() * 120f) * (rnd.nextBoolean() ? 1f : -1f); // degrees per second
+            flipFreq[i] = 0.4f + rnd.nextFloat();           // Hz
+            flipPhase[i] = rnd.nextFloat() * (float) TAU;
+            color[i] = rnd.nextInt(COLORS.length);
+            shape[i] = rnd.nextInt(shapes.length);
+        }
+        playing = true;
+        start = SystemClock.uptimeMillis();
+        postDelayed(finish, duration);
+        postInvalidateOnAnimation();
+    }
+
+    private void finish() {
+        if (!playing) return;
+        playing = false;
+        invalidate();
+        Runnable done = onDone;
+        onDone = null;
+        if (done != null) done.run();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (playing) {
+            removeCallbacks(finish);
+            finish();
+        }
+    }
+
+    @Override
+    protected void onDraw(Canvas c) {
+        if (!playing) return;
+        long now = SystemClock.uptimeMillis();
+        float elapsed = (now - start) / (float) duration;
+        float secs = (now - start) / 1000f;
+        float w = getWidth(), h = getHeight();
+        for (int i = 0; i < count; i++) {
+            float p = (elapsed - delay[i]) / life[i];
+            if (p <= 0f || p >= 1f) continue;
+            float len = size[i] * density;
+            float fall = (p + p * p) * 0.5f;               // gathers speed, like a petal against the air
+            float y = -len * 1.5f + (h * drop[i] + len * 1.5f) * fall;
+            double sway = TAU * swayFreq[i] * secs + swayPhase[i];
+            float x = xFrac[i] * w + swayAmp[i] * density * (float) Math.sin(sway);
+            float angle = rot0[i] + spin[i] * secs + 22f * (float) Math.cos(sway); // tilts into the sway
+            float flip = (float) Math.cos(TAU * flipFreq[i] * secs + flipPhase[i]);
+            float sx = Math.abs(flip) < 0.08f ? (flip < 0f ? -0.08f : 0.08f) : flip;
+            int a = p > 0.75f ? (int) (255 * (1f - (p - 0.75f) / 0.25f)) : 255;
+
+            // turned edge-on it looks darker; the back is darker still
+            float shade = (flip < 0f ? 0.78f : 1f) * (0.8f + 0.2f * Math.abs(flip));
+            int base = COLORS[color[i]];
+            fill.setColor(scale(base, shade));
+            fill.setAlpha(a);
+            edge.setColor(scale(base, 0.55f));
+            edge.setAlpha(a * 3 / 4);
+            vein.setAlpha(a / 4);
+
+            c.save();
+            c.translate(x, y);
+            c.rotate(angle);
+            c.scale(len * sx, len);
+            c.drawPath(shapes[shape[i]], fill);
+            c.drawPath(shapes[shape[i]], edge);
+            c.drawPath(veins[shape[i]], vein);
+            c.restore();
+        }
+        postInvalidateOnAnimation();
+    }
+
+    private void ensureCapacity(int n) {
+        if (xFrac.length >= n) return;
+        xFrac = new float[n];
+        delay = new float[n];
+        life = new float[n];
+        drop = new float[n];
+        size = new float[n];
+        swayAmp = new float[n];
+        swayFreq = new float[n];
+        swayPhase = new float[n];
+        rot0 = new float[n];
+        spin = new float[n];
+        flipFreq = new float[n];
+        flipPhase = new float[n];
+        color = new int[n];
+        shape = new int[n];
+    }
+
+    /** One marigold petal, 1 unit tall around the origin: a narrow base fanning out to a frilled top. */
+    private static Path petalShape(Random r) {
+        Path p = new Path();
+        float wTop = 0.36f + 0.08f * r.nextFloat();
+        p.moveTo(0f, 0.5f);
+        p.cubicTo(-0.16f, 0.36f, -wTop - 0.04f, 0.02f, -wTop, -0.3f);
+        int scallops = 4 + r.nextInt(2);
+        for (int k = 0; k < scallops; k++) {
+            float tx = -wTop + 2 * wTop * (k + 0.5f) / scallops;
+            float nx = -wTop + 2 * wTop * (k + 1f) / scallops;
+            float tipY = -0.5f + 0.2f * sq(tx / wTop) - 0.06f - 0.05f * r.nextFloat();
+            float notchY = k == scallops - 1 ? -0.3f : -0.5f + 0.2f * sq(nx / wTop) + 0.05f + 0.03f * r.nextFloat();
+            p.quadTo(tx, tipY, nx, notchY);
+        }
+        p.cubicTo(wTop + 0.04f, 0.02f, 0.16f, 0.36f, 0f, 0.5f);
+        p.close();
+        return p;
+    }
+
+    private static Path veinPath(Random r) {
+        Path p = new Path();
+        float bend = (r.nextFloat() - 0.5f) * 0.06f;
+        p.moveTo(0f, 0.42f);
+        p.quadTo(bend, 0f, 0f, -0.36f);
+        p.moveTo(0f, 0.3f);
+        p.quadTo(-0.12f, -0.05f, -0.2f, -0.3f);
+        p.moveTo(0f, 0.3f);
+        p.quadTo(0.12f, -0.05f, 0.2f, -0.3f);
+        return p;
+    }
+
+    private static float sq(float v) {
+        return v * v;
+    }
+
+    private static int scale(int c, float f) {
+        int r = Math.min(255, (int) (((c >> 16) & 0xFF) * f));
+        int g = Math.min(255, (int) (((c >> 8) & 0xFF) * f));
+        int b = Math.min(255, (int) ((c & 0xFF) * f));
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\ProbeActivity.java ==========
+package com.gathin.tvhome;
+
+import android.app.Activity;
+import android.os.Bundle;
+
+/**
+ * An invisible activity that closes right away. HomeKeyService opens it once at boot (stock_home_redirect):
+ * whatever was on screen comes back to the front when it closes and sends a window event, so the service can
+ * tell the stock home from an HDMI input without reading the screen (#1116).
+ */
+public class ProbeActivity extends Activity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getWindow().getDecorView().post(this::close);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void close() {
+        finish();
+        overridePendingTransition(0, 0);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\QuickSettingsActivity.java ==========
+package com.gathin.tvhome;
+
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+/**
+ * The panel the remote's Settings button opens when {@code settings_key_panel} is on (HomeKeyService):
+ * a few glass rows under the Settings pill, over Home or whatever app is playing. Translucent and in a
+ * task of its own, so the app behind keeps running and Back returns to it. Pressing Settings again
+ * closes the panel.
+ */
+public final class QuickSettingsActivity extends Activity {
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(LauncherLocale.wrap(base));   // locale
+    }
+
+
+    @Override
+    protected void onCreate(Bundle state) {
+        super.onCreate(state);
+        setContentView(R.layout.activity_quick_settings);
+        if (getResources().getBoolean(R.bool.rtl_menu_bar)) {
+            View panel = findViewById(R.id.panel);
+            android.widget.FrameLayout.LayoutParams position =
+                    (android.widget.FrameLayout.LayoutParams) panel.getLayoutParams();
+            position.gravity = android.view.Gravity.TOP | android.view.Gravity.LEFT;
+            int inset = position.getMarginEnd();
+            position.setMarginEnd(0);
+            position.setMargins(inset, position.topMargin, 0, position.bottomMargin);
+            panel.setLayoutParams(position);
+        }
+        findViewById(R.id.scrim).setOnClickListener(v -> finish());
+        LinearLayout rows = findViewById(R.id.rows);
+        addRow(rows, R.drawable.ic_settings, R.string.tv_settings, 0, SystemSettings.intent(this, Settings.ACTION_SETTINGS));
+        addRow(rows, R.drawable.ic_picture, R.string.quick_picture, 0, SystemSettings.displayIntent(this));
+        addRow(rows, R.drawable.ic_wifi, R.string.quick_network, 0, SystemSettings.intent(this, Settings.ACTION_WIFI_SETTINGS));
+        addRow(rows, R.drawable.ic_apps, R.string.quick_apps, R.string.quick_apps_hint,
+                SystemSettings.intent(this, Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS));
+        // Through Home, so it rebuilds with the new choices when Launcher settings closes.
+        addRow(rows, R.drawable.ic_home_settings, R.string.launcher_settings, 0,
+                new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_LAUNCHER_SETTINGS));
+        rows.getChildAt(0).requestFocus();
+    }
+
+    /** Settings pressed again while the panel is up. */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        finish();
+    }
+
+    /** Anything else taking the screen (Home, an app, a screensaver) closes the panel. */
+    @Override
+    @SuppressWarnings("deprecation")
+    protected void onPause() {
+        super.onPause();
+        finish();
+        overridePendingTransition(0, 0);
+    }
+
+    private void addRow(LinearLayout rows, int icon, int title, int status, Intent target) {
+        View row = getLayoutInflater().inflate(R.layout.item_input, rows, false);
+        ((ImageView) row.findViewById(R.id.icon)).setImageResource(icon);
+        ((TextView) row.findViewById(R.id.title)).setText(title);
+        row.findViewById(R.id.dot).setVisibility(View.GONE);
+        TextView hint = row.findViewById(R.id.status);
+        if (status != 0) hint.setText(status);
+        else hint.setVisibility(View.GONE);
+        row.setOnClickListener(v -> {
+            try {
+                startActivity(target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } catch (ActivityNotFoundException | SecurityException e) {
+                Toast.makeText(this, R.string.not_available, Toast.LENGTH_SHORT).show();
+            }
+            finish();
+        });
+        rows.addView(row);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\RaceWeekend.java ==========
+package com.gathin.tvhome;
+
+import android.content.res.Resources;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * Race-weekend mode. A theme's config.json can carry an F1 calendar ({@code race_calendar}, written by
+ * tools/race_calendar.py); from shortly before a weekend's first session until the race is over, Home shows
+ * a small panel with the next session and a countdown. Scheduling uses the clock against owner-pushed
+ * data and is tested on the JVM; display labels use Android resources.
+ */
+final class RaceWeekend {
+
+    /** The panel shows from this long before a weekend's first session... */
+    static final Duration LEAD = Duration.ofHours(12);
+    /** ...until this long after the race starts: a race runs about two hours, then the result settles. */
+    static final Duration TAIL = Duration.ofHours(4);
+
+    enum Status { DONE, LIVE, NEXT, LATER }
+
+    static final class Session {
+        /** As written in the calendar: FP1, FP2, FP3, SPRINT QUALI, SPRINT, QUALIFYING or RACE. */
+        final String name;
+        final Instant start;
+
+        Session(String name, Instant start) {
+            this.name = name.trim().toUpperCase(Locale.ROOT);
+            this.start = start;
+        }
+
+        boolean isRace() {
+            return name.equals("RACE");
+        }
+
+        /** Roughly how long the session is live; only used to tell live from done. */
+        Duration length() {
+            if (isRace()) return Duration.ofHours(2);
+            if (name.equals("SPRINT QUALI")) return Duration.ofMinutes(45);
+            return Duration.ofHours(1);
+        }
+
+        /** The name in the countdown line: "Qualifying in 2h 14m". */
+        String title(Resources res) {
+            switch (name) {
+                case "FP1": return res.getString(R.string.race_practice_1);
+                case "FP2": return res.getString(R.string.race_practice_2);
+                case "FP3": return res.getString(R.string.race_practice_3);
+                case "SPRINT QUALI": return res.getString(R.string.race_sprint_qualifying);
+                case "SPRINT": return res.getString(R.string.race_sprint);
+                case "QUALIFYING": return res.getString(R.string.race_qualifying);
+                case "RACE": return res.getString(R.string.race_race);
+                default: return name.charAt(0) + name.substring(1).toLowerCase(Locale.ROOT);
+            }
+        }
+
+        /** The name in the session row, kept short so a whole weekend fits on one line. */
+        String shortName(Resources res) {
+            switch (name) {
+                case "FP1": return res.getString(R.string.race_practice_1_short);
+                case "FP2": return res.getString(R.string.race_practice_2_short);
+                case "FP3": return res.getString(R.string.race_practice_3_short);
+                case "SPRINT QUALI": return res.getString(R.string.race_sprint_qualifying_short);
+                case "SPRINT": return res.getString(R.string.race_sprint_short);
+                case "QUALIFYING": return res.getString(R.string.race_qualifying_short);
+                case "RACE": return res.getString(R.string.race_race_short);
+                default: return name;
+            }
+        }
+    }
+
+    static final class Race {
+        final int round;
+        final String name;
+        final String place;
+        /** In start order; the last one is the race. */
+        final List<Session> sessions;
+
+        Race(int round, String name, String place, List<Session> sessions) {
+            this.round = round;
+            this.name = name;
+            this.place = place;
+            List<Session> sorted = new ArrayList<>(sessions);
+            sorted.sort((a, b) -> a.start.compareTo(b.start));
+            this.sessions = Collections.unmodifiableList(sorted);
+        }
+
+        /** "United States Grand Prix" becomes "United States GP", which fits the panel's top line. */
+        String shortName() {
+            return name.replace("Grand Prix", "GP").trim();
+        }
+    }
+
+    /** What the panel shows at one moment of a race weekend. */
+    static final class State {
+        final Race race;
+        /** One per session of {@link #race}, same order. */
+        final List<Status> statuses;
+        /** The session on track now, or null. */
+        final Session live;
+        /** The next session to start, or null once the race has started. */
+        final Session next;
+        /** Time until {@link #next} starts; null when there is no next session. */
+        final Duration untilNext;
+
+        State(Race race, List<Status> statuses, Session live, Session next, Duration untilNext) {
+            this.race = race;
+            this.statuses = Collections.unmodifiableList(statuses);
+            this.live = live;
+            this.next = next;
+            this.untilNext = untilNext;
+        }
+
+        /** The race is over and the panel is only showing the weekend until {@link #TAIL} runs out. */
+        boolean finished() {
+            return live == null && next == null;

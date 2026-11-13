@@ -1,0 +1,1500 @@
+﻿        StringBuilder b = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = Character.toLowerCase(s.charAt(i));
+            if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) b.append(c);
+        }
+        return b.toString();
+    }
+
+    /** True when a folded label claims endorsement or a name the launcher's UI uses (uiNames are folded too). */
+    static boolean isReserved(String folded, Set<String> uiNames) {
+        if (folded.isEmpty()) return true;
+        for (String word : RESERVED_ANYWHERE) if (folded.contains(word)) return true;
+        if (folded.startsWith(RESERVED_PREFIX)) return true;
+        return RESERVED_EXACT.contains(folded) || uiNames.contains(folded);
+    }
+
+    /** True when another package than pkg already uses this folded name. */
+    static boolean isTaken(String folded, String pkg, Map<String, Set<String>> names) {
+        Set<String> pkgs = names.get(folded);
+        if (pkgs == null) return false;
+        for (String p : pkgs) if (!p.equals(pkg)) return true;
+        return false;
+    }
+
+    /** Opaque ARGB for `#RRGGBB` (or the compiled `#AARRGGBB` form, alpha dropped), 0 when it is anything else. */
+    static int parseAccent(String s) {
+        if (s == null || (s.length() != 7 && s.length() != 9) || s.charAt(0) != '#') return 0;
+        String hex = s.substring(1);
+        if (!isHex(hex, false)) return 0;
+        // `#RRGGBB` as written, or `#AARRGGBB` as the resource compiler stores a colour attribute (it
+        // compiles `#E8A33D` to the colour value and the parser hands back `#ffe8a33d`). The alpha is dropped.
+        return 0xFF000000 | Integer.parseInt(hex.substring(hex.length() - 6), 16);
+    }
+
+    // ---- character checks (no regular expressions, see the class comment) -----------------------
+
+    /** Every character is an ASCII letter, digit, space or one of {@link #TEXT_PUNCTUATION}. */
+    static boolean isText(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            boolean ok = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == ' '
+                    || TEXT_PUNCTUATION.indexOf(c) >= 0;
+            if (!ok) return false;
+        }
+        return true;
+    }
+
+    static boolean isDigits(String s) {
+        if (s.isEmpty()) return false;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c < '0' || c > '9') return false;
+        }
+        return true;
+    }
+
+    /** Hex digits; lower case only when lowerOnly (the decision file keeps digests lower case). */
+    static boolean isHex(String s, boolean lowerOnly) {
+        if (s.isEmpty()) return false;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            boolean ok = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (!lowerOnly && c >= 'A' && c <= 'F');
+            if (!ok) return false;
+        }
+        return true;
+    }
+
+    /** A Java style package name: two or more dot separated segments, each a letter then letters, digits or _. */
+    static boolean isPackageName(String s) {
+        if (s == null || s.isEmpty() || s.length() > 255) return false;
+        int segments = 0;
+        int i = 0;
+        while (i < s.length()) {
+            char c = s.charAt(i);
+            if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) return false;
+            i++;
+            while (i < s.length() && s.charAt(i) != '.') {
+                c = s.charAt(i);
+                if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_')) return false;
+                i++;
+            }
+            segments++;
+            if (i < s.length()) i++;                      // skip the dot; a trailing dot leaves an empty segment below
+            else break;
+            if (i == s.length()) return false;
+        }
+        return segments >= 2;
+    }
+
+    static boolean isDigest(String s) {
+        return s != null && s.length() == 64 && isHex(s, true);
+    }
+
+    /** A label exactly as {@link #fold} writes it: 1 to LABEL_MAX characters from a-z 0-9. */
+    static boolean isFolded(String s) {
+        if (s == null || s.isEmpty() || s.length() > LABEL_MAX) return false;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))) return false;
+        }
+        return true;
+    }
+
+    static String hex(byte[] bytes) {
+        char[] digits = "0123456789abcdef".toCharArray();
+        char[] out = new char[bytes.length * 2];
+        for (int i = 0; i < bytes.length; i++) {
+            out[i * 2] = digits[(bytes[i] >> 4) & 0xF];
+            out[i * 2 + 1] = digits[bytes[i] & 0xF];
+        }
+        return new String(out);
+    }
+
+    /** The first 12 hex characters in groups of four, as shown on the prompt: "7f3a 91c0 b2e4". */
+    static String shortDigest(String digest) {
+        return grouped(digest.length() >= 12 ? digest.substring(0, 12) : digest, 3);
+    }
+
+    /** The whole digest in groups of four, eight groups per line, as shown in the Module cards list. */
+    static String longDigest(String digest) {
+        return grouped(digest, 8);
+    }
+
+    private static String grouped(String hex, int groupsPerLine) {
+        StringBuilder b = new StringBuilder(hex.length() + hex.length() / 4 + 2);
+        for (int i = 0; i < hex.length(); i += 4) {
+            if (i > 0) b.append(i / 4 % groupsPerLine == 0 ? '\n' : ' ');
+            b.append(hex, i, Math.min(hex.length(), i + 4));
+        }
+        return b.toString();
+    }
+
+    // ---- signer ----------------------------------------------------------------------------------
+
+    /**
+     * SHA-256 of the DER certificate of the package's one signer: the value apksigner verify (with
+     * print-certs) prints as the certificate SHA-256 digest. A package with more than one signer
+     * is rejected, because the order of its certificates is not defined.
+     */
+    @SuppressWarnings("deprecation")
+    static String digest(PackageManager pm, String pkg) throws Exception {
+        Signature[] sigs;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            PackageInfo pi = pm.getPackageInfo(pkg, PackageManager.GET_SIGNING_CERTIFICATES);
+            SigningInfo info = pi.signingInfo;
+            if (info == null) throw new CardException("package has no signing certificate");
+            if (info.hasMultipleSigners()) throw new CardException("package has more than one signer");
+            sigs = info.getApkContentsSigners();
+        } else {
+            PackageInfo pi = pm.getPackageInfo(pkg, PackageManager.GET_SIGNATURES);
+            sigs = pi.signatures;
+        }
+        if (sigs == null || sigs.length != 1) {
+            throw new CardException("package has " + (sigs == null ? 0 : sigs.length) + " signing certificates, expected one");
+        }
+        return hex(MessageDigest.getInstance("SHA-256").digest(sigs[0].toByteArray()));
+    }
+
+    // ---- decision file (cards.json) --------------------------------------------------------------
+
+    static File storeFile(Context ctx) {
+        return new File(ctx.getFilesDir(), STORE_FILE);
+    }
+
+    /**
+     * The records in cards.json, or an empty map. A file that does not decode is moved aside to
+     * cards.json.bad (kept, not deleted) and the launcher continues as if no decision had been made.
+     */
+    static Map<String, Record> load(File file) {
+        if (!file.exists()) return new TreeMap<>();
+        String text;
+        try {
+            text = new String(new AtomicFile(file).readFully(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            Log.w(TAG, "cannot read " + file.getName() + ": " + e);
+            return new TreeMap<>();
+        }
+        Map<String, Record> records = decode(text);
+        if (records == null) {
+            Log.w(TAG, file.getName() + " is not valid; moved to " + STORE_FILE + ".bad");
+            quarantine(file);
+            return new TreeMap<>();
+        }
+        return records;
+    }
+
+    /** Writes the records atomically. False (and a log line) when the write failed. */
+    static boolean save(File file, Map<String, Record> records) {
+        AtomicFile af = new AtomicFile(file);
+        FileOutputStream out = null;
+        try {
+            out = af.startWrite();
+            out.write(encode(records).getBytes(StandardCharsets.UTF_8));
+            af.finishWrite(out);
+            return true;
+        } catch (IOException e) {
+            Log.w(TAG, "cannot write " + file.getName() + ": " + e);
+            if (out != null) af.failWrite(out);
+            return false;
+        }
+    }
+
+    /** Records the owner's decision for the card's package under its current signer and saves. */
+    static boolean decide(File file, Card card, boolean show) {
+        Map<String, Record> records = load(file);
+        Record old = records.get(card.pkg);
+        long now = System.currentTimeMillis();
+        long firstSeen = old != null && old.digest.equals(card.digest) ? old.firstSeen : now;
+        records.put(card.pkg, new Record(card.pkg, card.digest, fold(card.label), show ? DECISION_SHOW : DECISION_HIDE, firstSeen, now));
+        return save(file, records);
+    }
+
+    /** Moves a bad decision file to `<name>.bad`, replacing an older .bad. Returns true when the file is out of the way. */
+    static boolean quarantine(File file) {
+        File bad = new File(file.getParentFile(), file.getName() + ".bad");
+        if (bad.exists() && !bad.delete()) return false;
+        return file.renameTo(bad) || file.delete();
+    }
+
+    private static final String HEADER = "{\"version\":2,\"records\":[";
+    private static final String FOOTER = "]}";
+    private static final String F_PACKAGE = "{\"package\":\"";
+    private static final String F_DIGEST = "\",\"signer_sha256\":\"";
+    private static final String F_LABEL = "\",\"label\":\"";
+    private static final String F_DECISION = "\",\"decision\":\"";
+    private static final String F_FIRST_SEEN = "\",\"first_seen\":";
+    private static final String F_DECIDED_AT = ",\"decided_at\":";
+
+    /**
+     * cards.json: one record per line, in the exact layout {@link #encode} writes. Anything else,
+     * including more than {@link #MAX_RECORDS} records or a package listed twice, is invalid (null).
+     */
+    static Map<String, Record> decode(String text) {
+        if (text == null || text.length() > 64 * 1024) return null;
+        List<String> lines = new ArrayList<>();
+        int start = 0;
+        for (int i = 0; i <= text.length(); i++) {
+            if (i == text.length() || text.charAt(i) == '\n') {
+                lines.add(text.substring(start, i));
+                start = i + 1;
+            }
+        }
+        if (lines.size() < 2 || !lines.get(0).equals(HEADER)) return null;
+        int last = lines.size() - 1;
+        if (lines.get(last).isEmpty()) last -= 1;           // a trailing newline is fine
+        if (last < 1 || !lines.get(last).equals(FOOTER)) return null;
+        int count = last - 1;
+        if (count > MAX_RECORDS) return null;
+        Map<String, Record> out = new TreeMap<>();
+        for (int i = 1; i < last; i++) {
+            String line = lines.get(i);
+            boolean lastRecord = i == last - 1;
+            if (!lastRecord) {
+                if (!line.endsWith(",")) return null;
+                line = line.substring(0, line.length() - 1);
+            }
+            Record r = decodeRecord(line);
+            if (r == null || out.containsKey(r.pkg)) return null;
+            out.put(r.pkg, r);
+        }
+        return out;
+    }
+
+    /** One record line, or null when it is not exactly what {@link #encode} writes. */
+    static Record decodeRecord(String line) {
+        int[] at = {0};
+        if (!take(line, at, F_PACKAGE)) return null;
+        String pkg = until(line, at, '"');
+        if (pkg == null || !isPackageName(pkg) || !take(line, at, F_DIGEST)) return null;
+        String digest = until(line, at, '"');
+        if (digest == null || !isDigest(digest) || !take(line, at, F_LABEL)) return null;
+        String label = until(line, at, '"');
+        if (label == null || !isFolded(label) || !take(line, at, F_DECISION)) return null;
+        String decision = until(line, at, '"');
+        if (decision == null || !(DECISION_SHOW.equals(decision) || DECISION_HIDE.equals(decision))) return null;
+        if (!take(line, at, F_FIRST_SEEN)) return null;
+        String firstSeen = until(line, at, ',');
+        if (firstSeen == null || firstSeen.length() > 18 || !isDigits(firstSeen)) return null;
+        if (!take(line, at, F_DECIDED_AT)) return null;
+        String decidedAt = until(line, at, '}');
+        if (decidedAt == null || decidedAt.length() > 18 || !isDigits(decidedAt)) return null;
+        if (!take(line, at, "}") || at[0] != line.length()) return null;
+        return new Record(pkg, digest, label, decision, Long.parseLong(firstSeen), Long.parseLong(decidedAt));
+    }
+
+    /** Consumes the literal at the cursor, or returns false. */
+    private static boolean take(String s, int[] at, String literal) {
+        if (!s.startsWith(literal, at[0])) return false;
+        at[0] += literal.length();
+        return true;
+    }
+
+    /** The text from the cursor up to the next stop character, which stays for the next literal; null when there is none. */
+    private static String until(String s, int[] at, char stop) {
+        int end = s.indexOf(stop, at[0]);
+        if (end < 0) return null;
+        String out = s.substring(at[0], end);
+        at[0] = end;
+        return out;
+    }
+
+    /** The decision file text for these records, by package; the oldest decisions are dropped beyond {@link #MAX_RECORDS}. */
+    static String encode(Map<String, Record> records) {
+        List<Record> list = new ArrayList<>(records.values());
+        if (list.size() > MAX_RECORDS) {
+            Collections.sort(list, (a, b) -> Long.compare(b.decidedAt, a.decidedAt));
+            list = new ArrayList<>(list.subList(0, MAX_RECORDS));
+        }
+        Collections.sort(list, (a, b) -> a.pkg.compareTo(b.pkg));
+        StringBuilder b = new StringBuilder(HEADER).append('\n');
+        for (int i = 0; i < list.size(); i++) {
+            Record r = list.get(i);
+            // Every field is validated before it gets here, so no JSON escaping is ever needed.
+            if (!isPackageName(r.pkg) || !isDigest(r.digest) || !isFolded(r.label)
+                    || !(DECISION_SHOW.equals(r.decision) || DECISION_HIDE.equals(r.decision))
+                    || r.firstSeen < 0 || r.decidedAt < 0) {
+                throw new IllegalArgumentException("record for " + r.pkg + " is not valid");
+            }
+            b.append(F_PACKAGE).append(r.pkg).append(F_DIGEST).append(r.digest).append(F_LABEL).append(r.label).append(F_DECISION).append(r.decision)
+                    .append(F_FIRST_SEEN).append(r.firstSeen).append(F_DECIDED_AT).append(r.decidedAt).append('}');
+            if (i < list.size() - 1) b.append(',');
+            b.append('\n');
+        }
+        return b.append(FOOTER).append('\n').toString();
+    }
+
+    /** The folded forms of the English UI names, for callers without resources (tests). */
+    static Set<String> englishUiNames() {
+        return new HashSet<>(Arrays.asList(fold("Home"), fold("Settings"), fold("Inputs"), fold("Wi-Fi"),
+                fold("Live TV"), fold("Default home"), fold("Clock")));
+    }
+
+    // ---- self-check ------------------------------------------------------------------------------
+
+    private static boolean selfChecked;
+
+    /**
+     * Debuggable builds only, once per process: runs the validators and the decision file codec on fixed
+     * input and logs "self-check ok" or what differs, so a device run shows at once whether this
+     * class behaves on the TV's runtime the way the JVM tests say it does.
+     */
+    static void selfCheck() {
+        if (selfChecked) return;
+        selfChecked = true;
+        List<String> bad = new ArrayList<>();
+        if (checkLabel("Retro") != null) bad.add("label Retro rejected");
+        if (checkLabel("Verified\u202E") == null) bad.add("control character accepted");
+        if (checkCaption("NES games") != null) bad.add("caption rejected");
+        if (parseAccent("#E8A33D") != 0xFFE8A33D || parseAccent("#ffe8a33d") != 0xFFE8A33D) bad.add("accent");
+        if (!"livetv".equals(fold("Live TV")) || !isReserved("hdmi2", englishUiNames())) bad.add("fold or reserved");
+        if (!"Netflix".equals(cleanLabel("Netflix\u202E\n", "x"))) bad.add("cleanLabel");
+        if (!isPackageName("io.example.a") || isPackageName("example")) bad.add("package name");
+        Map<String, Record> one = new TreeMap<>();
+        String digest = hex(new byte[32]);
+        one.put("io.example.a", new Record("io.example.a", digest, "a", DECISION_SHOW, 1, 2));
+        Map<String, Record> back = decode(encode(one));
+        if (back == null || back.size() != 1 || back.get("io.example.a").decidedAt != 2) bad.add("store round trip");
+        if (decode("{}") != null) bad.add("bad store accepted");
+        Log.w(TAG, bad.isEmpty() ? "self-check ok" : "self-check FAILED: " + bad);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\ClockActivity.java ==========
+package com.gathin.tvhome;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+
+/**
+ * The clock screensaver shown by Home itself after home_idle_clock_minutes without input. Some TVs' own
+ * screens (CVTE's live TV) do not keep the screen on, so the system screensaver would cut into programmes;
+ * this one only ever starts from Home. Any key returns to Home.
+ */
+public class ClockActivity extends Activity {
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(LauncherLocale.wrap(base));   // locale
+    }
+
+
+    private ClockScene scene;
+
+    @Override
+    @SuppressWarnings("deprecation")
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.dream_clock);
+        ClockFormat.apply(getWindow().getDecorView(), Config.load(this).clockFormat);
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE);
+        scene = new ClockScene(getWindow().getDecorView());
+        scene.useHomeWallpaper(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        scene.start();
+    }
+
+    @Override
+    protected void onPause() {
+        scene.stop();
+        super.onPause();
+        finish();   // never left behind in the back stack
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        // The key that wakes the clock should not also act on Home, so it is consumed here.
+        if (event.getAction() == KeyEvent.ACTION_UP) finish();
+        return true;
+    }
+
+    @Override
+    public boolean dispatchGenericMotionEvent(MotionEvent event) {
+        finish();
+        return true;
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public void finish() {
+        super.finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\ClockDream.java ==========
+package com.gathin.tvhome;
+
+import android.service.dreams.DreamService;
+
+/**
+ * Screensaver: the launcher's thin clock and date on black, over a slow ambient glow (ClockScene).
+ * No network, no images: cheap enough for a 1 GB TV.
+ */
+public class ClockDream extends DreamService {
+
+    private ClockScene scene;
+
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(LauncherLocale.wrap(base));   // the theme's locale, as ClockActivity
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        setInteractive(false);   // any key wakes the TV back to where it was
+        setFullscreen(true);
+        setScreenBright(false);
+        setContentView(R.layout.dream_clock);
+        ClockFormat.apply(getWindow().getDecorView(), Config.load(this).clockFormat);
+        scene = new ClockScene(getWindow().getDecorView());
+        scene.useHomeWallpaper(this);
+    }
+
+    @Override
+    public void onDreamingStarted() {
+        super.onDreamingStarted();
+        scene.start();
+    }
+
+    @Override
+    public void onDreamingStopped() {
+        scene.stop();
+        super.onDreamingStopped();
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        if (scene != null) scene.stop();
+        super.onDetachedFromWindow();
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\ClockFormat.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.text.format.DateFormat;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextClock;
+
+/** clock_format: "12" or "24" makes the launcher's clocks use that format whatever the TV is set to; else the TV's. */
+final class ClockFormat {
+    private ClockFormat() {
+    }
+
+    /** Every TextClock under root: its 12- and 24-hour patterns become the chosen one's (the AM/PM clock follows). */
+    static void apply(View root, String mode) {
+        if (!"12".equals(mode) && !"24".equals(mode)) return;
+        if (root instanceof TextClock) {
+            TextClock c = (TextClock) root;
+            if ("12".equals(mode)) c.setFormat24Hour(c.getFormat12Hour());
+            else c.setFormat12Hour(c.getFormat24Hour());
+        } else if (root instanceof ViewGroup) {
+            ViewGroup g = (ViewGroup) root;
+            for (int i = 0; i < g.getChildCount(); i++) apply(g.getChildAt(i), mode);
+        }
+    }
+
+    static boolean is24(Context ctx, String mode) {
+        return "24".equals(mode) || !"12".equals(mode) && DateFormat.is24HourFormat(ctx);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\ClockRefresh.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.hardware.display.DisplayManager;
+import android.os.Build;
+import android.view.Display;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextClock;
+
+/**
+ * Keeps the TextClocks under a view ticking on their own. Before Android 12 a TextClock without seconds only
+ * advances on ACTION_TIME_TICK; some firmware stops sending it for good after a sleep (a TCL Android 9 TV, once
+ * the power button has been used), which freezes every clock until a reboot. From Android 12 a TextClock times
+ * itself, so there this does nothing. Otherwise it redraws them at each minute change of the wall clock, and as
+ * soon as the display comes back on: the wait to the next minute runs on uptime, which stands still while the set
+ * sleeps. A display listener rather than ACTION_SCREEN_ON, as that same TCL firmware leaves the app that was on
+ * screen out of that broadcast.
+ */
+final class ClockRefresh implements Runnable, DisplayManager.DisplayListener {
+    /** Past the minute change, so the redraw cannot land just before it and repaint the old minute. */
+    private static final long MARGIN_MS = 250L;
+
+    private final View root;
+    private final DisplayManager displays;
+    /** The display's last state seen by onDisplayChanged; it is on when start() runs. */
+    private boolean on = true;
+
+    /** root holds the TextClocks. */
+    ClockRefresh(View root) {
+        this.root = root;
+        displays = (DisplayManager) root.getContext().getSystemService(Context.DISPLAY_SERVICE);
+    }
+
+    /**
+     * Redraw at the next minute change, then every minute and when the display comes on; calling it again
+     * re-aligns after the wall clock was set (registering the same listener twice is a no-op).
+     */
+    void start() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) return;
+        displays.registerDisplayListener(this, null);
+        schedule();
+    }
+
+    /** Safe to call when never started. */
+    void stop() {
+        root.removeCallbacks(this);
+        displays.unregisterDisplayListener(this);
+    }
+
+    @Override
+    public void run() {
+        redraw(root);
+        schedule();
+    }
+
+    /** Redraws when our display goes from off to on, not on its other changes. */
+    @Override
+    public void onDisplayChanged(int displayId) {
+        Display d = root.getDisplay();
+        if (d == null || d.getDisplayId() != displayId) return;
+        boolean nowOn = d.getState() == Display.STATE_ON;
+        if (nowOn && !on) run();
+        on = nowOn;
+    }
+
+    @Override
+    public void onDisplayAdded(int displayId) {
+    }
+
+    @Override
+    public void onDisplayRemoved(int displayId) {
+    }
+
+    private void schedule() {
+        root.removeCallbacks(this);
+        root.postDelayed(this, 60_000L - System.currentTimeMillis() % 60_000L + MARGIN_MS);
+    }
+
+    /**
+     * setFormat12Hour chooses the format again and calls the clock's onTimeChanged (checked in AOSP 8, 9 and 11),
+     * so setting the pattern it already has changes nothing but the text.
+     */
+    private static void redraw(View v) {
+        if (v instanceof TextClock) {
+            TextClock c = (TextClock) v;
+            c.setFormat12Hour(c.getFormat12Hour());
+        } else if (v instanceof ViewGroup) {
+            ViewGroup g = (ViewGroup) v;
+            for (int i = 0; i < g.getChildCount(); i++) redraw(g.getChildAt(i));
+        }
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\ClockScene.java ==========
+package com.gathin.tvhome;
+
+import android.animation.ArgbEvaluator;
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.DisplayMetrics;
+import android.view.View;
+import android.widget.ImageView;
+
+import java.io.File;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+
+/**
+ * The clock screensaver's scene (layout dream_clock): the thin clock and date on black over a slow ambient
+ * glow. Every minute the clock drifts to a new spot and the glow shifts colour, so nothing burns in; a
+ * ClockRefresh keeps its TextClocks current where Android would not.
+ * Shared by ClockDream (the system screensaver) and ClockActivity (Home left idle).
+ */
+final class ClockScene {
+
+    private static final long MOVE_MS = 60_000L;
+    /** The glow's colour change: 16 steps over 8 s. Animated per frame it redrew the full-screen gradient ~480 times. */
+    private static final int GLOW_STEPS = 16;
+    private static final long GLOW_STEP_MS = 500L;
+    /** Deep, low-brightness glow colours; the glow is drawn at partial alpha on black. */
+    private static final int[] PALETTE = {0xFF2B5CFF, 0xFF00A39A, 0xFF8A3FFC, 0xFFE0661B, 0xFFD6336C};
+
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Random random = new Random();
+    private final View content;
+    private final ClockRefresh clockRefresh;
+    private final ImageView ambient;
+    private final GradientDrawable glow;
+    private int colorIndex;
+    private int glowColor;
+    /** clock_wallpaper or clock_glow false: something else (a picture, or plain black) replaced the coloured glow. */
+    private boolean wallpaperShown;
+    /** clock_wallpaper: the picture start() decodes, its darkening, and the resources to draw it with. */
+    private File wallpaperFile;
+    private int wallpaperShade;
+    private Resources wallpaperRes;
+    /** One number per decode request: a result whose number is no longer the current one is dropped. Main thread only. */
+    private int wallpaperGeneration;
+    /** clock_wallpaper with a collection: the pictures, how long each lasts, and how the next one is picked. */
+    private List<File> rotation;
+    private long rotationMs;
+    private long shownMs;
+    private String order;
+    private Map<String, Set<String>> moods;
+    private String latitude, longitude;
+
+    private final Runnable tick = new Runnable() {
+        @Override
+        public void run() {
+            moveClock();
+            shiftGlow();
+            advanceWallpaper();
+            handler.postDelayed(this, MOVE_MS);
+        }
+    };
+
+    /** root is the inflated dream_clock layout. */
+    ClockScene(View root) {
+        content = root.findViewById(R.id.dreamContent);
+        clockRefresh = new ClockRefresh(content);
+        ambient = root.findViewById(R.id.dreamAmbient);
+        glow = new GradientDrawable();
+        glow.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        ambient.setBackground(glow);
+        ambient.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) ->
+                glow.setGradientRadius((r - l) * 0.55f));
+        colorIndex = random.nextInt(PALETTE.length);
+        setGlow(PALETTE[colorIndex]);
+    }
+
+    void start() {
+        content.setAlpha(0f);
+        content.post(() -> {
+            placeClock();
+            content.animate().alpha(1f).setDuration(1200).start();
+        });
+        handler.removeCallbacks(tick);
+        handler.postDelayed(tick, MOVE_MS);
+        clockRefresh.start();
+        if (wallpaperFile != null && !wallpaperShown) loadWallpaper();
+    }
+
+    void stop() {
+        handler.removeCallbacksAndMessages(null);   // the tick and any glow steps still queued
+        clockRefresh.stop();
+        content.animate().cancel();
+        wallpaperGeneration++;   // a decode still running must not attach its picture to a stopped scene
+    }
+
+    /**
+     * clock_wallpaper: put the picture Home is showing behind the clock, darkened by clock_wallpaper_dim, in
+     * place of the glow, and carry a collection's rotation on while the screensaver is up. Decoded off the main
+     * thread at screen size in RGB_565 (4 MB at 1080p), like Home's own; until then, or if it cannot be read,
+     * the glow stays.
+     * Call before start(), which starts the decode (again after a stop() that dropped an unfinished one).
+     */
+    void useHomeWallpaper(Context ctx) {
+        Config cfg;
+        try {
+            cfg = Config.load(ctx);
+        } catch (RuntimeException e) {
+            return;
+        }
+        if (!cfg.clockWallpaper) {
+            // clock_glow false: plain black behind the clock (OLED); the clock itself still moves every minute.
+            if (!cfg.clockGlow) {
+                wallpaperShown = true;   // also stops the glow's colour cycle
+                ambient.setBackground(null);
+            }
+            return;
+        }
+        // What Home plays, and Config puts the single wallpaper in it when a theme has no collection.
+        // Reading cfg.wallpaper first held the screensaver on wallpaper.jpg while Home rotated.
+        if (cfg.wallpapers.isEmpty()) {
+            wallpaperFile = null;
+        } else {
+            // Start on the picture Home is showing. WallpaperPlayer records it under the same
+            // preferences and the screensaver runs in the same process, so this is just a read.
+            rotation = new ArrayList<>(cfg.wallpapers);
+            String shown = ctx.getSharedPreferences("wallpaper_rotation", Context.MODE_PRIVATE)
+                    .getString("image", "");
+            File current = WallpaperRotation.find(rotation, shown);
+            wallpaperFile = current != null ? current : rotation.get(0);
+            // Home only rotates while it is visible, so the screensaver carries the rotation on
+            // itself; without this it holds one picture for as long as it is up.
+            rotationMs = cfg.wallpaperRotationMinutes * 60_000L;
+            order = cfg.wallpaperOrder;
+            moods = cfg.wallpaperMoods;
+            latitude = moods.isEmpty() ? "" : ctx.getString(R.string.latitude);
+            longitude = moods.isEmpty() ? "" : ctx.getString(R.string.longitude);
+        }
+        wallpaperShade = (cfg.clockWallpaperDim * 255 / 100) << 24;
+        wallpaperRes = ctx.getResources();
+    }
+
+    private void loadWallpaper() {
+        File file = wallpaperFile;
+        int shade = wallpaperShade;
+        Resources res = wallpaperRes;
+        DisplayMetrics dm = res.getDisplayMetrics();
+        int w = dm.widthPixels, h = dm.heightPixels;
+        int generation = ++wallpaperGeneration;
+        new Thread(() -> {
+            Bitmap bmp = decode(file, w, h);
+            if (bmp == null) return;
+            handler.post(() -> {
+                if (generation != wallpaperGeneration || wallpaperShown) {
+                    bmp.recycle();   // stopped meanwhile (or already shown): this picture was never attached
+                    return;
+                }
+                wallpaperShown = true;
+                // As the image, not the background: a background is stretched to the view, so a picture of
+                // another shape than the screen would be distorted. centerCrop scales and crops it like Home.
+                ambient.setBackground(null);
+                ambient.setImageDrawable(new LayerDrawable(new Drawable[]{
+                        new BitmapDrawable(res, bmp), new ColorDrawable(shade)}));
+            });
+        }, "clock-wallpaper").start();
+    }
+
+    /** WallpaperPlayer's decode: sampled and scaled down to cover the screen, never bigger than 4K. */
+    private static Bitmap decode(File file, int screenW, int screenH) {
+        try {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(file.getPath(), options);
+            int width = options.outWidth, height = options.outHeight;
+            if (width <= 0 || height <= 0) return null;
+            int sample = WallpaperSize.sampleSize(width, height, screenW, screenH);
+            if (!WallpaperSize.accepted(width / sample, height / sample)) return null;
+            options.inJustDecodeBounds = false;
+            options.inSampleSize = sample;
+            int[] scale = WallpaperSize.coverScale(width / sample, height / sample, screenW, screenH);
+            if (scale != null) {
+                options.inScaled = true;
+                options.inDensity = scale[0];
+                options.inTargetDensity = scale[1];
+            }
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            return BitmapFactory.decodeFile(file.getPath(), options);
+        } catch (Exception | OutOfMemoryError failure) {
+            return null;
+        }
+    }
+
+    /** Step to the next picture once its turn is up; the tick already runs every minute. */
+    private void advanceWallpaper() {
+        if (rotation == null || rotationMs <= 0 || rotation.size() < 2) return;
+        shownMs += MOVE_MS;
+        if (shownMs < rotationMs) return;
+        shownMs = 0;
+        // The same pick as Home's, so a shuffled collection stays shuffled and wallpaper_moods still
+        // decides what may show at this hour.
+        File next = WallpaperRotation.pick(playable(), wallpaperFile.getName(), order, random);
+        if (next.equals(wallpaperFile)) return;   // a mood group of one
+        wallpaperFile = next;
+        wallpaperShown = false;
+        loadWallpaper();
+    }
+
+    /** WallpaperPlayer's filter: the pictures wallpaper_moods allows at this hour, or all of them. */
+    private List<File> playable() {
+        if (moods.isEmpty()) return rotation;
+        LocalDateTime now = LocalDateTime.now();
+        int[] sun = WallpaperMood.sun(now.toLocalDate(), latitude, longitude, ZoneId.systemDefault());
+        return WallpaperMood.select(rotation, moods,
+                WallpaperMood.timeOfDay(now.getHour() * 60 + now.getMinute(), sun[0], sun[1]));
+    }
+
+    private void moveClock() {
+        content.animate().alpha(0f).setDuration(900).withLayer().withEndAction(() -> {
+            placeClock();
+            content.animate().alpha(1f).setDuration(1200).withLayer().start();
+        }).start();
+    }
+
+    /** A random spot that keeps the whole clock on screen, with the glow centred behind it. */
+    private void placeClock() {
+        View parent = (View) content.getParent();
+        int maxX = Math.max(0, parent.getWidth() - content.getWidth());
+        int maxY = Math.max(0, parent.getHeight() - content.getHeight());
+        float x = maxX * (0.1f + 0.8f * random.nextFloat());
+        float y = maxY * (0.1f + 0.8f * random.nextFloat());
+        content.setX(x);
+        content.setY(y);
+        if (parent.getWidth() > 0 && parent.getHeight() > 0) {
+            glow.setGradientCenter((x + content.getWidth() / 2f) / parent.getWidth(),
+                    (y + content.getHeight() / 2f) / parent.getHeight());
+        }
+    }
+
+    private void shiftGlow() {
+        if (wallpaperShown) return;
+        int from = glowColor;
+        colorIndex = (colorIndex + 1) % PALETTE.length;
+        int to = PALETTE[colorIndex];
+        ArgbEvaluator mix = new ArgbEvaluator();
+        for (int i = 1; i <= GLOW_STEPS; i++) {
+            float f = (float) i / GLOW_STEPS;
+            handler.postDelayed(() -> setGlow((int) mix.evaluate(f, from, to)), i * GLOW_STEP_MS);
+        }
+    }
+
+    private void setGlow(int color) {
+        glowColor = color;
+        int c = color & 0x00FFFFFF;
+        glow.setColors(new int[]{0x40000000 | c, 0x14000000 | c, 0x00000000 | c});
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\Config.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.os.Environment;
+import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * The launcher's settings: the values in res/values/config.xml, with an optional overlay read from
+ * {@code config.json} in the app's external files directory
+ * ({@code /sdcard/Android/data/com.gathin.tvhome/files/}). Every key in the JSON is optional and an
+ * unknown or badly typed key is ignored, so a theme can change the dock and the look without a rebuild:
+ * {@code tools/theme.sh themes/<name>} pushes a theme folder there and restarts Home.
+ *
+ * Read once in {@link MainActivity#onCreate}; nothing here touches the network.
+ */
+final class Config {
+    private static final String TAG = "TvHome.Config";
+    static final String FILE_NAME = "config.json";
+    static final String WALLPAPER_NAME = "wallpaper.jpg";
+    static final String SETTINGS_NAME = "launcher_settings";
+    static final String ROWS_BELOW_DOCK_KEY = "rows_below_dock";
+    static final String WALLPAPER_CHOICE_KEY = "wallpaper_choice";
+    static final String DOCK_OPACITY_KEY = "dock_opacity";
+    static final String CLOCK_FORMAT_KEY = "clock_format";
+    /**
+     * Counts the changes made in Launcher settings. Home remembers the count it was built with and rebuilds on
+     * resume when it differs, however the settings were left (see MainActivity#onResume).
+     */
+    static final String SETTINGS_REVISION_KEY = "settings_revision";
+
+    /** True when Launcher settings changed something since Home was built at revision {@code seen}. */
+    static boolean settingsChanged(long seen, long current) {
+        return seen != current;
+    }
+    private static final String THEME_REVISION_NAME = "theme_revision";
+    private static final String THEME_SIGNATURE_KEY = "theme_signature";
+
+    final List<String> dockApps;
+    /** Grid apps fill the dock slots dock_apps leaves free (config.xml, fill_dock); on by default, false leaves the slots empty. */
+    final boolean fillDock;
+    final List<String> hiddenApps;
+    /** Packages pre-seeded into the App library's "added" set (config.xml, library_apps); empty by default. */
+    final List<String> libraryApps;
+    /** Packages the App library catalogue never offers, even with app_library on (config.xml, library_excluded_apps). */
+    final List<String> libraryExcludedApps;
+    final String liveTvPackage;
+    final String liveTvAction;
+    final String liveTvInputId;
+    /** Package to the action its tile sends instead of opening the start screen (config.xml, launch_actions). */
+    final Map<String, String> launchActions;
+    /** Package to the name its tile shows instead of the app's label (config.xml, app_labels). */
+    final Map<String, String> appLabels;
+    /** Package to a bundled banner_* drawable its tile shows instead of the app's art (config.xml, app_banners). */
+    final Map<String, String> appBanners;
+    final String sourcePanelService;
+    final String sourcePanelAction;
+    /** One int extra for the source panel, "name=value" (config.xml source_panel_extra); empty for none. */
+    final String sourcePanelExtra;
+    /** List Coocaa OS sources from com.skyworth.tv in the Inputs menu (config.xml coocaa_sources). */
+    final boolean coocaaSources;
+    final String inputAction;
+    /** Vendor source numbers for passthrough inputs (config.xml or theme input_sources). */
+    final List<String> inputSources;
+    /** Scheme an Inputs row's passthrough URI is sent with instead of content:// (config.xml or theme input_uri_scheme). */
+    final String inputUriScheme;
+    final int columns;
+    final boolean animations;
+    final boolean advancedEffects;
+    final int rowsBelowDock;
+    final boolean shamsiDate;
+    /** Lunisolar date under the date (config.json lunar_date), computed for lunarUtcOffset hours east of UTC (-1: by locale). */
+    final boolean lunarDate;
+    final int lunarUtcOffset;
+    /** The date on its own line under the clock instead of beside it (config.xml, date_below_clock). */
+    final boolean dateBelowClock;
+    /** The VPN state as its own pill after the network pill, instead of a badge inside it (config.xml, vpn_pill). */
+    final boolean vpnPill;
+    /** Language tag the launcher shows itself in instead of the TV's, or "" for the TV's (config.xml, locale). */
+    final String locale;
+    /** Name after the greeting ("Good morning, Mr. Trá»‹nh"); empty for the greeting alone. */
+    final String greetingName;
+    final boolean moduleCards;
+    /** Calmer motion for weak GPUs (config.xml, reduced_motion): stiff spring, short fades, no replay. */
+    final boolean reducedMotion;
+    /** Open the Live TV app on the first Home after the TV starts (config.xml, boot_to_live_tv). */
+    final boolean bootToLiveTv;
+    /** Show the Open on start row in Launcher settings (config.xml, open_on_start_choice). */
+    final boolean openOnStartChoice;
+    /** Seconds the boot's app waits for a validated network; 0 opens it at once (open_on_start_network_wait). */
+    final int openOnStartNetworkWait;
+    /** The Open on start app also opens when the screen comes back on (config.xml, open_on_start_on_wake). */
+    final boolean openOnStartOnWake;
+    /** The focused dock app's name in large type above the dock (config.xml, dock_title). */
+    final boolean dockTitle;
+    /** The dock as its own row: band, no names, parked low (config.xml dock_row). false: one plain grid. */
+    final boolean dockRow;
+    /** Inputs, Wi-Fi and Settings folded into one gear button with a dropdown, like Google TV (config.xml top_menu). */
+    final boolean topMenu;
+    /** Direct launcher-settings header action; off by default (launcher_settings_button). */
+    final boolean launcherSettingsButton;
+    /** Names under every tile, dimmed until focused (config.xml always_show_names); the dock band grows for them. */
+    final boolean alwaysShowNames;
+    /** Reorder button in the top bar (config.xml reorder_button); the Settings long-press menu offers it either way. */
+    final boolean reorderButton;
+    /** Show the Wi-Fi/Ethernet pill in the top bar (config.xml, show_network_pill). */
+    final boolean showNetworkPill;
+    /** Show the Inputs pill when the TV has inputs to list (config.xml, show_inputs_pill). */
+    final boolean showInputsPill;
+    /** Wi-Fi and Settings pills as round icon buttons, Inputs keeps its label (config.xml icon_only_buttons). */
+    final boolean iconOnlyButtons;
+    /** The Inputs pill as a round icon button too (config.xml icon_only_inputs). */
+    final boolean iconOnlyInputs;
+    /** With vpn_pill, the VPN pill as a round lock button (config.xml / theme icon_only_vpn). */
+    final boolean iconOnlyVpn;
+    /** Back on the Home screen opens the clock screensaver instead of doing nothing (config.xml / theme back_opens_clock). */
+    final boolean backOpensClock;
+    /** The ambient glow takes a new app's colour in one frame instead of dipping and fading (config.xml / theme glow_snap). */
+    final boolean glowSnap;
+    /** The remote's Settings button clears the TV Settings task before opening it (config.xml / theme settings_key_clear_task). */
+    final boolean settingsKeyClearTask;
+    /** App library as a round button in the top bar (config.xml library_button); needs app_library. */
+    final boolean libraryButton;
+    /** The App library pill after the last Home row; false hides it while libraryButton is on (show_library_pill). */
+    final boolean showLibraryPill;
+    /** With icon_only_buttons, the Wi-Fi pill keeps the network name up to this width in dp (0: icon only). */
+    final int wifiLabelWidth;
+    /** Decode wallpapers in 32-bit colour instead of RGB_565 (config.xml wallpaper_true_color). */
+    final boolean wallpaperTrueColor;
+    /** The focused tile and the glass highlight swing past their target before settling (config.xml, focus_overshoot). */
+    final boolean focusOvershoot;
+    final String vpnApp;
+    final boolean showHomeSettingsShortcut;
+    /** One line under the clock: CPU, free memory, free storage. Off unless config or a theme turns it on. */
+    final boolean showStats;
+    /** game_day: the package of an add-on that publishes each team's next game (GameDay); empty = off. */
+    final String gameDay;
+    /** App library pill after the last Home row (config.xml app_library). */
+    final boolean appLibrary;
+    /** OK directly toggles Home membership in the library (app_library_selection). */
+    final boolean appLibrarySelection;
+    /** OK opens every app in the library; Add to Home stays in the hold menu (library_ok_opens). */
+    final boolean libraryOkOpens;
+    /** Icon on a card tinted from that icon, instead of the app's banner (config.xml uniform_tiles). */
+    final boolean uniformTiles;
+    /** Background colour behind everything, #RRGGBB; black unless a theme says otherwise. */
+    final int backgroundColor;
+    /** Time-of-day backdrop, 0 to 100 (config.xml, sky_intensity); 0 keeps the plain background. */
+    final int skyIntensity;
+    /** Remote keycodes that open Settings through HomeKeyService (config.xml, settings_key_keycodes). */
+    final int[] settingsKeycodes;
+    /** Extra keycodes that open the input switcher in InputKeyService (config.xml input_key_keycodes). */
+    final int[] inputKeycodes;
+    /** Remote buttons that open an app, "keycode:package" or "KEYCODE_NAME:package" (config.xml app_keys). */
+    final List<String> appKeys;
+    /** Whether the key services request key filtering (config.xml or theme key_filter); false keeps key
+     *  auto-repeat working on firmware whose AccessibilityInputFilter drops repeats (TCL Android 12). */
+    final boolean keyFilter;
+    /** With keyFilter on, the key services stop filtering while a game controller is connected (gamepad_passthrough). */
+    final boolean gamepadPassthrough;
+    /** With keyFilter on, the key services swallow Volume Up/Down and repeat a held one themselves (consume_volume_keys). */
+    final boolean consumeVolumeKeys;
+    /** With keyFilter on, a volume change stops the key services filtering for a few seconds (volume_pauses_filter). */
+    final boolean volumePausesFilter;
+    /** Channel Up/Down do nothing while Home is in front, instead of opening the TV's Live TV app. */
+    final boolean homeIgnoreChannelKeys;
+    /** Stock launcher whose home screen is sent back here if the firmware revives it (config.xml stock_home_redirect). */
+    final String stockHomeRedirect;
+    /** A Live TV window the firmware opens by itself at power-on is sent back to Home (power_on_home). */
+    final boolean powerOnHome;
+    /** Every Home press opens this launcher, a held one too, instead of Android's long-press action (home_long_press_home). */
+    final boolean homeLongPressHome;
+    /** Home at every power-on, whatever the firmware put in front: an input, Live TV or an app (power_on_home_always). */
+    final boolean powerOnHomeAlways;
+    /** The Inputs menu lists only inputs reporting connected; the rest fold behind a More inputs row (config.xml / theme inputs_connected_only). */
+    final boolean inputsConnectedOnly;
+    /** Only CEC device rows in the Inputs menu show a connection state, never a bare HDMI port (config.xml / theme inputs_cec_state_only). */
+    final boolean inputsCecStateOnly;
+    /** "12", "24" or "system" (theme clock_format, or Launcher settings' Clock row); see ClockFormat. */
+    final String clockFormat;
+    /** The Settings button opens the quick settings panel instead of the TV's Settings (settings_key_panel). */
+    final boolean settingsKeyPanel;
+    /** Home puts the remote's accessibility helpers back after a force stop (restore_key_services; ServiceRepair). */
+    final boolean restoreKeyServices;
+    /** Whether themes may show a wallpaper (config.json, wallpaper). */
+    final boolean wallpaperEnabled;
+    /** Full-screen picture behind the launcher, or null for the plain colour. */
+    final File wallpaper;
+    /** Rotating theme images, or the single wallpaper when no collection is configured. */
+    final List<File> wallpapers;
+    final int wallpaperRotationMinutes;
+    final int wallpaperDim;
+    /** The dock band's opacity in percent (config.json dock_opacity, 30-100): below 100 the wallpaper shows through. */
+    final int dockOpacity;
+    /**
+     * Playback order for a wallpaper collection: {@code sequential} or {@code shuffle}. Missing or
+     * invalid values keep the historical shuffle so existing themes rotate exactly as before.
+     */
+    final String wallpaperOrder;
+    /** Whether the overlay file was present and parsed. */
+    final boolean overlayApplied;
+    /** Festive skin from a theme (festival, festival_until, greeting, accent_color); {@link Festival#NONE} if none. */
+    final Festival festival;
+    /** F1 weekends from a theme's race_calendar (see RaceWeekend); empty when the theme has none. */
+    final List<RaceWeekend.Race> raceCalendar;
+    /** Cinematic top shelf (config.xml, cinematic_home): the focused dock app's artwork behind a larger shelf. */
+    final boolean cinematicHome;
+    /** The glow in the focused app's colour behind the dock (config.xml, ambient_glow); false keeps the background plain. */
+    final boolean ambientGlow;
+    /** The focus highlight in the focused app's colour on every tile (config.xml, app_glow), as cinematic_home does for the dock. */
+    final boolean appGlow;
+    /** The rows fade out under the clock instead of being cut off (config.xml, fade_rows); TopFade. */
+    final boolean fadeRows;
+    /** Minutes Home may sit untouched before the clock screensaver (config.xml, home_idle_clock_minutes); 0 is off. */
+    final int homeIdleClockMinutes;
+    /** The dock band as light frosted glass like the pills (config.xml, dock_glass); false keeps the solid band. */
+    final boolean dockGlass;
+    /** The dock band's padding equals the gap between its tiles (config.xml, dock_even_padding); false keeps the fixed padding. */
+    final boolean dockEvenPadding;
+    /** The dock band and its edge draw (dock_band); false leaves the tiles floating on the wallpaper. */
+    final boolean dockBand;
+    /** The dock position dots under the cinematic shelf's name (config.xml, cinematic_dots); false leaves them out. */
+    final boolean cinematicDots;
+    /** The cinematic shelf keeps the white focus highlight instead of the app's colour (config.xml, cinematic_white_focus). */
+    final boolean cinematicWhiteFocus;
+    /** The Wi-Fi pill's icon green while the TV is online (config.xml, wifi_status_color); false keeps it white. */
+    final boolean wifiStatusColor;
+    /** Opacity of the app's artwork behind the cinematic shelf, 0 to 100 (config.xml, cinematic_art); 50 as before. */
+    final int cinematicArt;
+    /** Strength of the cinematic shelf's dark scrim, 0 to 100 percent (config.xml, cinematic_scrim); 100 as before. */
+    final int cinematicScrim;
+    /** A rotating collection's groups by time of day, as file names (config.xml, wallpaper_moods); empty rotates through all of it. */
+    final Map<String, Set<String>> wallpaperMoods;
+    /** Shape of the glow behind the focused app (config.xml, glow_style): {@link #GLOW_RADIAL} or {@link #GLOW_HORIZON}. */
+    final String glowStyle;
+    /** The focus highlight's look (config.xml, glass_style): {@link #GLASS_DEFAULT}, {@link #GLASS_RIM} or {@link #GLASS_HALO}. */
+    final String glassStyle;
+
+    static final String GLOW_RADIAL = "radial", GLOW_HORIZON = "horizon";
+    static final String GLASS_DEFAULT = "glass", GLASS_RIM = "rim", GLASS_HALO = "halo";
+    /** Show each rotating wallpaper's name from wallpapers/captions.txt (config.xml / theme wallpaper_captions). */
+    final boolean wallpaperCaptions;
+    /** Answer VIEW_INPUTS with the Inputs menu (handle_view_inputs); see InputsRequestActivity. */
+    final boolean handleViewInputs;
+    /** Hold OK on a tile opens a menu (Move, Remove from Home, App info) instead of App info (config.xml / theme tile_menu). */
+    final boolean tileMenu;
+    /** With wifi_status_color, the icon orange while connected without internet (a captive portal) and red while offline (config.xml, wifi_status_warnings). */
+    final boolean wifiStatusWarnings;
+    /** Apps shown as round logo buttons in the top bar, left of the network pill, and no longer as tiles (config.xml, top_bar_apps). */
+    final List<String> topBarApps;
+    /** The greeting above the clock (Good evening); false hides it (config.xml, show_greeting). */
+    final boolean showGreeting;
+    /** The date and the line between it and the clock in the clock's full white instead of dimmed (config.xml, header_white). */
+    final boolean headerWhite;
+    /** The clock screensaver over Home's wallpaper instead of the black glow (config.xml, clock_wallpaper). */
+    final boolean clockWallpaper;
+    /** How dark the clock screensaver's wallpaper is, 0 to 90 % (config.xml, clock_wallpaper_dim). */
+    final int clockWallpaperDim;
+    /** The clock screensaver's coloured glow; false leaves the clock on plain black, e.g. for an OLED (config.xml, clock_glow). */
+    final boolean clockGlow;
+    /** Every app in the dock's row, which scrolls sideways, and no grid below it (config.xml, single_row); needs dock_row. */
+    final boolean singleRow;
+    /** With single_row, the band runs behind every app in the row, not only the dock apps (config.xml, dock_band_all). */
+    final boolean dockBandAll;
+
+    private Config(List<String> dockApps, boolean fillDock, List<String> hiddenApps, List<String> libraryApps, List<String> libraryExcludedApps, String liveTvPackage,
+                   String liveTvAction, String liveTvInputId, Map<String, String> launchActions, Map<String, String> appLabels,
+                   Map<String, String> appBanners, String sourcePanelService, String sourcePanelAction,
+                   String sourcePanelExtra, boolean coocaaSources, String inputAction, List<String> inputSources,
+                   String inputUriScheme, int columns, int rowsBelowDock, boolean animations, boolean advancedEffects,
+                   boolean shamsiDate, String greetingName, boolean moduleCards, boolean reducedMotion, boolean bootToLiveTv, boolean openOnStartChoice, boolean dockTitle, boolean dockRow, boolean topMenu, boolean launcherSettingsButton, boolean reorderButton, boolean showNetworkPill, boolean showInputsPill, boolean iconOnlyButtons, boolean iconOnlyInputs, boolean libraryButton, boolean showLibraryPill, int wifiLabelWidth, boolean alwaysShowNames, boolean wallpaperTrueColor, boolean focusOvershoot, String vpnApp,
+                   boolean showHomeSettingsShortcut, boolean showStats, String gameDay, boolean appLibrary, boolean appLibrarySelection, boolean libraryOkOpens, boolean uniformTiles, int backgroundColor, int skyIntensity,
+                   int[] settingsKeycodes, boolean settingsKeyPanel, boolean restoreKeyServices, boolean wallpaperEnabled, File wallpaper, List<File> wallpapers,
+                   int wallpaperRotationMinutes, int wallpaperDim, int dockOpacity, String wallpaperOrder, boolean overlayApplied,
+                   Festival festival, int[] inputKeycodes, List<String> appKeys, String stockHomeRedirect,
+                   List<RaceWeekend.Race> raceCalendar, boolean cinematicHome, boolean ambientGlow, boolean appGlow, boolean fadeRows, int homeIdleClockMinutes,
+                   boolean keyFilter, boolean dockGlass, String glowStyle, boolean wallpaperCaptions,
+                   boolean handleViewInputs, boolean tileMenu, boolean dockEvenPadding, boolean dockBand, boolean cinematicDots, boolean cinematicWhiteFocus, boolean wifiStatusColor, int cinematicScrim, int cinematicArt,
+                   Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean volumePausesFilter, boolean homeIgnoreChannelKeys, boolean powerOnHome, boolean homeLongPressHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean vpnPill, String locale, boolean powerOnHomeAlways, boolean inputsConnectedOnly, boolean inputsCecStateOnly,
+                   int openOnStartNetworkWait, boolean openOnStartOnWake, boolean iconOnlyVpn, String clockFormat, boolean backOpensClock, boolean glowSnap,
+                   boolean settingsKeyClearTask) {
+        this.handleViewInputs = handleViewInputs;
+        this.tileMenu = tileMenu;
+        this.inputKeycodes = inputKeycodes;
+        this.appKeys = Collections.unmodifiableList(appKeys);
+        this.keyFilter = keyFilter;
+        this.stockHomeRedirect = stockHomeRedirect;
+        this.dockApps = Collections.unmodifiableList(dockApps);
+        this.fillDock = fillDock;
+        this.hiddenApps = Collections.unmodifiableList(hiddenApps);
+        this.libraryApps = Collections.unmodifiableList(libraryApps);
+        this.libraryExcludedApps = Collections.unmodifiableList(libraryExcludedApps);
+        this.liveTvPackage = liveTvPackage;
+        this.liveTvAction = liveTvAction;
+        this.liveTvInputId = liveTvInputId;
+        this.launchActions = Collections.unmodifiableMap(launchActions);
+        this.appLabels = Collections.unmodifiableMap(appLabels);
+        this.appBanners = Collections.unmodifiableMap(appBanners);
+        this.sourcePanelService = sourcePanelService;
+        this.sourcePanelAction = sourcePanelAction;
+        this.sourcePanelExtra = sourcePanelExtra;
+        this.coocaaSources = coocaaSources;
+        this.inputAction = inputAction;
+        this.inputSources = Collections.unmodifiableList(inputSources);
+        this.inputUriScheme = inputUriScheme;
+        this.columns = columns;
+        this.rowsBelowDock = rowsBelowDock;
+        this.animations = animations;
+        this.advancedEffects = advancedEffects;
+        this.shamsiDate = shamsiDate;
+        this.lunarDate = lunarDate;
+        this.lunarUtcOffset = lunarUtcOffset;
+        this.dateBelowClock = dateBelowClock;
+        this.vpnPill = vpnPill;
+        this.locale = locale;
+        this.greetingName = greetingName;
+        this.moduleCards = moduleCards;
+        this.reducedMotion = reducedMotion;
+        this.bootToLiveTv = bootToLiveTv;
+        this.openOnStartChoice = openOnStartChoice;
+        this.dockTitle = dockTitle;
+        this.dockRow = dockRow;
+        this.topMenu = topMenu;
+        this.launcherSettingsButton = launcherSettingsButton;
+        this.reorderButton = reorderButton;
+        this.showNetworkPill = showNetworkPill;
+        this.showInputsPill = showInputsPill;
+        this.iconOnlyButtons = iconOnlyButtons;
+        this.iconOnlyInputs = iconOnlyInputs;
+        this.iconOnlyVpn = iconOnlyVpn;
+        this.backOpensClock = backOpensClock;
+        this.glowSnap = glowSnap;
+        this.settingsKeyClearTask = settingsKeyClearTask;
+        this.libraryButton = libraryButton;
+        this.showLibraryPill = showLibraryPill;
+        this.wifiLabelWidth = wifiLabelWidth;
+        this.alwaysShowNames = alwaysShowNames;
+        this.wallpaperTrueColor = wallpaperTrueColor;
+        this.focusOvershoot = focusOvershoot;
+        this.vpnApp = vpnApp;
+        this.showHomeSettingsShortcut = showHomeSettingsShortcut;
+        this.showStats = showStats;
+        this.gameDay = gameDay;
+        this.appLibrary = appLibrary;
+        this.appLibrarySelection = appLibrarySelection;
+        this.libraryOkOpens = libraryOkOpens;
+        this.uniformTiles = uniformTiles;
+        this.backgroundColor = backgroundColor;
+        this.skyIntensity = skyIntensity;
+        this.settingsKeycodes = settingsKeycodes;
+        this.settingsKeyPanel = settingsKeyPanel;
+        this.restoreKeyServices = restoreKeyServices;
+        this.wallpaperEnabled = wallpaperEnabled;
+        this.wallpaper = wallpaper;
+        this.wallpapers = Collections.unmodifiableList(wallpapers);
+        this.wallpaperRotationMinutes = wallpaperRotationMinutes;
+        this.wallpaperDim = wallpaperDim;
+        this.dockOpacity = dockOpacity;
+        this.wallpaperOrder = wallpaperOrder;
+        this.overlayApplied = overlayApplied;
+        this.festival = festival;
+        this.raceCalendar = Collections.unmodifiableList(raceCalendar);
+        this.cinematicHome = cinematicHome;
+        this.ambientGlow = ambientGlow;
+        this.appGlow = appGlow;
+        this.fadeRows = fadeRows;
+        this.homeIdleClockMinutes = homeIdleClockMinutes;
+        this.dockGlass = dockGlass;
+        this.dockEvenPadding = dockEvenPadding;
+        this.dockBand = dockBand;
+        this.cinematicDots = cinematicDots;
+        this.cinematicWhiteFocus = cinematicWhiteFocus;
+        this.wifiStatusColor = wifiStatusColor;
+        this.cinematicArt = cinematicArt;
+        this.cinematicScrim = cinematicScrim;
+        this.wallpaperMoods = wallpaperMoods;
+        this.gamepadPassthrough = gamepadPassthrough;
+        this.consumeVolumeKeys = consumeVolumeKeys;
+        this.volumePausesFilter = volumePausesFilter;
+        this.homeIgnoreChannelKeys = homeIgnoreChannelKeys;
+        this.powerOnHome = powerOnHome;
+        this.homeLongPressHome = homeLongPressHome;
+        this.powerOnHomeAlways = powerOnHomeAlways;
+        this.inputsConnectedOnly = inputsConnectedOnly;
+        this.inputsCecStateOnly = inputsCecStateOnly;
+        this.openOnStartNetworkWait = openOnStartNetworkWait;
+        this.openOnStartOnWake = openOnStartOnWake;
+        this.clockFormat = clockFormat;
+        this.wifiStatusWarnings = wifiStatusWarnings;
+        this.topBarApps = Collections.unmodifiableList(topBarApps);
+        this.showGreeting = showGreeting;
+        this.headerWhite = headerWhite;
+        this.clockWallpaper = clockWallpaper;
+        this.clockWallpaperDim = clockWallpaperDim;
+        this.clockGlow = clockGlow;
+        this.singleRow = singleRow;
+        this.dockBandAll = dockBandAll;
+        this.glowStyle = glowStyle(glowStyle);
+        this.wallpaperCaptions = wallpaperCaptions;
+        this.glassStyle = glassStyle(glassStyle);
+    }
+
+    /** A known glow_style, or radial (the default) for anything else. */
+    static String glowStyle(String value) {
+        return value != null && GLOW_HORIZON.equalsIgnoreCase(value.trim()) ? GLOW_HORIZON : GLOW_RADIAL;
+    }
+
+    /** A known glass_style, or glass (the default) for anything else. */
+    static String glassStyle(String value) {
+        if (value == null) return GLASS_DEFAULT;
+        String v = value.trim();
+        if (GLASS_RIM.equalsIgnoreCase(v)) return GLASS_RIM;
+        return GLASS_HALO.equalsIgnoreCase(v) ? GLASS_HALO : GLASS_DEFAULT;
+    }
+
+    /** The folder the theme tools push into; null when external storage is unavailable. */
+    static File dir(Context ctx) {
+        return ctx.getExternalFilesDir(null);
+    }
+
+    static Config load(Context ctx) {
+        Resources res = ctx.getResources();
+        List<String> dock = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.dock_apps)));
+        boolean fillDock = res.getBoolean(R.bool.fill_dock);
+        List<String> hidden = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.hidden_apps)));
+        List<String> libraryApps = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.library_apps)));
+        List<String> libraryExcludedApps = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.library_excluded_apps)));
+        String liveTv = res.getString(R.string.live_tv_package).trim();
+        String liveTvAction = res.getString(R.string.live_tv_action).trim();
+        String liveTvInputId = res.getString(R.string.live_tv_input_id).trim();
+        List<String> launchActions = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.launch_actions)));
+        List<String> appLabels = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.app_labels)));
+        List<String> appBanners = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.app_banners)));
+        String panelService = res.getString(R.string.source_panel_service).trim();
+        String panelAction = res.getString(R.string.source_panel_action).trim();
+        String panelExtra = res.getString(R.string.source_panel_extra).trim();
+        boolean coocaaSources = res.getBoolean(R.bool.coocaa_sources);
+        String inputAction = res.getString(R.string.input_action).trim();
+        List<String> inputSources = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.input_sources)));
+        String inputUriScheme = res.getString(R.string.input_uri_scheme).trim();
+        int columns = res.getInteger(R.integer.columns);
+        int rowsBelow = res.getInteger(R.integer.rows_below_dock);
+        boolean animations = res.getBoolean(R.bool.animations);
+        boolean advancedEffects = res.getBoolean(R.bool.advanced_effects);
+        boolean shamsi = res.getBoolean(R.bool.shamsi_date);
+        boolean lunar = res.getBoolean(R.bool.lunar_date);
+        int lunarOffset = -1;
+        String greetingName = res.getString(R.string.greeting_name).trim();
+        boolean moduleCards = res.getBoolean(R.bool.module_cards);
+        boolean reducedMotion = res.getBoolean(R.bool.reduced_motion);
+        boolean bootToLiveTv = res.getBoolean(R.bool.boot_to_live_tv);
+        boolean openOnStartChoice = res.getBoolean(R.bool.open_on_start_choice);
+        int openOnStartNetworkWait = res.getInteger(R.integer.open_on_start_network_wait);
+        boolean openOnStartOnWake = res.getBoolean(R.bool.open_on_start_on_wake);
+        boolean dockTitle = res.getBoolean(R.bool.dock_title);
+        boolean dockRow = res.getBoolean(R.bool.dock_row);
+        boolean topMenu = res.getBoolean(R.bool.top_menu);
+        boolean launcherSettingsButton = res.getBoolean(R.bool.launcher_settings_button);
+        boolean reorderButton = res.getBoolean(R.bool.reorder_button);
+        boolean showNetworkPill = res.getBoolean(R.bool.show_network_pill);
+        boolean showInputsPill = res.getBoolean(R.bool.show_inputs_pill);
+        boolean iconOnlyButtons = res.getBoolean(R.bool.icon_only_buttons);
+        boolean iconOnlyInputs = res.getBoolean(R.bool.icon_only_inputs);
+        boolean iconOnlyVpn = res.getBoolean(R.bool.icon_only_vpn);
+        boolean backOpensClock = res.getBoolean(R.bool.back_opens_clock);
+        boolean glowSnap = res.getBoolean(R.bool.glow_snap);
+        boolean settingsKeyClearTask = res.getBoolean(R.bool.settings_key_clear_task);
+        boolean libraryButton = res.getBoolean(R.bool.library_button);
+        boolean showLibraryPill = res.getBoolean(R.bool.show_library_pill);
+        int wifiLabelWidth = res.getInteger(R.integer.wifi_label_width);
+        boolean alwaysShowNames = res.getBoolean(R.bool.always_show_names);
+        boolean wallpaperTrueColor = res.getBoolean(R.bool.wallpaper_true_color);
+        boolean focusOvershoot = res.getBoolean(R.bool.focus_overshoot);
+        boolean wallpaperCaptions = res.getBoolean(R.bool.wallpaper_captions);
+        boolean tileMenu = res.getBoolean(R.bool.tile_menu);
+        String vpn = res.getString(R.string.vpn_app).trim();
+        boolean homeSettings = res.getBoolean(R.bool.show_home_settings_shortcut);
+        boolean showStats = res.getBoolean(R.bool.show_stats);
+        String gameDay = res.getString(R.string.game_day).trim();
+        boolean library = res.getBoolean(R.bool.app_library);
+        boolean librarySelection = res.getBoolean(R.bool.app_library_selection);
+        boolean libraryOkOpens = res.getBoolean(R.bool.library_ok_opens);
+        boolean uniformTiles = res.getBoolean(R.bool.uniform_tiles);
+        int background = 0xFF000000;
+        int skyIntensity = res.getInteger(R.integer.sky_intensity);
+        int[] settingsKeycodes = res.getIntArray(R.array.settings_key_keycodes);
+        boolean settingsKeyPanel = res.getBoolean(R.bool.settings_key_panel);
+        boolean restoreKeyServices = res.getBoolean(R.bool.restore_key_services);
+        int[] inputKeycodes = res.getIntArray(R.array.input_key_keycodes);
+        boolean handleViewInputs = res.getBoolean(R.bool.handle_view_inputs);
+        List<String> appKeys = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.app_keys)));
+        String stockHomeRedirect = res.getString(R.string.stock_home_redirect).trim();
+        boolean cinematic = res.getBoolean(R.bool.cinematic_home);
+        boolean ambientGlow = res.getBoolean(R.bool.ambient_glow);
+        boolean appGlow = res.getBoolean(R.bool.app_glow);
+        boolean fadeRows = res.getBoolean(R.bool.fade_rows);
+        int idleClockMinutes = res.getInteger(R.integer.home_idle_clock_minutes);
+        boolean keyFilter = res.getBoolean(R.bool.key_filter);
+        boolean gamepadPassthrough = res.getBoolean(R.bool.gamepad_passthrough);
+        boolean consumeVolumeKeys = res.getBoolean(R.bool.consume_volume_keys);
+        boolean volumePausesFilter = res.getBoolean(R.bool.volume_pauses_filter);
+        boolean homeIgnoreChannelKeys = res.getBoolean(R.bool.home_ignore_channel_keys);
+        boolean powerOnHome = res.getBoolean(R.bool.power_on_home);
+        boolean homeLongPressHome = res.getBoolean(R.bool.home_long_press_home);
+        boolean powerOnHomeAlways = res.getBoolean(R.bool.power_on_home_always);
+        boolean inputsConnectedOnly = res.getBoolean(R.bool.inputs_connected_only);
+        boolean inputsCecStateOnly = res.getBoolean(R.bool.inputs_cec_state_only);
+        String clockFormat = res.getString(R.string.clock_format);
+        boolean dockGlass = res.getBoolean(R.bool.dock_glass);
+        boolean dockEvenPadding = res.getBoolean(R.bool.dock_even_padding);
+        boolean dockBand = res.getBoolean(R.bool.dock_band);
+        boolean cinematicDots = res.getBoolean(R.bool.cinematic_dots);
+        boolean cinematicWhiteFocus = res.getBoolean(R.bool.cinematic_white_focus);
+        boolean wifiStatusColor = res.getBoolean(R.bool.wifi_status_color);
+        int cinematicArt = res.getInteger(R.integer.cinematic_art);
+        int cinematicScrim = res.getInteger(R.integer.cinematic_scrim);
+        Map<String, Set<String>> wallpaperMoods = moods(res.getString(R.string.wallpaper_moods));
+        String glowStyle = res.getString(R.string.glow_style);
+        boolean wifiStatusWarnings = res.getBoolean(R.bool.wifi_status_warnings);
+        boolean dateBelowClock = res.getBoolean(R.bool.date_below_clock);
+        boolean vpnPill = res.getBoolean(R.bool.vpn_pill);
+        String locale = res.getString(R.string.locale).trim();
+        List<String> topBarApps = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.top_bar_apps)));
+        boolean showGreeting = res.getBoolean(R.bool.show_greeting);
+        boolean headerWhite = res.getBoolean(R.bool.header_white);
+        boolean clockWallpaper = res.getBoolean(R.bool.clock_wallpaper);
+        int clockWallpaperDim = res.getInteger(R.integer.clock_wallpaper_dim);
+        boolean clockGlow = res.getBoolean(R.bool.clock_glow);
+        String glassStyle = res.getString(R.string.glass_style);
+        boolean singleRow = res.getBoolean(R.bool.single_row);
+        boolean dockBandAll = res.getBoolean(R.bool.dock_band_all);
+        boolean applied = false;
+
+        File dir = dir(ctx);
+        File file = dir != null ? new File(dir, FILE_NAME) : null;
+        boolean mounted = Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+        JSONObject json = readOverlay(ctx, file, mounted);
+        if (json != null) {
+            applied = true;
+            dock = stringList(json, "dock_apps", dock);
+            fillDock = bool(json, "fill_dock", fillDock);
+            hidden = stringList(json, "hidden_apps", hidden);
+            libraryApps = stringList(json, "library_apps", libraryApps);
+            libraryExcludedApps = stringList(json, "library_excluded_apps", libraryExcludedApps);
+            liveTv = string(json, "live_tv_package", liveTv);
+            liveTvAction = string(json, "live_tv_action", liveTvAction);
+            liveTvInputId = string(json, "live_tv_input_id", liveTvInputId);
+            launchActions = stringList(json, "launch_actions", launchActions);
+            appLabels = stringList(json, "app_labels", appLabels);
+            appBanners = stringList(json, "app_banners", appBanners);
+            panelService = string(json, "source_panel_service", panelService);
+            panelAction = string(json, "source_panel_action", panelAction);
+            panelExtra = string(json, "source_panel_extra", panelExtra).trim();
+            coocaaSources = bool(json, "coocaa_sources", coocaaSources);
+            inputAction = string(json, "input_action", inputAction);
+            inputSources = stringList(json, "input_sources", inputSources);
+            inputUriScheme = string(json, "input_uri_scheme", inputUriScheme).trim();
+            columns = integer(json, "columns", columns, 1, 8);
+            rowsBelow = integer(json, "rows_below_dock", rowsBelow, 0, 3);
+            animations = bool(json, "animations", animations);
+            advancedEffects = bool(json, "advanced_effects", advancedEffects);
+            shamsi = bool(json, "shamsi_date", shamsi);
+            lunar = bool(json, "lunar_date", lunar);
+            lunarOffset = integer(json, "lunar_utc_offset", lunarOffset, -1, 14);
+            greetingName = string(json, "greeting_name", greetingName).trim();
+            moduleCards = bool(json, "module_cards", moduleCards);
+            reducedMotion = bool(json, "reduced_motion", reducedMotion);
+            bootToLiveTv = bool(json, "boot_to_live_tv", bootToLiveTv);
+            openOnStartChoice = bool(json, "open_on_start_choice", openOnStartChoice);
+            openOnStartNetworkWait = integer(json, "open_on_start_network_wait", openOnStartNetworkWait, 0, 600);
+            openOnStartOnWake = bool(json, "open_on_start_on_wake", openOnStartOnWake);
+            dockTitle = bool(json, "dock_title", dockTitle);
+            dockRow = bool(json, "dock_row", dockRow);
+            topMenu = bool(json, "top_menu", topMenu);
+            launcherSettingsButton = bool(json, "launcher_settings_button", launcherSettingsButton);
+            reorderButton = bool(json, "reorder_button", reorderButton);
+            showNetworkPill = bool(json, "show_network_pill", showNetworkPill);
+            showInputsPill = bool(json, "show_inputs_pill", showInputsPill);
+            iconOnlyButtons = bool(json, "icon_only_buttons", iconOnlyButtons);
+            iconOnlyInputs = bool(json, "icon_only_inputs", iconOnlyInputs);
+            iconOnlyVpn = bool(json, "icon_only_vpn", iconOnlyVpn);
+            backOpensClock = bool(json, "back_opens_clock", backOpensClock);
+            glowSnap = bool(json, "glow_snap", glowSnap);
+            settingsKeyClearTask = bool(json, "settings_key_clear_task", settingsKeyClearTask);
+            libraryButton = bool(json, "library_button", libraryButton);
+            showLibraryPill = bool(json, "show_library_pill", showLibraryPill);
+            wifiLabelWidth = integer(json, "wifi_label_width", wifiLabelWidth, 0, 300);
+            alwaysShowNames = bool(json, "always_show_names", alwaysShowNames);
+            wallpaperTrueColor = bool(json, "wallpaper_true_color", wallpaperTrueColor);
+            focusOvershoot = bool(json, "focus_overshoot", focusOvershoot);
+            wallpaperCaptions = bool(json, "wallpaper_captions", wallpaperCaptions);
+            tileMenu = bool(json, "tile_menu", tileMenu);
+            vpn = string(json, "vpn_app", vpn);
+            homeSettings = bool(json, "show_home_settings_shortcut", homeSettings);
+            showStats = bool(json, "show_stats", showStats);
+            gameDay = string(json, "game_day", gameDay);
+            library = bool(json, "app_library", library);
+            librarySelection = bool(json, "app_library_selection", librarySelection);
+            libraryOkOpens = bool(json, "library_ok_opens", libraryOkOpens);
+            uniformTiles = bool(json, "uniform_tiles", uniformTiles);
+            background = color(json, "background_color", background);
+            skyIntensity = integer(json, "sky_intensity", skyIntensity, 0, 100);
+            settingsKeycodes = intArray(json, "settings_key_keycodes", settingsKeycodes);
+            settingsKeyPanel = bool(json, "settings_key_panel", settingsKeyPanel);
+            restoreKeyServices = bool(json, "restore_key_services", restoreKeyServices);
+            inputKeycodes = intArray(json, "input_key_keycodes", inputKeycodes);

@@ -1,0 +1,1500 @@
+﻿import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.hardware.input.InputManager;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.InputDevice;
+
+/**
+ * Stops HomeKeyService and InputKeyService filtering keys while a game controller is connected. With key filtering on,
+ * Android routes every key through the accessibility layer and re-injects the ones the service passes on, and games
+ * (Steam Link with an Xbox controller, on a TCL G07) stop seeing the controller's buttons as the controller's. The
+ * remote buttons the services handle do nothing until the controller disconnects; filtering then comes back.
+ * Off by default (gamepad_passthrough).
+ *
+ * With volume_pauses_filter it also stops filtering for PAUSE_MS after each volume change. On a Xiaomi MOEU0 (Google TV 14) the
+ * window policy changes volume once per press while any service filters keys, and a held volume key never repeats;
+ * the services never see the volume keys, so consume_volume_keys cannot repeat them either. The first press steps
+ * once, a press or hold within PAUSE_MS repeats as usual, and the remote buttons work again once the pause ends. Off by
+ * default (volume_pauses_filter).
+ *
+ * Started only with key_filter on too: with it off the services never filter, and this must not turn filtering back on.
+ */
+final class GamepadPassthrough extends BroadcastReceiver implements InputManager.InputDeviceListener, Runnable {
+    static final long PAUSE_MS = 4000;
+
+    private final AccessibilityService service;
+    private final InputManager input;
+    private final Config config;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
+    private GamepadPassthrough(AccessibilityService service, Config config) {
+        this.service = service;
+        this.input = (InputManager) service.getSystemService(Context.INPUT_SERVICE);
+        this.config = config;
+    }
+
+    /** Null unless a switch that needs it is on, and key_filter: with that off the services never filter keys. */
+    static GamepadPassthrough start(AccessibilityService service, Config config) {
+        if (!config.keyFilter || !(config.gamepadPassthrough || config.volumePausesFilter)) return null;
+        GamepadPassthrough g = new GamepadPassthrough(service, config);
+        // Only for gamepads: a device event ends a volume pause early.
+        if (config.gamepadPassthrough) g.input.registerInputDeviceListener(g, null);
+        if (config.volumePausesFilter) {
+            // A protected system broadcast, so Android 14 needs no exported flag.
+            service.registerReceiver(g, new IntentFilter("android.media.VOLUME_CHANGED_ACTION"));
+        }
+        g.run();
+        return g;
+    }
+
+    void stop() {
+        input.unregisterInputDeviceListener(this);
+        if (config.volumePausesFilter) service.unregisterReceiver(this);
+        handler.removeCallbacks(this);
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        handler.removeCallbacks(this);
+        handler.postDelayed(this, PAUSE_MS);
+        set(false);
+    }
+
+    /**
+     * A gamepad has all the SOURCE_GAMEPAD bits and the SOURCE_JOYSTICK ones, as dumpsys input reports them on a TCL
+     * G07. Either alone is not enough: the Bluetooth voice remote reports a joystick (BT_RC833_U1: 0x01000311), and
+     * the firmware's virtual-search keyboard, which isVirtual() misses, reports a gamepad (0x00000701). An Xbox
+     * controller reports both (0x01000511).
+     */
+    static boolean isGamepad(int sources) {
+        return (sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD
+                && (sources & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK;
+    }
+
+    private boolean gamepadConnected() {
+        for (int id : input.getInputDeviceIds()) {
+            InputDevice device = input.getInputDevice(id);
+            if (device != null && !device.isVirtual() && isGamepad(device.getSources())) return true;
+        }
+        return false;
+    }
+
+    /** Filtering as the gamepads want it; also a pause's end. */
+    @Override
+    public void run() {
+        set(!(config.gamepadPassthrough && gamepadConnected()));
+    }
+
+    private void set(boolean filter) {
+        AccessibilityServiceInfo info = service.getServiceInfo();
+        if (info == null) return;
+        boolean filtering = (info.flags & AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS) != 0;
+        if (filter == filtering) return;
+        // Without the flag no more keys come, the UP of a button held right now included.
+        if (!filter) {
+            RemoteKeys.release(service);
+            // consume_volume_keys: the held key's UP will not come either, so end its repeat too.
+            VolumeKeys.stop();
+        }
+        info.flags ^= AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
+        service.setServiceInfo(info);
+    }
+
+    @Override
+    public void onInputDeviceAdded(int deviceId) {
+        run();
+    }
+
+    @Override
+    public void onInputDeviceRemoved(int deviceId) {
+        run();
+    }
+
+    @Override
+    public void onInputDeviceChanged(int deviceId) {
+        run();
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\GlassView.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.util.AttributeSet;
+import android.view.View;
+
+/**
+ * A translucent glass slab: soft sheen fill, bright top specular, crisp rim and a faint outer glow.
+ * One instance floats over the grid and is moved with spring animations between tiles.
+ */
+public class GlassView extends View {
+
+    private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint specular = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint rim = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint glow = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF rect = new RectF();
+    private final float density;
+    private float radius;
+    /** Glow colour as 0xRRGGBB: white normally, a festival's accent (diya gold) while a festive skin is on. */
+    private int glowRgb = 0xFFFFFF;
+    /** Glow strength: the white glow stays faint, a coloured one needs more alpha to read as warm light. */
+    private int glowAlpha = 0x30;
+    /** glass_style rim or halo: no sheen and no fill, only the crisp rim (and, for halo, a lighter outer glow). */
+    private boolean flat;
+    private boolean halo;
+
+    public GlassView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        density = getResources().getDisplayMetrics().density;
+        radius = 20f * density;
+        rim.setStyle(Paint.Style.STROKE);
+        rim.setStrokeWidth(1.5f * density);
+        rim.setColor(0xCCFFFFFF);
+        glow.setStyle(Paint.Style.STROKE);
+        // Cache the slab as a texture. The spring only changes translation, so the GPU can
+        // move it without replaying clipPath and the glow on every frame. That path is
+        // software-rendered on the MT5895 and is what makes the highlight crawl.
+        setLayerType(LAYER_TYPE_HARDWARE, null);
+    }
+
+    /** Tints the rim and the outer glow; 0 restores the plain white glass. */
+    void setAccent(int argb) {
+        if (argb == 0) {
+            glowRgb = 0xFFFFFF;
+            glowAlpha = 0x30;
+            rim.setColor(0xCCFFFFFF);
+        } else {
+            glowRgb = argb & 0xFFFFFF;
+            glowAlpha = 0x70;
+            // The rim is the accent lifted towards white, so the edge still reads as glass, not paint.
+            int r = (((glowRgb >> 16) & 0xFF) + 255 * 2) / 3, g = (((glowRgb >> 8) & 0xFF) + 255 * 2) / 3,
+                    b = ((glowRgb & 0xFF) + 255 * 2) / 3;
+            rim.setColor(0xE6000000 | (r << 16) | (g << 8) | b);
+        }
+        invalidate();
+    }
+
+    /** One of Config's GLASS_* styles. */
+    void setStyle(String style) {
+        flat = Config.GLASS_RIM.equals(style) || Config.GLASS_HALO.equals(style);
+        halo = Config.GLASS_HALO.equals(style);
+        rim.setStrokeWidth((flat ? 2f : 1.5f) * density);
+        invalidate();
+    }
+
+    void setRadius(float px) {
+        radius = px;
+        invalidate();
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        fill.setShader(new LinearGradient(0, 0, 0, h, 0x3DFFFFFF, 0x12FFFFFF, Shader.TileMode.CLAMP));
+        specular.setShader(new LinearGradient(0, 0, 0, h * 0.45f, 0x66FFFFFF, 0x00FFFFFF, Shader.TileMode.CLAMP));
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        float inset = 6f * density;   // room for the glow
+        rect.set(inset, inset, getWidth() - inset, getHeight() - inset);
+
+        // Outer glow: thin rings across the inset, each a little fainter, so it fades out smoothly. Three wide
+        // strokes left visible bands once the glow took an app's colour at a stronger alpha. The hardware layer
+        // caches the result, so the rings cost one draw, not one per frame of the spring.
+        if (!flat || halo) {
+            int rings = 12;
+            float step = inset / rings;
+            int alpha = flat ? glowAlpha / 2 : glowAlpha;
+            glow.setStrokeWidth(step + 0.5f);
+            for (int i = 0; i < rings; i++) {
+                float o = step * (i + 0.5f);
+                float t = 1f - (float) i / rings;
+                glow.setColor(Math.round(alpha * t) << 24 | glowRgb);
+                canvas.drawRoundRect(rect.left - o, rect.top - o, rect.right + o, rect.bottom + o, radius + o, radius + o, glow);
+            }
+        }
+        if (flat) {
+            canvas.drawRoundRect(rect, radius, radius, rim);
+            return;
+        }
+
+        canvas.drawRoundRect(rect, radius, radius, fill);
+
+        // Sheen across the top 45%: clipRect stays on the GPU (clipPath did not on the MT5895) and
+        // the round rect under it keeps the top corners rounded with a flat bottom edge.
+        canvas.save();
+        canvas.clipRect(rect.left, rect.top, rect.right, rect.top + rect.height() * 0.45f);
+        canvas.drawRoundRect(rect, radius, radius, specular);
+        canvas.restore();
+
+        canvas.drawRoundRect(rect, radius, radius, rim);
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\GridNavigation.java ==========
+package com.gathin.tvhome;
+
+/** Physical left/right boundaries for a grid whose first column follows its reading direction. */
+final class GridNavigation {
+    private GridNavigation() { }
+
+    static boolean atHorizontalEdge(int position, int count, int columns, boolean rtl, boolean left) {
+        boolean towardStart = left != rtl;
+        if (towardStart) return position % columns == 0;
+        return position % columns == columns - 1 || position == count - 1;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\GuardConfig.java ==========
+package com.gathin.tvhome;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+
+/**
+ * Opt in to leaving the home helper while the screen is off.
+ * {@code adb shell am broadcast -a com.gathin.tvhome.GUARD -n com.gathin.tvhome/.GuardConfig --ez guard_off_in_standby true}
+ */
+public class GuardConfig extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        if (intent.hasExtra("guard_off_in_standby")) {
+            GuardKeep.setOffInStandby(context, intent.getBooleanExtra("guard_off_in_standby", false));
+            GuardKeep.ensureHomeKey(context);
+        }
+        setResultData("guard_off_in_standby=" + GuardKeep.offInStandby(context));
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\GuardKeep.java ==========
+package com.gathin.tvhome;
+
+import android.Manifest;
+import android.accessibilityservice.AccessibilityService;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.os.PowerManager;
+import android.os.UserManager;
+import android.provider.Settings;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Keeps {@link HomeKeyService} on the accessibility list, the way a China-market TV needs it.
+ *
+ * TCL and Xiaomi start their own launcher at boot and force-stop a third-party one, which also
+ * drops its accessibility service. {@link GuardRevival} is bound again by the system afterwards
+ * and calls {@link #ensureHomeKey}. With {@code guard_off_in_standby} the service removes itself
+ * while the screen is off: on a TCL tc8000 the power key never woke the set while an accessibility
+ * service of this app stayed bound.
+ */
+final class GuardKeep {
+    static final String ACTION = "com.gathin.tvhome.GUARD";
+    private static final String PREFS = "guard";
+    private static final String KEY_OFF = "off_in_standby";
+
+    private static BroadcastReceiver screenOn;
+
+    private GuardKeep() {
+    }
+
+    static boolean offInStandby(Context context) {
+        UserManager users = context.getSystemService(UserManager.class);
+        if (users != null && !users.isUserUnlocked()) return false;
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_OFF, false);
+    }
+
+    static void setOffInStandby(Context context, boolean off) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_OFF, off).commit();
+    }
+
+    /** Puts HomeKeyService back on the enabled list when standby exit is opted in. Other services stay. */
+    static void ensureHomeKey(Context context) {
+        // The helper may already be bound. Arming only inside onServiceConnected misses an opt-in
+        // that arrives after that, so the first screen-off does nothing (Philips 65PUS8102).
+        HomeKeyService.applyStandbyOptIn();
+        if (!offInStandby(context)) return;
+        if (context.checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
+                != PackageManager.PERMISSION_GRANTED) return;
+        PowerManager power = context.getSystemService(PowerManager.class);
+        // Still off: binding the helper again would sit on the power key. Wait for the screen.
+        if (power != null && !power.isInteractive()) {
+            watchScreenOn(context.getApplicationContext());
+            return;
+        }
+        try {
+            ComponentName mine = new ComponentName(context, HomeKeyService.class);
+            String list = Settings.Secure.getString(context.getContentResolver(),
+                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+            List<String> entries = new ArrayList<>();
+            boolean found = false;
+            if (list != null && !list.equals("null")) {
+                for (String entry : list.split(":")) {
+                    if (entry.isEmpty()) continue;
+                    ComponentName name = ComponentName.unflattenFromString(entry);
+                    if (mine.equals(name)) found = true;
+                    entries.add(entry);
+                }
+            }
+            if (!found) {
+                entries.add(mine.flattenToShortString());
+                Settings.Secure.putString(context.getContentResolver(),
+                        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, String.join(":", entries));
+            }
+            Settings.Secure.putInt(context.getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, 1);
+        } catch (RuntimeException ignored) {
+            // The settings are the system's; a refusal leaves the helper as it was.
+        }
+    }
+
+    /** Drops the service from the list and puts it back on the next SCREEN_ON. The process has to stay up. */
+    static void stepOut(AccessibilityService service) {
+        watchScreenOn(service.getApplicationContext());
+        service.disableSelf();
+    }
+
+    private static void watchScreenOn(Context app) {
+        if (screenOn != null) return;
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (screenOn != this) return;
+                screenOn = null;
+                try {
+                    app.unregisterReceiver(this);
+                } catch (RuntimeException ignored) {
+                }
+                ensureHomeKey(app);
+            }
+        };
+        screenOn = receiver;
+        app.registerReceiver(receiver, new IntentFilter(Intent.ACTION_SCREEN_ON));
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\GuardRevival.java ==========
+package com.gathin.tvhome;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.UserManager;
+import android.service.notification.NotificationListenerService;
+
+/**
+ * Starts this launcher's process after the firmware has killed it.
+ *
+ * A notification listener keeps its approval across a force stop, and the system binds it again
+ * once the process is gone. That rebind is what brings Home back on TCL and Xiaomi. No notification
+ * is read. Enable with {@code cmd notification allow_listener com.gathin.tvhome/.GuardRevival}.
+ */
+public class GuardRevival extends NotificationListenerService {
+    private BroadcastReceiver unlocked;
+
+    @Override
+    public void onListenerConnected() {
+        UserManager users = getSystemService(UserManager.class);
+        if (users != null && !users.isUserUnlocked()) {
+            if (unlocked != null) return;
+            unlocked = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    stopWaiting();
+                    GuardKeep.ensureHomeKey(GuardRevival.this);
+                }
+            };
+            registerReceiver(unlocked, new IntentFilter(Intent.ACTION_USER_UNLOCKED));
+            if (users.isUserUnlocked()) {
+                stopWaiting();
+                GuardKeep.ensureHomeKey(this);
+            }
+            return;
+        }
+        GuardKeep.ensureHomeKey(this);
+    }
+
+    private void stopWaiting() {
+        if (unlocked == null) return;
+        try {
+            unregisterReceiver(unlocked);
+        } catch (RuntimeException ignored) {
+        }
+        unlocked = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        stopWaiting();
+        super.onDestroy();
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\HeroArt.java ==========
+package com.gathin.tvhome;
+
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+
+/**
+ * The cinematic shelf's backdrop: an app's artwork reduced to 48Ã—27 pixels, saturated and smoothed,
+ * then stretched over the screen by its ImageView. Bilinear filtering of an image that small is a
+ * blur that costs one tiny texture; a real blur would mean RenderScript or a shader pass per frame,
+ * which a 1 GB TV cannot spare.
+ */
+final class HeroArt {
+    static final int W = 48, H = 27;
+    private static final float SATURATION = 1.7f;
+
+    private HeroArt() {
+    }
+
+    /** The softened artwork, about 5 KB; null when there is nothing to draw. */
+    static Bitmap from(Drawable live) {
+        if (live == null) return null;
+        // Draw a private copy: changing the bounds of the drawable a tile shows would blank the tile.
+        Drawable d = live.getConstantState() != null ? live.getConstantState().newDrawable().mutate() : live;
+        Rect saved = new Rect(d.getBounds());
+        Bitmap big = Bitmap.createBitmap(W * 4, H * 4, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(big);
+        c.drawColor(Color.BLACK);
+        d.setBounds(0, 0, big.getWidth(), big.getHeight());
+        d.draw(c);
+        d.setBounds(saved);
+        // Halve twice: each filtered halving averages 2Ã—2 pixels, where one 4Ã— step would skip most of them.
+        Bitmap half = Bitmap.createScaledBitmap(big, W * 2, H * 2, true);
+        big.recycle();
+        Bitmap small = Bitmap.createScaledBitmap(half, W, H, true);
+        half.recycle();
+
+        int[] px = new int[W * H];
+        small.getPixels(px, 0, W, 0, 0, W, H);
+        saturate(px);
+        // Three box passes approximate a gaussian, so the stretched image shows no seams between pixels.
+        for (int pass = 0; pass < 3; pass++) {
+            px = boxBlur(px, W, H, 2, true);
+            px = boxBlur(px, W, H, 2, false);
+        }
+        Bitmap out = small.isMutable() ? small : small.copy(Bitmap.Config.ARGB_8888, true);
+        if (out != small) small.recycle();
+        out.setPixels(px, 0, W, 0, 0, W, H);
+        return out;
+    }
+
+    private static void saturate(int[] px) {
+        for (int i = 0; i < px.length; i++) {
+            int p = px[i];
+            int r = Color.red(p), g = Color.green(p), b = Color.blue(p);
+            float lum = 0.2126f * r + 0.7152f * g + 0.0722f * b;
+            px[i] = Color.rgb(clamp(lum + (r - lum) * SATURATION), clamp(lum + (g - lum) * SATURATION),
+                    clamp(lum + (b - lum) * SATURATION));
+        }
+    }
+
+    private static int clamp(float v) {
+        return v < 0 ? 0 : v > 255 ? 255 : Math.round(v);
+    }
+
+    /** One box blur pass along rows (horizontal) or columns, edges clamped. */
+    private static int[] boxBlur(int[] src, int w, int h, int radius, boolean horizontal) {
+        int[] dst = new int[src.length];
+        int lines = horizontal ? h : w, length = horizontal ? w : h, span = 2 * radius + 1;
+        for (int line = 0; line < lines; line++) {
+            for (int i = 0; i < length; i++) {
+                int r = 0, g = 0, b = 0;
+                for (int k = -radius; k <= radius; k++) {
+                    int j = Math.max(0, Math.min(length - 1, i + k));
+                    int p = horizontal ? src[line * w + j] : src[j * w + line];
+                    r += Color.red(p);
+                    g += Color.green(p);
+                    b += Color.blue(p);
+                }
+                dst[horizontal ? line * w + i : i * w + line] = Color.rgb(r / span, g / span, b / span);
+            }
+        }
+        return dst;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\HomeKeyService.java ==========
+package com.gathin.tvhome;
+
+import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.PowerManager;
+import android.os.SystemClock;
+import android.os.UserManager;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.provider.Settings;
+import android.view.KeyEvent;
+import android.view.ViewConfiguration;
+import android.view.accessibility.AccessibilityEvent;
+import android.widget.Toast;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Sends the remote's Home button to this launcher on remotes that emit KEYCODE_ALL_APPS for Home
+ * (Xiaomi sticks and boxes). Android TV 9 routes that key only to the system-image launcher, so once
+ * the stock launcher is disabled the button does nothing. Every other key passes through untouched.
+ *
+ * With stock_home_redirect set, it also sends the stock launcher's home screen back here, for firmware that turns
+ * that launcher on again after it was disabled (XGIMI's xrmservice does, on its own remote keys), or that cannot be
+ * disabled at all, and a short press of Home opens this launcher even when the stock home is already on screen.
+ *
+ * With power_on_home set, a Live TV window (live_tv_package) that the firmware opens by itself at power-on is sent
+ * back here too, until the first key press after boot or after the screen turns on (Changhong / Homwee boards).
+ * With power_on_home_always set, Home comes up at every power-on whatever is in front, for TVs that resume their
+ * last source: a Philips back on an HDMI input sends no window event until the input has a picture.
+ *
+ * With home_long_press_home set, it takes every Home press, so one held past the long-press timeout opens this launcher
+ * instead of Android's ALL_APPS action, which nothing answers once the stock launcher is disabled (Philips TPM191E).
+ *
+ * Enable over adb:
+ *   settings put secure enabled_accessibility_services com.gathin.tvhome/.HomeKeyService
+ *   settings put secure accessibility_enabled 1
+ */
+public class HomeKeyService extends AccessibilityService {
+
+    /** restore_key_services was on when the config was read: this helper is noted for ServiceRepair. */
+    private boolean repairRecord;
+    /** Remote buttons that should open Settings (config.xml, settings_key_scancodes and settings_key_keycodes). */
+    private int[] settingsScancodes = new int[0];
+    private int[] settingsKeycodes = new int[0];
+    private boolean settingsPanel;
+    private boolean settingsClearTask;
+    /** consume_volume_keys: Volume Up/Down go to VolumeKeys instead of on to the firmware. */
+    private boolean consumeVolumeKeys;
+    /** app_keys, the same maps InputKeyService reads, for setups that run only this service. */
+    private Map<Integer, String> appKeys = Collections.emptyMap();
+    private Map<Integer, String> appScancodes = Collections.emptyMap();
+    private Map<Integer, String> holdAppKeys = Collections.emptyMap();
+    private Map<Integer, String> holdAppScancodes = Collections.emptyMap();
+
+    /** Waits for the user to unlock when Android binds this service at boot; null once the config is read. */
+    private BroadcastReceiver unlockReceiver;
+    /** The stock launcher's HOME activities (stock_home_redirect), disabled ones included. */
+    private final Set<String> stockHome = new HashSet<>();
+    /** stock_home_redirect, the stock launcher's package. */
+    private String stockHomePackage = "";
+    /** power_on_home: the Live TV package to send back to Home, empty when off; armed until this uptime or a key. */
+    private String powerOnLiveTv = "";
+    private long powerOnUntil;
+    /** home_long_press_home: this service takes every Home press, held ones included. */
+    private boolean homeLongPressHome;
+    /** app_keys "front:" entries; the package in front goes to RemoteKeys.frontPackage, for both helpers. */
+    private Map<Integer, String> frontAppKeys = Collections.emptyMap();
+    private Map<Integer, String> frontAppScancodes = Collections.emptyMap();
+    /** power_on_home_always: Home at every power-on, not only over Live TV. */
+    private boolean powerOnAlways;
+    /** power_on_home: re-arms after the screen turns on; null unless the key is on. */
+    private BroadcastReceiver screenOnReceiver;
+    /** Stops key filtering while a game controller is connected or after a volume change; null unless gamepad_passthrough or volume_pauses_filter, and key_filter, or before the unlock. */
+    private GamepadPassthrough gamepads;
+    /** Screen-off receiver while guard_off_in_standby is set; null otherwise. */
+    private BroadcastReceiver standbyExit;
+    /** disableSelf is how this service leaves for standby, not the user turning it off. */
+    private boolean steppingOut;
+    /** The bound helper, so the opt-in broadcast can arm it without waiting for a new connection. */
+    static HomeKeyService running;
+
+    @Override
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+        running = this;
+        settingsScancodes = getResources().getIntArray(R.array.settings_key_scancodes);
+        // The service is directBootAware: Android 11 skips a service that is not while the user is still
+        // locked at boot, writes accessibility_enabled=0 and, on TCL G03 firmware, never binds it after the
+        // unlock. Config.load reads credential-protected storage, so wait for the unlock before reading it.
+        UserManager users = getSystemService(UserManager.class);
+        if (users.isUserUnlocked()) {
+            loadConfig();
+            return;
+        }
+        unlockReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                stopWaitingForUnlock();
+                loadConfig();
+            }
+        };
+        registerReceiver(unlockReceiver, new IntentFilter(Intent.ACTION_USER_UNLOCKED));
+        // The unlock may have happened between the check and the registration.
+        if (users.isUserUnlocked()) {
+            stopWaitingForUnlock();
+            loadConfig();
+        }
+    }
+
+    private void stopWaitingForUnlock() {
+        if (unlockReceiver == null) return;
+        unregisterReceiver(unlockReceiver);
+        unlockReceiver = null;
+    }
+
+    /** The opt-in broadcast: arm this binding now, or drop the receiver if the opt-in was turned off. */
+    static void applyStandbyOptIn() {
+        HomeKeyService service = running;
+        if (service == null) return;
+        if (GuardKeep.offInStandby(service)) service.armStandbyExit();
+        else service.disarmStandbyExit();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (running == this) running = null;
+        RemoteKeys.frontPackage = "";
+        RemoteKeys.release(this);
+        stopWaitingForUnlock();
+        if (screenOnReceiver != null) unregisterReceiver(screenOnReceiver);
+        if (standbyExit != null) {
+            try {
+                unregisterReceiver(standbyExit);
+            } catch (RuntimeException ignored) {
+            }
+            standbyExit = null;
+        }
+        if (gamepads != null) gamepads.stop();
+        if (consumeVolumeKeys) VolumeKeys.stop();
+        super.onDestroy();
+    }
+
+    /** Some TCL boards never wake from the remote while this helper stays bound with the screen off. */
+    private void armStandbyExit() {
+        if (standbyExit != null || !GuardKeep.offInStandby(this)) return;
+        standbyExit = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (!Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) return;
+                leaveForStandby();
+            }
+        };
+        registerReceiver(standbyExit, new IntentFilter(Intent.ACTION_SCREEN_OFF));
+        PowerManager power = getSystemService(PowerManager.class);
+        if (power != null && !power.isInteractive()) leaveForStandby();
+    }
+
+    private void disarmStandbyExit() {
+        if (standbyExit == null) return;
+        try {
+            unregisterReceiver(standbyExit);
+        } catch (RuntimeException ignored) {
+        }
+        standbyExit = null;
+    }
+
+    private void leaveForStandby() {
+        steppingOut = true;
+        GuardKeep.stepOut(this);
+    }
+
+    private void loadConfig() {
+        // Keycodes and the panel choice can also come from a theme; theme.sh restarts this service.
+        Config config = Config.load(this);
+        // restore_key_services: note that this helper runs, so Home can put it back after a force stop. Here, not
+        // in onServiceConnected: the note is in credential-protected storage too, readable only after the unlock.
+        repairRecord = config.restoreKeyServices;
+        if (repairRecord) ServiceRepair.connected(this, getClass());
+        settingsKeycodes = config.settingsKeycodes;
+        settingsPanel = config.settingsKeyPanel;
+        settingsClearTask = config.settingsKeyClearTask;
+        consumeVolumeKeys = config.consumeVolumeKeys;
+        appKeys = RemoteKeys.parseAppKeys(config.appKeys);
+        appScancodes = RemoteKeys.parseAppScancodes(config.appKeys);
+        RemoteKeys.applyKeyFilter(this, config.keyFilter);
+        homeLongPressHome = config.homeLongPressHome;
+        frontAppKeys = RemoteKeys.parseFrontAppKeys(config.appKeys);
+        frontAppScancodes = RemoteKeys.parseFrontAppScancodes(config.appKeys);
+        boolean watchFront = !frontAppKeys.isEmpty() || !frontAppScancodes.isEmpty();
+        stockHome.clear();
+        stockHomePackage = config.stockHomeRedirect;
+        if (!config.stockHomeRedirect.isEmpty()) {
+            Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setPackage(config.stockHomeRedirect);
+            for (ResolveInfo ri : getPackageManager().queryIntentActivities(home, PackageManager.MATCH_DISABLED_COMPONENTS)) {
+                stockHome.add(ri.activityInfo.name);
+            }
+        }
+        // power_on_home, off by default. Not with boot_to_live_tv, or with Live TV picked as the Open on start app:
+        // those open Live TV on purpose at boot.
+        String openOnStart = config.openOnStartChoice
+                ? getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE).getString(OpenOnStart.KEY, "") : "";
+        powerOnLiveTv = config.powerOnHome && !config.bootToLiveTv && !config.liveTvPackage.equals(openOnStart)
+                ? config.liveTvPackage : "";
+        powerOnAlways = config.powerOnHomeAlways && !config.bootToLiveTv && openOnStart.isEmpty();
+        if (!powerOnLiveTv.isEmpty() || powerOnAlways) {
+            armPowerOnHome();
+        } else if (screenOnReceiver != null) {
+            unregisterReceiver(screenOnReceiver);
+            screenOnReceiver = null;
+            powerOnUntil = 0;
+        }
+        // home_key_service.xml subscribes to no events, so the redirects ask for window changes only when one is on.
+        AccessibilityServiceInfo info = getServiceInfo();
+        if (info != null && (!stockHome.isEmpty() || !powerOnLiveTv.isEmpty() || watchFront)) {
+            info.eventTypes |= AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
+            setServiceInfo(info);
+        }
+        if (!stockHome.isEmpty() || !powerOnLiveTv.isEmpty()) probeAtBoot();
+        armStandbyExit();
+        holdAppKeys = RemoteKeys.parseHoldAppKeys(config.appKeys);
+        holdAppScancodes = RemoteKeys.parseHoldAppScancodes(config.appKeys);
+        // gamepad_passthrough and volume_pauses_filter, off by default.
+        if (gamepads == null) gamepads = GamepadPassthrough.start(this, config);
+    }
+
+    /** A tap's target: the "front:" entry while the button's own app is already in front, else the usual one. */
+    private String inFront(Map<Integer, String> keys, Map<Integer, String> front, int code) {
+        return RemoteKeys.tap(keys.get(code), front.get(code));
+    }
+
+    private boolean isSettingsScancode(KeyEvent event) {
+        for (int code : settingsScancodes) if (event.getScanCode() == code) return true;
+        return false;
+    }
+
+    private boolean isSettingsKey(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_SETTINGS) return true;
+        if (isSettingsScancode(event)) return true;
+        for (int code : settingsKeycodes) if (event.getKeyCode() == code) return true;
+        return false;
+    }
+
+    @Override
+    protected boolean onKeyEvent(KeyEvent event) {
+        // power_on_home: the first key after power-on hands the TV to the user (power and wake keys don't count).
+        if (powerOnUntil != 0 && event.getAction() == KeyEvent.ACTION_DOWN
+                && event.getKeyCode() != KeyEvent.KEYCODE_POWER && event.getKeyCode() != KeyEvent.KEYCODE_WAKEUP) {
+            powerOnUntil = 0;
+        }
+        if (consumeVolumeKeys && VolumeKeys.handle(this, event)) return true;
+        // A scancode entry is more specific than any keycode, so it goes first.
+        if (RemoteKeys.handle(this, event, inFront(appScancodes, frontAppScancodes, event.getScanCode()),
+                holdAppScancodes.get(event.getScanCode()))) return true;
+        // A keycode app_keys entry with a tap target wins over the Settings keycodes (InputKeyService opens it too, and
+        // RemoteKeys answers a press once), but not over a button named in settings_key_scancodes. A hold-only entry
+        // leaves the tap to Settings and still runs its hold.
+        boolean settingsKey = isSettingsKey(event);
+        String tap = inFront(appKeys, frontAppKeys, event.getKeyCode());
+        String hold = holdAppKeys.get(event.getKeyCode());
+        if ((!settingsKey || (tap != null && !isSettingsScancode(event))) && RemoteKeys.handle(this, event, tap, hold)) {
+            return true;
+        }
+        // The stock launcher handled the remote's Settings button; with it disabled the button does nothing.
+        if (settingsKey) {
+            RemoteKeys.handle(this, event, null, hold);
+            boolean held = hold != null && event.getEventTime() - event.getDownTime() >= RemoteKeys.HOLD_MS;
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled() && !held) {
+                Intent open = settingsPanel ? new Intent(this, QuickSettingsActivity.class)
+                        : SystemSettings.intent(this, Settings.ACTION_SETTINGS);
+                // settings_key_clear_task: on MediaTek boards KEYCODE_SETTINGS is also a global key that opens Display &
+                // Sound in the Settings task before this helper sees it; cleared, Back from Settings goes Home, not there.
+                if (settingsClearTask && !settingsPanel) open.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                try {
+                    startActivity(open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                } catch (ActivityNotFoundException | SecurityException unavailable) {
+                    Toast.makeText(this, R.string.not_available, Toast.LENGTH_SHORT).show();
+                }
+            }
+            return true;
+        }
+        // home_long_press_home: Android never sees the Home key, so a held press cannot turn into ALL_APPS.
+        if (homeLongPressHome && event.getKeyCode() == KeyEvent.KEYCODE_HOME) {
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) openHome();
+            return true;
+        }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_HOME && !stockHome.isEmpty()) {
+            redirectHomeKey(event);
+            return false;
+        }
+        if (event.getKeyCode() != KeyEvent.KEYCODE_ALL_APPS) return false;
+        if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) openHome();
+        return true;
+    }
+
+    /** Unbound by Android: the user turned the helper off, so Home doesn't put it back (ServiceRepair). */
+    @Override
+    public boolean onUnbind(Intent intent) {
+        RemoteKeys.release(this);
+        if (repairRecord && !steppingOut) ServiceRepair.disconnected(this, getClass());
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+        if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return;
+        // app_keys "front:" entries: only activities count, so a toast or the volume bar doesn't change the app in front.
+        if ((!frontAppKeys.isEmpty() || !frontAppScancodes.isEmpty())
+                && event.getPackageName() != null && event.getClassName() != null) {
+            try {
+                ComponentName window = new ComponentName(event.getPackageName().toString(), event.getClassName().toString());
+                getPackageManager().getActivityInfo(window, 0);
+                RemoteKeys.frontPackage = window.getPackageName();
+            } catch (PackageManager.NameNotFoundException notAnActivity) {
+                // a dialog, panel or overlay: the app under it is still in front
+            }
+        }
+        // power_on_home: the firmware opened Live TV by itself at power-on, before anyone pressed a key.
+        if (powerOnRedirect(powerOnLiveTv, event.getPackageName(), SystemClock.elapsedRealtime(), powerOnUntil)) {
+            openHome();
+            return;
+        }
+        // stock_home_redirect: the firmware turned the stock launcher back on and its home screen came up.
+        CharSequence cls = event.getClassName();
+        if (!stockHome.isEmpty() && cls != null && stockHome.contains(cls.toString())) openHome();
+    }
+
+    /** How long power_on_home stays armed after the screen turns on without a reboot. */
+    static final long SCREEN_ON_WINDOW_MS = 60 * 1000L;
+
+    /** power_on_home: armed for the boot window (if this bind is part of the boot) and after every screen-on. */
+    private void armPowerOnHome() {
+        if (SystemClock.elapsedRealtime() < BOOT_WINDOW_MS) {
+            powerOnUntil = BOOT_WINDOW_MS;
+            if (powerOnAlways) handler.postDelayed(this::homeAtPowerOn, POWER_ON_ALWAYS_DELAY_MS);
+        }
+        if (screenOnReceiver != null) return;
+        screenOnReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                powerOnUntil = SystemClock.elapsedRealtime() + SCREEN_ON_WINDOW_MS;
+                if (powerOnAlways) handler.postDelayed(HomeKeyService.this::homeAtPowerOn, POWER_ON_ALWAYS_DELAY_MS);
+            }
+        };
+        registerReceiver(screenOnReceiver, new IntentFilter(Intent.ACTION_SCREEN_ON));
+    }
+
+    /** power_on_home_always: after the firmware has brought its last source back (Philips: within 0.5 s). */
+    static final long POWER_ON_ALWAYS_DELAY_MS = 800L;
+
+    /** power_on_home_always: Home, unless a key was pressed since the screen came on (the user has the TV). */
+    private void homeAtPowerOn() {
+        if (stillArmed(SystemClock.elapsedRealtime(), powerOnUntil)) openHome();
+    }
+
+    static boolean stillArmed(long now, long armedUntil) {
+        return now < armedUntil;
+    }
+
+    /** The settings menu offers Restart only while this helper is bound: it opens the system power menu. */
+    static boolean canOpenPowerMenu() {
+        return running != null;
+    }
+
+    /** The system power menu (Restart, and Power off where the firmware has it); the TV asks before it acts. */
+    static void openPowerMenu() {
+        HomeKeyService service = running;
+        if (service != null) service.performGlobalAction(GLOBAL_ACTION_POWER_DIALOG);
+    }
+
+    static boolean powerOnRedirect(String liveTv, CharSequence pkg, long now, long armedUntil) {
+        return !liveTv.isEmpty() && pkg != null && liveTv.contentEquals(pkg) && now < armedUntil;
+    }
+
+    /** How long after boot the first bind still counts as "at boot" for probeAtBoot. */
+    static final long BOOT_WINDOW_MS = 3 * 60 * 1000L;
+
+    /** stock_home_redirect at boot: the stock home is often on screen before Android binds this service, so no
+     *  window event for it arrives (#1116). Once per boot, open ProbeActivity: when it closes, whatever was in
+     *  front comes back and sends a window event, and onAccessibilityEvent covers it only if it is the stock home.
+     *  An HDMI input or an app that the TV resumed at boot is left alone. */
+    private void probeAtBoot() {
+        int boot = Settings.Global.getInt(getContentResolver(), Settings.Global.BOOT_COUNT, -1);
+        SharedPreferences prefs = getSharedPreferences("boot", MODE_PRIVATE);
+        if (!firstBindAfterBoot(boot, prefs.getInt("probe_boot", -1), SystemClock.elapsedRealtime())) return;
+        prefs.edit().putInt("probe_boot", boot).apply();
+        try {
+            startActivity(new Intent(this, ProbeActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION));
+        } catch (ActivityNotFoundException | SecurityException ignored) {
+        }
+    }
+
+    static boolean firstBindAfterBoot(int boot, int lastBoot, long uptimeMs) {
+        return boot >= 0 && boot != lastBoot && uptimeMs < BOOT_WINDOW_MS;
+    }
+
+    /** Lets the system see the key, so a long press still does what the firmware gives it. */
+    private static final long HOME_KEY_DELAY_MS = 250;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
+    /** stock_home_redirect on the Home key: when the stock home is already on screen (it came up at boot, before
+     *  Android bound this service), Home brings it up again with no window change, so the redirect above never
+     *  fires and the TV stays on the stock home until another app opens (#1116). A short press opens this
+     *  launcher shortly after the system has handled the key; a long press (Google TV's quick settings) is left
+     *  alone. Held time, not repeats: key repeats are made after accessibility filtering, so none arrive here. */
+    private void redirectHomeKey(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()
+                && isShortPress(event.getDownTime(), event.getEventTime(), ViewConfiguration.getLongPressTimeout())) {
+            handler.postDelayed(this::openHome, HOME_KEY_DELAY_MS);
+        }
+    }
+
+    static boolean isShortPress(long downTime, long upTime, long longPressTimeout) {
+        return upTime - downTime < longPressTimeout;
+    }
+
+    private void openHome() {
+        Intent open = stockHomeStays() ? new Intent(this, MainActivity.class)
+                : new Intent(Intent.ACTION_MAIN).setPackage(getPackageName());
+        startActivity(open.addCategory(Intent.CATEGORY_HOME)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
+    }
+
+    /** stock_home_redirect while Android's Home is still the stock launcher (launcherx on Google TV outranks this
+     *  one). A Home intent would then put this launcher in the home task and make it the home process, and from
+     *  Android 10 the stock launcher, no longer exempt from the limits on background activity starts, can't open
+     *  apps for the remote's YouTube and Netflix buttons (#1274). openHome starts it like an app instead:
+     *  CATEGORY_HOME without ACTION_MAIN is not a Home intent, but still sends MainActivity back to the first tile.
+     *  A MainActivity already in the home task, as the install scripts' first start leaves it, is reused as it is
+     *  until that task goes (a restart or a reinstall). With this launcher or Android's chooser as Home, openHome
+     *  keeps the Home intent. */
+    private boolean stockHomeStays() {
+        if (stockHome.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false;
+        ResolveInfo home = getPackageManager().resolveActivity(
+                new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_DEFAULT_ONLY);
+        return home != null && stockHomePackage.equals(home.activityInfo.packageName);
+    }
+
+    @Override
+    public void onInterrupt() {
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\HomeSettingsActivity.java ==========
+package com.gathin.tvhome;
+
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.os.Bundle;
+import android.provider.Settings;
+import android.widget.Toast;
+
+/** Lets the user change HOME through the system UI, without shell or privileged permissions. The picker is translucent
+ *  on Android 14 (permissioncontroller), so this stays behind it as a black backdrop: over Home, its text sat on the
+ *  tiles. */
+public class HomeSettingsActivity extends Activity {
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(LauncherLocale.wrap(base));   // locale
+    }
+
+    private boolean left;
+
+    @Override
+    protected void onCreate(Bundle state) {
+        super.onCreate(state);
+        if (state != null) { left = true; return; }
+        try {
+            startActivity(new Intent(Settings.ACTION_HOME_SETTINGS));
+            Toast.makeText(this, R.string.home_settings_help, Toast.LENGTH_LONG).show();
+        } catch (ActivityNotFoundException | SecurityException unavailable) {
+            Toast.makeText(this, R.string.not_available, Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        left = true;
+    }
+
+    /** Back from the picker: this screen was only the backdrop. */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (left) finish();
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\InputFold.java ==========
+package com.gathin.tvhome;
+
+import android.media.tv.TvInputManager;
+
+/** Which Inputs menu rows inputs_connected_only folds behind "More inputs". */
+final class InputFold {
+    private InputFold() {}
+
+    /**
+     * state is the row's TvInputManager input state, or -1 when it has none to show (the AV jacks, or an HDMI state
+     * that cannot be trusted). An AV jack has no hotplug detection, so it always folds. An HDMI port or CEC device
+     * stays only while it reports INPUT_STATE_CONNECTED: a port with nothing on it can report
+     * CONNECTED_STANDBY (TCL), and so does a device asleep in standby, so both fold. A state of -1 keeps the row.
+     */
+    static boolean folds(boolean hdmi, int state) {
+        if (!hdmi) return true;
+        return state != -1 && state != TvInputManager.INPUT_STATE_CONNECTED;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\InputKeyService.java ==========
+package com.gathin.tvhome;
+
+import android.accessibilityservice.AccessibilityService;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.view.KeyEvent;
+import android.view.accessibility.AccessibilityEvent;
+import java.util.Collections;
+import java.util.Map;
+
+/**
+ * Maps the remote's Input button to the system input switcher, from any app. Remotes such as the Chromecast voice
+ * remote send KEYCODE_TV for it, others (KTC and Kalley Realtek Google TV remotes) KEYCODE_TV_INPUT; on Google TV
+ * the stock launcher handles both, so with the stock launcher disabled the button does nothing. Buttons listed in
+ * input_key_keycodes (config.xml or a theme) open the input switcher the same way, and app_keys start an app (a
+ * YouTube button that only the stock launcher answered). Every other key passes through untouched.
+ * Opt-in: INPUT_KEY_SERVICE=1 build-and-install.sh (or -InputKeyService on Windows) enables it.
+ */
+public class InputKeyService extends AccessibilityService {
+
+    private static final String ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS";
+
+    private int[] inputKeycodes = new int[0];
+    private Map<Integer, String> appKeys = Collections.emptyMap();
+    private Map<Integer, String> appScancodes = Collections.emptyMap();
+    private Map<Integer, String> holdAppKeys = Collections.emptyMap();
+    private Map<Integer, String> holdAppScancodes = Collections.emptyMap();
+    /** app_keys "front:" entries, chosen the way HomeKeyService chooses them (RemoteKeys.tap). */
+    private Map<Integer, String> frontAppKeys = Collections.emptyMap();
+    private Map<Integer, String> frontAppScancodes = Collections.emptyMap();
+    /** restore_key_services was on when the config was read: this helper is noted for ServiceRepair. */
+    private boolean repairRecord;
+    /** consume_volume_keys: Volume Up/Down go to VolumeKeys instead of on to the firmware. */
+    private boolean consumeVolumeKeys;
+    /** Stops key filtering while a game controller is connected or after a volume change; null unless gamepad_passthrough or volume_pauses_filter, and key_filter. */
+    private GamepadPassthrough gamepads;
+    /** The bound helper, for global actions Home's own key path asks for (RemoteKeys). */
+    static InputKeyService running;
+
+    @Override
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+        running = this;
+        // From config.xml or a theme's config.json; theme.sh rebinds this service after a push.
+        Config config = Config.load(this);
+        // restore_key_services: note that this helper runs, so Home can put it back after a force stop.
+        repairRecord = config.restoreKeyServices;
+        if (repairRecord) ServiceRepair.connected(this, getClass());
+        inputKeycodes = config.inputKeycodes;
+        consumeVolumeKeys = config.consumeVolumeKeys;
+        appKeys = RemoteKeys.parseAppKeys(config.appKeys);
+        appScancodes = RemoteKeys.parseAppScancodes(config.appKeys);
+        RemoteKeys.applyKeyFilter(this, config.keyFilter);
+        holdAppKeys = RemoteKeys.parseHoldAppKeys(config.appKeys);
+        holdAppScancodes = RemoteKeys.parseHoldAppScancodes(config.appKeys);
+        frontAppKeys = RemoteKeys.parseFrontAppKeys(config.appKeys);
+        frontAppScancodes = RemoteKeys.parseFrontAppScancodes(config.appKeys);
+        // gamepad_passthrough and volume_pauses_filter, off by default.
+        if (gamepads == null) gamepads = GamepadPassthrough.start(this, config);
+    }
+
+    private boolean isInputKey(int keyCode) {
+        if (keyCode == KeyEvent.KEYCODE_TV || keyCode == KeyEvent.KEYCODE_TV_INPUT) return true;
+        for (int code : inputKeycodes) if (keyCode == code) return true;
+        return false;
+    }
+
+    @Override
+    protected boolean onKeyEvent(KeyEvent event) {
+        if (consumeVolumeKeys && VolumeKeys.handle(this, event)) return true;
+        // A scancode entry is more specific than any keycode, so it goes first.
+        if (RemoteKeys.handle(this, event, RemoteKeys.tap(appScancodes.get(event.getScanCode()),
+                frontAppScancodes.get(event.getScanCode())),
+                holdAppScancodes.get(event.getScanCode()))) return true;
+        if (RemoteKeys.handle(this, event, RemoteKeys.tap(appKeys.get(event.getKeyCode()),
+                frontAppKeys.get(event.getKeyCode())),
+                holdAppKeys.get(event.getKeyCode()))) return true;
+        if (!isInputKey(event.getKeyCode())) return false;
+        if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
+            try {
+                startActivity(new Intent(ACTION_VIEW_INPUTS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } catch (ActivityNotFoundException | SecurityException ignored) {
+            }
+        }
+        return true;
+    }
+
+    /** Unbound by Android: the user turned the helper off, so Home doesn't put it back (ServiceRepair). */
+    @Override
+    public boolean onUnbind(Intent intent) {
+        RemoteKeys.release(this);
+        if (repairRecord) ServiceRepair.disconnected(this, getClass());
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        if (running == this) running = null;
+        RemoteKeys.release(this);
+        if (gamepads != null) gamepads.stop();
+        if (consumeVolumeKeys) VolumeKeys.stop();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onAccessibilityEvent(AccessibilityEvent event) {
+    }
+
+    @Override
+    public void onInterrupt() {
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\InputNames.java ==========
+package com.gathin.tvhome;
+
+import java.util.Locale;
+
+/**
+ * Philips (TP Vision) saves an input's name from its Sources menu as "Name&TYPE", the type picking the icon there
+ * ("Xbox&GAME_CONSOLE", "Ordinateur&COMPUTER"), and an unnamed port as the text "null". Shown as is, the Inputs
+ * menu read "Xbox&GAME_CONSOLE Â· HDMI 1" and "null Â· HDMI 4". This gives "ðŸŽ® Xbox" and no name; the TV's own
+ * setting is left as it is.
+ */
+final class InputNames {
+    private InputNames() {
+    }
+
+    static String tidy(CharSequence raw) {
+        if (raw == null) return null;
+        String s = raw.toString().trim();
+        if (s.isEmpty() || s.equals("null")) return null;
+        int amp = s.lastIndexOf('&');
+        // Only a type in Philips' form (three or more capitals, digits or underscores) is taken off, so "Tom & Jerry" stays.
+        if (amp < 0 || !s.substring(amp + 1).matches("[A-Z][A-Z0-9_]{2,}")) return s;
+        String name = s.substring(0, amp).trim();
+        String emoji = emoji(s.substring(amp + 1));
+        if (name.isEmpty()) return emoji;
+        return emoji == null ? name : emoji + " " + name;
+    }
+
+    private static String emoji(String type) {
+        String t = type.toUpperCase(Locale.ROOT);
+        if (t.contains("GAME")) return "ðŸŽ®";                                                   // ðŸŽ®
+        if (t.contains("COMPUTER") || t.equals("PC")) return "ðŸ’»";                             // ðŸ’»
+        if (t.contains("BLU") || t.contains("DVD") || t.contains("DISC")) return "ðŸ“€";         // ðŸ“€
+        if (t.contains("BOX") || t.contains("STB") || t.contains("SAT") || t.contains("CABLE")) return "ðŸ“¡"; // ðŸ“¡
+        if (t.contains("AUDIO") || t.contains("SOUND") || t.contains("AMP")) return "ðŸ”Š";      // ðŸ”Š
+        if (t.contains("CAM")) return "ðŸ“·";                                                    // ðŸ“·
+        return null;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\InputSources.java ==========
+package com.gathin.tvhome;
+
+import java.util.List;
+
+/** Vendor source numbers for passthrough inputs, such as Xiaomi's EXTSRC_PLAY route. */
+final class InputSources {
+    private InputSources() {
+    }
+
+    /** Returns the mapped source, -1 for a hidden input, or null when the input is not mapped. */
+    static Integer mapped(List<String> mappings, String inputId) {
+        if (inputId == null || mappings == null) return null;
+        String input = inputId.substring(inputId.lastIndexOf('/') + 1);
+        for (String mapping : mappings) {
+            if (mapping == null) continue;
+            int equals = mapping.indexOf('=');
+            if (equals <= 0 || !mapping.substring(0, equals).trim().equals(input)) continue;
+            String value = mapping.substring(equals + 1).trim();
+            if (value.equals("-")) return -1;
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /** True when `input_action` names an activity ("package/.Activity", "package/package.Activity") rather than an
+     *  intent action. Actions never contain a slash, so the two forms cannot be confused. */
+    static boolean isComponent(String inputAction) {
+        if (inputAction == null) return false;
+        int slash = inputAction.indexOf('/');
+        return slash > 0 && slash < inputAction.length() - 1 && inputAction.indexOf('/', slash + 1) < 0;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\InputsRequestActivity.java ==========
+package com.gathin.tvhome;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+
+/**
+ * Answers com.android.tv.action.VIEW_INPUTS, the system input switcher that the remote's Input button turns into
+ * (through the TV's Live TV app, or InputKeyService), by bringing Home forward with its Inputs menu open. The
+ * component is disabled in the manifest and MainActivity switches it on only while handle_view_inputs is set,
+ * so a TV with its own input picker is never offered a chooser. No UI of its own (Theme.NoDisplay).
+ */
+public class InputsRequestActivity extends Activity {
+    @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(LauncherLocale.wrap(base));   // locale
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        startActivity(new Intent(this, MainActivity.class)
+                .setAction(MainActivity.ACTION_VIEW_INPUTS)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        finish();
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\JackOLanternDrawable.java ==========
+package com.gathin.tvhome;
+
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.Random;
+
+/**
+ * A carved jack-o'-lantern for the network pill while the Halloween skin is on: its face glows while the TV is
+ * online and goes dark when the connection drops. The candle's brightness follows the signal level (1 to 4) and
+ * flickers a little while started; Ethernet burns steady. It is two pictures of the same pumpkin, dark and lit
+ * (from Microsoft's Fluent Emoji 3D, MIT), cross-faded, so it reads like the other skin's photo-real icons rather
+ * than a drawing. Frames run at about 15 fps only while the candle burns or fades; nothing is allocated per frame.
+ */
+public final class JackOLanternDrawable extends Drawable implements FestiveLamp {
+
+    private static final float BOX_DP = 24f;
+    private static final long FRAME_MS = 66, FADE_MS = 350;
+    /** How brightly the face glows at each level; index 0 is dark. */
+    private static final float[] LEVEL_GLOW = {0f, 0.55f, 0.72f, 0.88f, 1f};
+
+    private final float density;
+    private final Bitmap dark, lit;
+    private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private final float[] noise = new float[64];
+    private final long epoch = SystemClock.uptimeMillis();
+
+    private int level = 4;
+    private boolean primed, running, steady, reduced;
+    private float glowFrom = 1f, glowTo = 1f;
+    private long fadeStart;
+    private int alpha = 255;
+
+    private final Runnable tick = new Runnable() {
+        @Override
+        public void run() {
+            invalidateSelf();
+            if (wantsFrames()) scheduleSelf(this, SystemClock.uptimeMillis() + FRAME_MS);
+        }
+    };
+
+    public JackOLanternDrawable(Resources res, float density) {
+        this.density = density;
+        dark = BitmapFactory.decodeResource(res, R.drawable.halloween_pumpkin_dark);
+        lit = BitmapFactory.decodeResource(res, R.drawable.halloween_pumpkin_lit);
+        Random rnd = new Random(0xC731L);
+        for (int i = 0; i < noise.length; i++) noise[i] = rnd.nextFloat();
+    }
+
+    @Override
+    public void setFlame(int newLevel) {
+        int lvl = Math.max(0, Math.min(4, newLevel));
+        long now = SystemClock.uptimeMillis();
+        if (!primed || reduced) {
+            primed = true;
+            level = lvl;
+            glowFrom = glowTo = LEVEL_GLOW[lvl];
+            kick();
+            return;
+        }
+        if (lvl == level) return;
+        glowFrom = glow(now);
+        glowTo = LEVEL_GLOW[lvl];
+        fadeStart = now;
+        level = lvl;
+        kick();
+    }
+
+    @Override
+    public void setSteady(boolean steady) {
+        if (this.steady == steady) return;
+        this.steady = steady;
+        invalidateSelf();
+    }
+
+    @Override
+    public void setReducedMotion(boolean reducedMotion) {
+        if (reduced == reducedMotion) return;
+        reduced = reducedMotion;
+        if (reduced) glowFrom = glowTo;
+        kick();
+    }
+
+    @Override
+    public void start() {
+        if (running) return;
+        running = true;
+        kick();
+    }
+
+    @Override
+    public void stop() {
+        if (!running) return;
+        running = false;
+        glowFrom = glowTo;
+        kick();
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running;
+    }
+
+    @Override
+    public boolean setVisible(boolean visible, boolean restart) {
+        boolean changed = super.setVisible(visible, restart);
+        if (changed) kick();
+        return changed;
+    }
+
+    private boolean fading(long now) {
+        return glowFrom != glowTo && now - fadeStart < FADE_MS;
+    }
+
+    private boolean wantsFrames() {
+        return running && isVisible() && !reduced && (level > 0 || fading(SystemClock.uptimeMillis()));
+    }
+
+    private void kick() {
+        unscheduleSelf(tick);
+        if (wantsFrames()) scheduleSelf(tick, SystemClock.uptimeMillis() + FRAME_MS);
+        invalidateSelf();
+    }
+
+    /** The face's brightness now, easing from the last level to the new one. */
+    private float glow(long now) {
+        float p = Math.min(1f, Math.max(0f, (now - fadeStart) / (float) FADE_MS));
+        float e = 1f - (1f - p) * (1f - p);
+        return glowFrom + (glowTo - glowFrom) * e;
+    }
+
+    /** A candle's flicker: smooth noise around 1, a slow breath when steady, nothing when still. */
+    private float flicker(long now) {
+        if (!running || reduced || level == 0) return 1f;
+        float t = (now - epoch) / 1000f;
+        if (steady) return 0.97f + 0.03f * (float) Math.sin(t * 1.6f);
+        float x = t * 7f;
+        int i = (int) x;
+        float f = x - i;
+        float s = f * f * (3f - 2f * f);
+        float n = noise[i & 63] + (noise[(i + 1) & 63] - noise[i & 63]) * s;
+        return 0.84f + 0.16f * n;
+    }
+
+    @Override
+    public void draw(@NonNull Canvas canvas) {
+        long now = SystemClock.uptimeMillis();
+        paint.setAlpha(alpha);
+        canvas.drawBitmap(dark, null, getBounds(), paint);
+        float g = glow(now) * flicker(now);
+        if (g <= 0.01f) return;
+        paint.setAlpha(Math.round(alpha * Math.min(1f, g)));
+        canvas.drawBitmap(lit, null, getBounds(), paint);
+    }
+
+    @Override
+    public int getIntrinsicWidth() {
+        return Math.round(BOX_DP * density);
+    }
+
+    @Override
+    public int getIntrinsicHeight() {
+        return Math.round(BOX_DP * density);
+    }
+
+    @Override
+    public void setAlpha(int alpha) {
+        if (this.alpha == alpha) return;
+        this.alpha = alpha;
+        invalidateSelf();
+    }
+
+    @Override
+    public int getAlpha() {
+        return alpha;
+    }
+
+    @Override
+    public void setColorFilter(@Nullable ColorFilter filter) {
+        paint.setColorFilter(filter);
+        invalidateSelf();
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public int getOpacity() {
+        return PixelFormat.TRANSLUCENT;
+    }
+}
+`n`n========== FILE: launcher\app\src\main\java\com\gathin\tvhome\LastOpened.java ==========
+package com.gathin.tvhome;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.text.format.DateUtils;
+
+import java.util.Locale;
+
+/**
+ * When an app was last opened from Home, for the cinematic shelf's "Last opened" line: the launcher notes the
+ * time whenever it opens an app. No permission and nothing read from other apps, so an app started some other
+ * way (a remote's own Netflix button) shows the last time Home opened it.
+ */
+final class LastOpened {
+    private static final String PREFS = "last_opened";
+
+    private LastOpened() {
+    }
+
+    /** Notes that Home just opened this app. */
+    static void record(Context ctx, String pkg) {
+        prefs(ctx).edit().putLong(pkg, System.currentTimeMillis()).apply();
+    }
+
+    /** Milliseconds since the epoch, or 0 when Home never opened the app. */
+    static long get(Context ctx, String pkg) {
+        return pkg == null ? 0L : prefs(ctx).getLong(pkg, 0L);
+    }
