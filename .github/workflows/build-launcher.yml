@@ -58,27 +58,17 @@ jobs:
             tmp="$target.tmp"
             url="https://images.unsplash.com/${urls[$i]}?fm=jpg&fit=crop&w=1600&h=900&q=78"
             if curl --fail --location --silent --show-error --retry 2 --connect-timeout 10 --max-time 60 "$url" -o "$tmp"; then
-              if file --brief --mime-type "$tmp" | grep -q '^image/jpeg
-        working-directory: source/cleanyourtv-main/launcher
-        run: |
-          chmod +x gradlew
-          ./gradlew --no-daemon testReleaseUnitTest lintRelease assembleRelease
-
-      - name: Upload release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: tv-launcher-release
-          path: source/cleanyourtv-main/launcher/app/build/outputs/apk/release/app-release.apk
-          if-no-files-found: error
- && [ "$(wc -c < "$tmp")" -gt 20000 ]; then
+              mime="$(file --brief --mime-type "$tmp" || true)"
+              size="$(wc -c < "$tmp")"
+              if [[ "$mime" == "image/jpeg" && "$size" -gt 20000 ]]; then
                 mv "$tmp" "$target"
               else
                 rm -f "$tmp"
-                echo "Wallpaper $n was not a valid JPEG; using the offline fallback."
+                echo "Wallpaper $n unavailable or invalid; the launcher will generate a fallback."
               fi
             else
               rm -f "$tmp"
-              echo "Wallpaper $n could not be fetched; using the offline fallback."
+              echo "Wallpaper $n could not be fetched; the launcher will generate a fallback."
             fi
           done
 
