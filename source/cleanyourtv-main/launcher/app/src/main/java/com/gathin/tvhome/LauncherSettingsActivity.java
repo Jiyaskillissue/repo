@@ -16,6 +16,8 @@ import android.provider.Settings;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.SeekBar;
+import android.graphics.BitmapFactory;
+import android.widget.ImageView;
 import android.graphics.Color;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -281,13 +283,31 @@ public final class LauncherSettingsActivity extends Activity {
         box.setOrientation(android.widget.LinearLayout.VERTICAL); box.setPadding(24,8,24,8);
         SharedPreferences prefs = getSharedPreferences("wallpaper_rotation", MODE_PRIVATE);
         int zoom = Math.max(100,Math.min(180,Math.round(prefs.getFloat("frame_zoom",1f)*100)));
+        ImageView preview = new ImageView(this);
+        preview.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        File rootDir = Config.dir(this);
+        String selectedName = choices.getString(Config.WALLPAPER_CHOICE_KEY, null);
+        File previewFile = selectedName == null || rootDir == null ? null : new File(new File(rootDir, "wallpapers"), selectedName);
+        if (previewFile == null || !previewFile.isFile()) {
+            List<File> available = WallpaperRotation.images(rootDir == null ? null : new File(rootDir, "wallpapers"));
+            previewFile = available.isEmpty() ? (rootDir == null ? null : new File(rootDir, Config.WALLPAPER_NAME)) : available.get(0);
+        }
+        if (previewFile != null && previewFile.isFile()) {
+            BitmapFactory.Options opts = new BitmapFactory.Options(); opts.inSampleSize = 4;
+            try { preview.setImageBitmap(BitmapFactory.decodeFile(previewFile.getPath(), opts)); } catch (OutOfMemoryError ignored) { }
+        }
+        box.addView(preview, new android.widget.LinearLayout.LayoutParams(-1, dp(190)));
         TextView z = new TextView(this); z.setText("Zoom · "+zoom+"%"); z.setTextColor(Color.WHITE); box.addView(z);
         SeekBar zs = new SeekBar(this); zs.setMax(80); zs.setProgress(zoom-100); box.addView(zs);
         TextView x = new TextView(this); x.setText("Horizontal position"); x.setTextColor(Color.WHITE); box.addView(x);
         SeekBar xs = new SeekBar(this); xs.setMax(200); xs.setProgress(Math.max(0,Math.min(200,Math.round(prefs.getFloat("frame_x",0f)+100)))); box.addView(xs);
         TextView y = new TextView(this); y.setText("Vertical position"); y.setTextColor(Color.WHITE); box.addView(y);
         SeekBar ys = new SeekBar(this); ys.setMax(200); ys.setProgress(Math.max(0,Math.min(200,Math.round(prefs.getFloat("frame_y",0f)+100)))); box.addView(ys);
-        zs.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean u){z.setText("Zoom · "+(100+p)+"%");}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
+        preview.setScaleX(zoom/100f); preview.setScaleY(zoom/100f);
+        zs.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean u){z.setText("Zoom · "+(100+p)+"%");preview.setScaleX(1f+p/100f);preview.setScaleY(1f+p/100f);}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
+        xs.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean u){preview.setTranslationX((p-100)*dp(1));}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
+        ys.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean u){preview.setTranslationY((p-100)*dp(1));}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
+
         new AlertDialog.Builder(this).setTitle(R.string.wallpaper_adjust).setMessage(R.string.wallpaper_adjust_hint).setView(box)
             .setPositiveButton(android.R.string.ok,(d,w)->{prefs.edit().putFloat("frame_zoom",1f+zs.getProgress()/100f).putFloat("frame_x",xs.getProgress()-100f).putFloat("frame_y",ys.getProgress()-100f).apply();changed();})
             .setNegativeButton(android.R.string.cancel,null).show();
