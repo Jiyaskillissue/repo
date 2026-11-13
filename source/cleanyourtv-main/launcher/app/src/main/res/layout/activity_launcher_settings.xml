@@ -117,6 +117,18 @@
             android:text="@string/wallpaper_import" />
 
         <TextView
+            android:id="@+id/wallpaperCuratedChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp"
+            android:text="@string/wallpaper_curated" />
+
+        <TextView
+            android:id="@+id/wallpaperAdjustChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp"
+            android:text="@string/wallpaper_adjust" />
+
+        <TextView
             android:id="@+id/wallpaperChoice"
             style="@style/SettingsRow"
             android:layout_marginTop="10dp" />

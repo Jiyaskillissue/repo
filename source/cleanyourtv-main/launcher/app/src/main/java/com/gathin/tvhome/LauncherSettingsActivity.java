@@ -15,6 +15,8 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.SeekBar;
+import android.graphics.Color;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -134,6 +136,8 @@ public final class LauncherSettingsActivity extends Activity {
         wallpaperChoice = findViewById(R.id.wallpaperChoice);
         wallpaperChoice.setOnClickListener(v -> showWallpaperPicker());
         findViewById(R.id.wallpaperImportChoice).setOnClickListener(v -> importWallpapers());
+        findViewById(R.id.wallpaperCuratedChoice).setOnClickListener(v -> { int count = CuratedWallpapers.install(this); changed(); refresh(); Toast.makeText(this, getString(R.string.wallpaper_curated_done, count), Toast.LENGTH_LONG).show(); });
+        findViewById(R.id.wallpaperAdjustChoice).setOnClickListener(v -> showWallpaperAdjust());
         animationsChoice = findViewById(R.id.animationsChoice);
         animationsChoice.setOnClickListener(v -> {
             animations = !animations;
@@ -270,6 +274,23 @@ public final class LauncherSettingsActivity extends Activity {
             destination.delete();
             return false;
         }
+    }
+
+    private void showWallpaperAdjust() {
+        android.widget.LinearLayout box = new android.widget.LinearLayout(this);
+        box.setOrientation(android.widget.LinearLayout.VERTICAL); box.setPadding(24,8,24,8);
+        SharedPreferences prefs = getSharedPreferences("wallpaper_rotation", MODE_PRIVATE);
+        int zoom = Math.max(100,Math.min(180,Math.round(prefs.getFloat("frame_zoom",1f)*100)));
+        TextView z = new TextView(this); z.setText("Zoom · "+zoom+"%"); z.setTextColor(Color.WHITE); box.addView(z);
+        SeekBar zs = new SeekBar(this); zs.setMax(80); zs.setProgress(zoom-100); box.addView(zs);
+        TextView x = new TextView(this); x.setText("Horizontal position"); x.setTextColor(Color.WHITE); box.addView(x);
+        SeekBar xs = new SeekBar(this); xs.setMax(200); xs.setProgress(Math.max(0,Math.min(200,Math.round(prefs.getFloat("frame_x",0f)+100)))); box.addView(xs);
+        TextView y = new TextView(this); y.setText("Vertical position"); y.setTextColor(Color.WHITE); box.addView(y);
+        SeekBar ys = new SeekBar(this); ys.setMax(200); ys.setProgress(Math.max(0,Math.min(200,Math.round(prefs.getFloat("frame_y",0f)+100)))); box.addView(ys);
+        zs.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){public void onProgressChanged(SeekBar s,int p,boolean u){z.setText("Zoom · "+(100+p)+"%");}public void onStartTrackingTouch(SeekBar s){}public void onStopTrackingTouch(SeekBar s){}});
+        new AlertDialog.Builder(this).setTitle(R.string.wallpaper_adjust).setMessage(R.string.wallpaper_adjust_hint).setView(box)
+            .setPositiveButton(android.R.string.ok,(d,w)->{prefs.edit().putFloat("frame_zoom",1f+zs.getProgress()/100f).putFloat("frame_x",xs.getProgress()-100f).putFloat("frame_y",ys.getProgress()-100f).apply();changed();})
+            .setNegativeButton(android.R.string.cancel,null).show();
     }
 
     private void showWallpaperPicker() {

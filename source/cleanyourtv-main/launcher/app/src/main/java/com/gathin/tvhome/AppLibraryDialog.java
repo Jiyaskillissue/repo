@@ -343,6 +343,15 @@ final class AppLibraryDialog {
         panel.addView(title, new LinearLayout.LayoutParams(-1, -2));
     }
 
+    private TextView headerTextAction(String label, Runnable action) {
+        TextView button = text(label, 13, Color.WHITE);
+        button.setGravity(Gravity.CENTER); button.setPadding(dp(10), 0, dp(10), 0);
+        button.setBackground(surface(0x16FFFFFF, 14)); button.setFocusable(true); button.setClickable(true);
+        button.setOnClickListener(v -> action.run());
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-2, dp(40));
+        params.setMargins(dp(4), 0, dp(4), 0); button.setLayoutParams(params); return button;
+    }
+
     private ImageView headerAction(int icon, String description, Runnable action) {
         ImageView button = new ImageView(activity);
         button.setImageResource(icon);
@@ -391,6 +400,10 @@ final class AppLibraryDialog {
         clockParams.setMargins(dp(8), 0, dp(8), 0);
         header.addView(clock, clockParams);
 
+        header.addView(headerTextAction("Games", () -> {
+            try { activity.startActivity(new Intent(activity, GameHubActivity.class)); }
+            catch (ActivityNotFoundException | SecurityException ignored) { }
+        }));
         header.addView(headerAction(R.drawable.ic_settings, activity.getString(R.string.settings), () -> {
             try { activity.startActivity(new Intent(activity, LauncherSettingsActivity.class)); }
             catch (ActivityNotFoundException | SecurityException ignored) { }

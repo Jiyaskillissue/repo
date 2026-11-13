@@ -24,7 +24,8 @@
     <string name="not_available">Not available on this TV</string>
     <string name="cant_open">Can\'t open %1$s</string>
     <string name="date_format">EEEE  d MMMM</string>
-    <!-- Date next to the clock on Home; a locale can split it over two lines with \n. -->
+    <!-- Date next to the clock on Home; a locale can split it over two lines with 
+. -->
     <string name="date_format_home" translatable="false">@string/date_format</string>
     <string name="shamsi_month_farvardin">Farvardin</string>
     <string name="shamsi_month_ordibehesht">Ordibehesht</string>
@@ -55,6 +56,10 @@
     <string name="dock_opacity_label">Dock band opacity</string>
     <string name="wallpaper_label">Wallpaper</string>
     <string name="wallpaper_import">Import wallpapers from device</string>
+    <string name="wallpaper_curated">Install 12 aerial wallpapers</string>
+    <string name="wallpaper_curated_done">Installed %1$d curated wallpapers</string>
+    <string name="wallpaper_adjust">Adjust wallpaper framing</string>
+    <string name="wallpaper_adjust_hint">Zoom and reposition the selected wallpaper. Changes apply when Home reloads.</string>
     <string name="wallpaper_imported">Imported %1$d wallpaper(s)</string>
     <string name="wallpaper_import_failed">No wallpapers imported. Use JPG, PNG or WebP images up to 10 MB.</string>
     <string name="wallpaper_state">Wallpaper: %1$s</string>

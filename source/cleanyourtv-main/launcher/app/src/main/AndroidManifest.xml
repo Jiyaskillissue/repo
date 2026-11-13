@@ -106,6 +106,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".GameHubActivity" android:exported="false" android:excludeFromRecents="true" android:screenOrientation="landscape" />
+
         <activity
             android:name=".LauncherSettingsActivity"
             android:exported="false"
