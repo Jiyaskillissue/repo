@@ -4,6 +4,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.ClipData;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.OpenableColumns;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -15,6 +19,9 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +42,7 @@ public final class LauncherSettingsActivity extends Activity {
     private static final String[] CLOCK_FORMATS = {"system", "12", "24"};
     private final TextView[] clockChoices = new TextView[CLOCK_FORMATS.length];
     private TextView wallpaperChoice;
+    private static final int WALLPAPER_IMPORT_REQUEST = 43;
     private TextView animationsChoice;
     private TextView advancedChoice;
     private TextView followThemeChoice;
@@ -125,6 +133,7 @@ public final class LauncherSettingsActivity extends Activity {
         }
         wallpaperChoice = findViewById(R.id.wallpaperChoice);
         wallpaperChoice.setOnClickListener(v -> showWallpaperPicker());
+        findViewById(R.id.wallpaperImportChoice).setOnClickListener(v -> importWallpapers());
         animationsChoice = findViewById(R.id.animationsChoice);
         animationsChoice.setOnClickListener(v -> {
             animations = !animations;
@@ -181,6 +190,86 @@ public final class LauncherSettingsActivity extends Activity {
         LinearLayout row = (LinearLayout) views[0].getParent();
         row.removeAllViews();
         for (int i = views.length - 1; i >= 0; i--) row.addView(views[i]);
+    }
+
+    private void importWallpapers() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("image/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        try {
+            startActivityForResult(intent, WALLPAPER_IMPORT_REQUEST);
+        } catch (ActivityNotFoundException | SecurityException unavailable) {
+            Toast.makeText(this, R.string.not_available, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != WALLPAPER_IMPORT_REQUEST || resultCode != RESULT_OK || data == null) return;
+        java.util.ArrayList<Uri> selected = new java.util.ArrayList<>();
+        ClipData clips = data.getClipData();
+        if (clips != null) {
+            for (int i = 0; i < clips.getItemCount(); i++) selected.add(clips.getItemAt(i).getUri());
+        } else if (data.getData() != null) selected.add(data.getData());
+        File root = Config.dir(this);
+        File folder = root == null ? null : new File(root, "wallpapers");
+        if (folder == null || (!folder.isDirectory() && !folder.mkdirs())) {
+            Toast.makeText(this, R.string.not_available, Toast.LENGTH_LONG).show();
+            return;
+        }
+        int imported = 0;
+        for (Uri uri : selected) if (copyWallpaper(uri, folder)) imported++;
+        if (imported > 0) {
+            // Return to the full imported collection; a previous one-image override should not hide new pictures.
+            choices.edit().remove(Config.WALLPAPER_CHOICE_KEY).apply();
+            changed();
+            refresh();
+            Toast.makeText(this, getString(R.string.wallpaper_imported, imported), Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, R.string.wallpaper_import_failed, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private boolean copyWallpaper(Uri uri, File folder) {
+        String name = null;
+        try (Cursor cursor = getContentResolver().query(uri,
+                new String[]{OpenableColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) name = cursor.getString(0);
+        } catch (Exception ignored) { }
+        if (name == null || name.trim().isEmpty()) name = "wallpaper-" + System.currentTimeMillis() + ".jpg";
+        name = new File(name).getName().replaceAll("[^A-Za-z0-9._-]", "_");
+        String lower = name.toLowerCase(java.util.Locale.ROOT);
+        if (!(lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".webp"))) {
+            String mime = getContentResolver().getType(uri);
+            String extension = "image/png".equals(mime) ? ".png"
+                    : "image/webp".equals(mime) ? ".webp" : ".jpg";
+            name = "wallpaper-" + System.currentTimeMillis() + extension;
+        }
+        File destination = new File(folder, name);
+        int suffix = 1;
+        while (destination.exists()) destination = new File(folder,
+                name.substring(0, name.lastIndexOf('.')) + "-" + suffix++ + name.substring(name.lastIndexOf('.')));
+        long copied = 0;
+        try (InputStream input = getContentResolver().openInputStream(uri);
+             OutputStream output = new FileOutputStream(destination)) {
+            if (input == null) return false;
+            byte[] buffer = new byte[16 * 1024];
+            int count;
+            while ((count = input.read(buffer)) != -1) {
+                copied += count;
+                if (copied > 10L * 1024L * 1024L) {
+                    destination.delete();
+                    return false;
+                }
+                output.write(buffer, 0, count);
+            }
+            return copied > 0;
+        } catch (Exception failure) {
+            destination.delete();
+            return false;
+        }
     }
 
     private void showWallpaperPicker() {
