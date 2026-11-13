@@ -111,9 +111,15 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/wallpaperImportChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="28dp"
+            android:text="@string/wallpaper_import" />
+
+        <TextView
             android:id="@+id/wallpaperChoice"
             style="@style/SettingsRow"
-            android:layout_marginTop="28dp" />
+            android:layout_marginTop="10dp" />
 
         <TextView
             android:id="@+id/animationsChoice"
