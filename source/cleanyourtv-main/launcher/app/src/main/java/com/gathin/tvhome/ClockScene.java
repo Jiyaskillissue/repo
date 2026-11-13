@@ -1,6 +1,9 @@
 package com.gathin.tvhome;
 
 import android.animation.ArgbEvaluator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -46,6 +49,7 @@ final class ClockScene {
     private final ClockRefresh clockRefresh;
     private final ImageView ambient;
     private final GradientDrawable glow;
+    private AnimatorSet wallpaperMotion;
     private int colorIndex;
     private int glowColor;
     /** clock_wallpaper or clock_glow false: something else (a picture, or plain black) replaced the coloured glow. */
@@ -102,6 +106,15 @@ final class ClockScene {
 
     void stop() {
         handler.removeCallbacksAndMessages(null);   // the tick and any glow steps still queued
+        if (wallpaperMotion != null) {
+            wallpaperMotion.cancel();
+            wallpaperMotion = null;
+        }
+        ambient.animate().cancel();
+        ambient.setScaleX(1f);
+        ambient.setScaleY(1f);
+        ambient.setTranslationX(0f);
+        ambient.setTranslationY(0f);
         clockRefresh.stop();
         content.animate().cancel();
         wallpaperGeneration++;   // a decode still running must not attach its picture to a stopped scene
@@ -174,6 +187,7 @@ final class ClockScene {
                 ambient.setBackground(null);
                 ambient.setImageDrawable(new LayerDrawable(new Drawable[]{
                         new BitmapDrawable(res, bmp), new ColorDrawable(shade)}));
+                startWallpaperMotion();
             });
         }, "clock-wallpaper").start();
     }
@@ -201,6 +215,24 @@ final class ClockScene {
         } catch (Exception | OutOfMemoryError failure) {
             return null;
         }
+    }
+
+    /** A slow, low-amplitude aerial-style camera drift; GPU transforms avoid decoding extra frames. */
+    private void startWallpaperMotion() {
+        if (wallpaperMotion != null) wallpaperMotion.cancel();
+        float driftX = ambient.getWidth() * 0.018f;
+        float driftY = ambient.getHeight() * 0.012f;
+        ObjectAnimator zoomX = ObjectAnimator.ofFloat(ambient, View.SCALE_X, 1.025f, 1.075f);
+        ObjectAnimator zoomY = ObjectAnimator.ofFloat(ambient, View.SCALE_Y, 1.025f, 1.075f);
+        ObjectAnimator panX = ObjectAnimator.ofFloat(ambient, View.TRANSLATION_X, driftX, -driftX);
+        ObjectAnimator panY = ObjectAnimator.ofFloat(ambient, View.TRANSLATION_Y, -driftY, driftY);
+        wallpaperMotion = new AnimatorSet();
+        wallpaperMotion.playTogether(zoomX, zoomY, panX, panY);
+        wallpaperMotion.setDuration(90_000L);
+        wallpaperMotion.setInterpolator(new android.view.animation.LinearInterpolator());
+        wallpaperMotion.setRepeatCount(ValueAnimator.INFINITE);
+        wallpaperMotion.setRepeatMode(ValueAnimator.REVERSE);
+        wallpaperMotion.start();
     }
 
     /** Step to the next picture once its turn is up; the tick already runs every minute. */
