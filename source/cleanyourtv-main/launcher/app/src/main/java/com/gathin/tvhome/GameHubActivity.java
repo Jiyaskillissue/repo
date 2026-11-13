@@ -242,7 +242,7 @@ public final class GameHubActivity extends Activity {
         for(int y=0;y<8;y++)for(int x=0;x<8;x++)if(Integer.signum(board[y][x])==side){
             int piece=board[y][x],king=Math.abs(piece)==2?1:0;
             for(int dx:new int[]{-1,1})for(int dir:new int[]{-1,1}){
-                if(!king&&dir!=(side<0?-1:1))continue;
+                if(king==0&&dir!=(side<0?-1:1))continue;
                 int ny=y+dir,nx=x+dx;
                 if(inside(ny,nx)&&board[ny][nx]==0)all.add(new int[]{y,x,ny,nx});
                 int jy=y+2*dir,jx=x+2*dx;
@@ -254,7 +254,7 @@ public final class GameHubActivity extends Activity {
     private boolean hasCaptureFrom(int y,int x,int side) {
         int piece=board[y][x],king=Math.abs(piece)==2?1:0;
         for(int dx:new int[]{-1,1})for(int dir:new int[]{-1,1}){
-            if(!king&&dir!=(side<0?-1:1))continue;
+            if(king==0&&dir!=(side<0?-1:1))continue;
             int ny=y+dir,nx=x+dx,jy=y+2*dir,jx=x+2*dx;
             if(inside(jy,jx)&&inside(ny,nx)&&board[ny][nx]*side<0&&board[jy][jx]==0)return true;
         }return false;
