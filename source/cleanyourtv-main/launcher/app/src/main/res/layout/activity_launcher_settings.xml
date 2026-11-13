@@ -93,7 +93,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="26dp"
                     android:paddingBottom="4dp"
-                    android:text="DISPLAY & LAYOUT"
+                    android:text="DISPLAY &amp; LAYOUT"
                     android:textColor="#B8D9F0"
                     android:textSize="14sp"
                     android:letterSpacing="0.10" />
@@ -152,7 +152,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
                     android:paddingBottom="4dp"
-                    android:text="WALLPAPER & SCENES"
+                    android:text="WALLPAPER &amp; SCENES"
                     android:textColor="#B8D9F0"
                     android:textSize="14sp"
                     android:letterSpacing="0.10" />
@@ -172,7 +172,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
                     android:paddingBottom="4dp"
-                    android:text="MOTION & PERFORMANCE"
+                    android:text="MOTION &amp; PERFORMANCE"
                     android:textColor="#B8D9F0"
                     android:textSize="14sp"
                     android:letterSpacing="0.10" />
