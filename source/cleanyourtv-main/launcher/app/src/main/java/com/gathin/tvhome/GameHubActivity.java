@@ -30,7 +30,10 @@ public final class GameHubActivity extends Activity {
     private boolean finished;
     private final int[] secret=new int[4],guess={-1,-1,-1,-1};
     private int attempts;
-    private final boolean[][] hits=new boolean[8][8];\n    private final boolean[][] playerFleet=new boolean[8][8];\n    private final boolean[][] cpuShots=new boolean[8][8];\n    private int cpuHits=0;
+    private final boolean[][] hits=new boolean[8][8];
+    private final boolean[][] playerFleet=new boolean[8][8];
+    private final boolean[][] cpuShots=new boolean[8][8];
+    private int cpuHits=0;
     private String word="PLANET";
     private final String[] words={"PLANET","ORBIT","COMET"};
 
