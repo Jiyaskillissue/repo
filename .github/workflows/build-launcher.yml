@@ -62,6 +62,7 @@ jobs:
               size="$(wc -c < "$tmp")"
               if [[ "$mime" == "image/jpeg" && "$size" -gt 20000 ]]; then
                 mv "$tmp" "$target"
+                echo "Wallpaper $n fetched successfully ($size bytes)."
               else
                 rm -f "$tmp"
                 echo "Wallpaper $n unavailable or invalid; the launcher will generate a fallback."
@@ -71,6 +72,8 @@ jobs:
               echo "Wallpaper $n could not be fetched; the launcher will generate a fallback."
             fi
           done
+          ready=$(find "$dir" -maxdepth 1 -type f -name 'curated-*.jpg' -size +20k | wc -l)
+          echo "$ready/12 valid landscape photos ready for APK packaging."
 
       - name: Run tests and build release APK
         working-directory: source/cleanyourtv-main/launcher
