@@ -39,6 +39,7 @@ public final class LauncherSettingsActivity extends Activity {
     }
 
     static final String EXTRA_REORDER = "com.gathin.tvhome.extra.REORDER_FROM_SETTINGS";
+    static final String EXTRA_BACKDROP_PATH = "com.gathin.tvhome.extra.SETTINGS_BACKDROP_PATH";
     private SharedPreferences choices;
     private final TextView[] columnChoices = new TextView[4];
     private final TextView[] rowChoices = new TextView[4];
@@ -63,6 +64,7 @@ public final class LauncherSettingsActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_launcher_settings);
+        SettingsBackdrop.applySettingsGlass(this, getIntent().getStringExtra(EXTRA_BACKDROP_PATH));
         findViewById(R.id.navDisplay).setOnClickListener(v -> navigateTo(R.id.displaySection));
         findViewById(R.id.navWallpaper).setOnClickListener(v -> navigateTo(R.id.wallpaperSection));
         findViewById(R.id.navMotion).setOnClickListener(v -> navigateTo(R.id.motionSection));
