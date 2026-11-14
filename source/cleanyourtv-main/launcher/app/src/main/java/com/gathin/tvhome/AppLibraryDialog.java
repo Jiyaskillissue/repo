@@ -198,6 +198,7 @@ final class AppLibraryDialog {
     }
 
     private void reveal() {
+        SettingsBackdrop.applyLibraryGlass(activity, panel);
         popup.showAtLocation(activity.getWindow().getDecorView(), Gravity.CENTER, 0, 0);
         View container = panel.getRootView();
         if (container.getLayoutParams() instanceof WindowManager.LayoutParams) {
@@ -405,8 +406,12 @@ final class AppLibraryDialog {
             catch (ActivityNotFoundException | SecurityException ignored) { }
         }));
         header.addView(headerAction(R.drawable.ic_settings, activity.getString(R.string.settings), () -> {
-            try { activity.startActivity(new Intent(activity, LauncherSettingsActivity.class)); }
-            catch (ActivityNotFoundException | SecurityException ignored) { }
+            try {
+                String backdrop = SettingsBackdrop.capture(activity);
+                Intent settings = new Intent(activity, LauncherSettingsActivity.class);
+                if (backdrop != null) settings.putExtra(LauncherSettingsActivity.EXTRA_BACKDROP_PATH, backdrop);
+                activity.startActivity(settings);
+            } catch (ActivityNotFoundException | SecurityException ignored) { }
         }));
         header.addView(headerAction(R.drawable.ic_wifi, activity.getString(R.string.wifi), () -> {
             try { activity.startActivity(new Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)); }
