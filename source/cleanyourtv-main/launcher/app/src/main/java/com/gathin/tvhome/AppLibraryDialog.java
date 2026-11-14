@@ -47,7 +47,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
-/** On-demand installed-app picker. Uses the launcher's glass resources; no backdrop capture or blur. */
+/** On-demand installed-app picker with a low-resolution blurred backdrop and remote-friendly glass surfaces. */
 final class AppLibraryDialog {
     /**
      * The catalogue, the labels and the icons load here, off the UI thread: each label and icon opens the app's
