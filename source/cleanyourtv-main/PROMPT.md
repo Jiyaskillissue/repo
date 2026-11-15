@@ -23,6 +23,17 @@ folder, you are running without this repo: clone it first with
 `git clone https://github.com/Gathin23/cleanyourtv` and work from there, so `tools/disable.sh` and the
 rest keep their safety checks, rather than stopping or writing your own.
 
+## Launcher behaviour requirements
+
+The launcher must behave as the TV's real Home app, not as an app that the user has to open manually:
+
+1. **Starts on boot.** Declare the main activity as an Android HOME activity. The installer must install and start the new launcher first, verify that it starts, then set it as the default Home activity and disable only a recognised stock launcher. Keep the stock package and its original enabled/disabled state in the pre-change recovery record. The restore path must re-enable it only if it was enabled before, and restore the previous Home owner. If the handover check fails, roll back immediately; never leave the TV without a working Home app.
+2. **Home always returns to this launcher.** A normal remote Home key must resolve to this launcher through Android's default HOME activity. If the TV firmware uses a vendor key such as KEYCODE_ALL_APPS for its Home button, map that actual key to Home through HomeKeyService. Do not assume the Apps key and Home key are the same: inspect the remote's actual key event first. The configured Apps shortcut (currently `284:library`) must open the App Library, not Home. If a device reports the same keycode for both physical buttons, stop and ask which action should take priority rather than silently routing both the same way. Preserve Back, D-pad, OK and volume behaviour.
+3. **App Library stays current automatically.** Build its catalogue from installed packages that expose an Android TV `LEANBACK_LAUNCHER` or regular `LAUNCHER` activity. Re-query when the library opens and refresh on package added, removed or changed events. Newly installed launchable apps must appear without editing a static app list or manually adding them. Apps with no launchable activity cannot be offered as normal app tiles; explain that limitation rather than inventing an entry.
+
+Do not disable the stock launcher until the new launcher has passed the start check and its Home handover has been verified. Keep all changes reversible and preserve the state that existed before installation.
+
+
 Connect
 - Find the TV on my network (hostname, ARP table, or ask me for the IP) and connect over ADB on port 5555.
   If the TV is in another home, I'll give you its Tailscale address instead (docs/REMOTE.md): use that,
