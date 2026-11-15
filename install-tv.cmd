@@ -62,7 +62,9 @@ if errorlevel 1 goto :pip_failed
 
 echo.
 echo Starting the original CleanYourTV install-and-rollback procedure...
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%PROJECT%\launcher\build-and-install.ps1" -TvHost "%TV_HOST%"
+rem Enable the remote-key helper so config.xml mapping 284:library opens the App Library.
+rem Keep HOME and ALL_APPS distinct: verify the physical remote mapping before changing keycodes.
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%PROJECT%\launcher\build-and-install.ps1" -TvHost "%TV_HOST%" -HomeKeyService
 set "RESULT=%ERRORLEVEL%"
 
 echo.

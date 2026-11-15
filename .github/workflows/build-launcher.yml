@@ -2,7 +2,7 @@ name: Build TV launcher
 
 on:
   push:
-    branches: [main]
+    branches: [main, "launcher/**"]
     paths:
       - "source/cleanyourtv-main/launcher/**"
       - ".github/workflows/build-launcher.yml"
